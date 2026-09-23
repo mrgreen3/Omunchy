@@ -1,0 +1,125 @@
+#!/bin/bash
+#
+# omunchy — CLI dispatcher.
+#
+# Emulates Omarchy's bin/omarchy: every executable bin/omunchy-* script is a
+# subcommand, self-described by metadata comments in its header:
+#
+#   # omunchy:summary=One-line description
+#   # omunchy:args=[name url icon]
+#   # omunchy:examples=omunchy webapp install Gmail https://gmail.com
+#
+# The route is the script filename with the omunchy- prefix stripped and dashes
+# turned into spaces, e.g. bin/omunchy-webapp-install -> `omunchy webapp install`.
+
+set -euo pipefail
+
+BIN_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+
+declare -A SCRIPT_OF SUMMARY_OF ARGS_OF EXAMPLES_OF
+ROUTES=()
+
+for script_path in "$BIN_DIR"/omunchy-*; do
+    [[ -f $script_path && -x $script_path ]] || continue
+    script=${script_path##*/}
+    route=${script#omunchy-}
+    route=${route//-/ }
+    SCRIPT_OF[$route]=$script_path
+    ROUTES+=("$route")
+    summary="" args="" examples=""
+    while IFS= read -r line; do
+        case $line in
+        "# omunchy:summary="*) summary=${line#\# omunchy:summary=} ;;
+        "# omunchy:args="*) args=${line#\# omunchy:args=} ;;
+        "# omunchy:examples="*) examples=${line#\# omunchy:examples=} ;;
+        esac
+    done <"$script_path"
+    SUMMARY_OF[$route]=$summary
+    ARGS_OF[$route]=$args
+    EXAMPLES_OF[$route]=$examples
+done
+
+sorted_routes() {
+    # One route per line, sorted — safe for `while read` (no word splitting).
+    printf '%s\n' "${ROUTES[@]}" | sort
+}
+
+print_route_help() {
+    local route=$1
+    printf '  omunchy %s %s\n' "$route" "${ARGS_OF[$route]:-}"
+    [[ -n ${SUMMARY_OF[$route]:-} ]] && printf '      %s\n' "${SUMMARY_OF[$route]}"
+    [[ -n ${EXAMPLES_OF[$route]:-} ]] && printf '      e.g. %s\n' "${EXAMPLES_OF[$route]}"
+    echo
+}
+
+print_help() {
+    local route
+    echo "omunchy — lightweight Omarchy-inspired desktop installer for ArchBang"
+    echo
+    echo "Usage: omunchy <route> [args...]"
+    echo
+    echo "Routes (auto-discovered from bin/omunchy-*):"
+    echo
+    while IFS= read -r route; do
+        print_route_help "$route"
+    done < <(sorted_routes)
+    echo "Run 'omunchy help <group>' to list the routes in one group (e.g. webapp, tui)."
+}
+
+main() {
+    if (($# == 0)); then
+        print_help
+        exit 0
+    fi
+
+    if [[ $1 == help ]]; then
+        shift
+        if (($# == 0)); then
+            print_help
+        else
+            local group=$1 route found=0
+            echo "omunchy $group commands:"
+            echo
+            while IFS= read -r route; do
+                [[ $route == "$group "* || $route == "$group" ]] || continue
+                print_route_help "$route"
+                found=1
+            done < <(sorted_routes)
+            ((found)) || {
+                echo "Unknown group: $group" >&2
+                exit 2
+            }
+        fi
+        exit 0
+    fi
+
+    # Match the longest route prefix (e.g. "webapp install x y z" consumes
+    # "webapp install" and passes "x y z" to the script).
+    local -a route_words
+    read -ra route_words <<<"$*"
+    local n=${#route_words[@]} len query
+    for ((len = n; len >= 1; len--)); do
+        query="${route_words[*]:0:len}"
+        if [[ -n ${SCRIPT_OF[$query]:-} ]]; then
+            # A -h/--help anywhere in the remaining args means "show help for
+            # this route", not "pass --help to the script".
+            local rest=(${@:$((len + 1))}) a
+            for a in "${rest[@]}"; do
+                if [[ $a == -h || $a == --help ]]; then
+                    print_route_help "$query"
+                    exit 0
+                fi
+            done
+            exec "${SCRIPT_OF[$query]}" "${rest[@]}"
+        fi
+    done
+
+    echo "Unknown command: omunchy $*" >&2
+    while IFS= read -r route; do
+        [[ $route == "$1"* ]] && echo "  did you mean: omunchy $route" >&2
+    done < <(sorted_routes)
+    echo "Try 'omunchy help'." >&2
+    exit 2
+}
+
+main "$@"

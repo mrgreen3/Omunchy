@@ -1,0 +1,113 @@
+#!/bin/bash
+
+# omunchy:summary=Remove a web app desktop launcher installed by omunchy
+# omunchy:args=[name]
+# omunchy:examples=omunchy webapp remove Gmail
+
+set -euo pipefail
+
+ICON_DIR="$HOME/.local/share/icons/hicolor/256x256/apps"
+DESKTOP_DIR="$HOME/.local/share/applications"
+
+if [[ ${1:-} == -h || ${1:-} == --help ]]; then
+    printf 'Usage: omunchy webapp remove [name]\nRemove a web app launcher; with no name, shows an interactive picker.\n'
+    exit 0
+fi
+
+# Resolve this script through any symlink to find the repo config dir.
+SOURCE=${BASH_SOURCE[0]}
+while [[ -L $SOURCE ]]; do
+    DIR=$(cd -P "$(dirname -- "$SOURCE")" && pwd)
+    SOURCE=$(readlink -- "$SOURCE")
+    [[ $SOURCE == /* ]] || SOURCE="$DIR/$SOURCE"
+done
+CONF_FILE="$(cd -P "$(dirname -- "$SOURCE")/.." && pwd)/config/webapps.conf"
+
+safe_icon_name() {
+    printf '%s\n' "$1" \
+        | tr '[:upper:]' '[:lower:]' \
+        | sed 's/[^[:alnum:]]\+/-/g; s/^-//; s/-$//'
+}
+
+# Index launchers by scanning, so removal deletes the file that was found
+# rather than a path rebuilt from the displayed name.
+NAMES=()
+PATHS=()
+for file in "$DESKTOP_DIR"/omunchy-webapp-*.desktop; do
+    [[ -f $file ]] || continue
+    name=$(sed -n 's/^Name=//p' "$file" | head -1)
+    NAMES+=("${name:-$(basename "${file%.desktop}")}")
+    PATHS+=("$file")
+done
+
+path_for_name() {
+    local wanted="$1" i
+    for i in "${!NAMES[@]}"; do
+        if [[ ${NAMES[i]} == "$wanted" ]]; then
+            printf '%s\n' "${PATHS[i]}"
+            return 0
+        fi
+    done
+}
+
+choose_name() {
+    if command -v fzf >/dev/null 2>&1; then
+        printf '%s\n' "${NAMES[@]}" | sort | fzf --prompt="Select web app to remove: " --height=~50%
+    else
+        local i=1 opt num
+        echo "Select web app to remove:"
+        for opt in $(printf '%s\n' "${NAMES[@]}" | sort); do
+            echo "  $i) $opt"
+            i=$((i + 1))
+        done
+        read -r -p "Number: " num
+        [[ $num =~ ^[0-9]+$ ]] || return 1
+        local sorted
+        mapfile -t sorted < <(printf '%s\n' "${NAMES[@]}" | sort)
+        [[ $num -ge 1 && $num -le ${#sorted[@]} ]] || return 1
+        printf '%s\n' "${sorted[num - 1]}"
+    fi
+}
+
+if (($# == 0)); then
+    if ((${#NAMES[@]} == 0)); then
+        echo "No omunchy web apps to remove."
+        exit 1
+    fi
+    APP_NAME=$(choose_name)
+else
+    APP_NAME="$*"
+fi
+
+[[ -z $APP_NAME ]] && {
+    echo "You must select a web app to remove."
+    exit 1
+}
+
+desktop_file=$(path_for_name "$APP_NAME")
+if [[ -z $desktop_file ]]; then
+    echo "No webapp named '$APP_NAME' found." >&2
+    exit 1
+fi
+
+# Capture the icon name BEFORE deleting the entry (sed after rm would fail the
+# pipeline under set -e -o pipefail).
+icon_field=$(sed -n 's/^Icon=//p' "$desktop_file" | head -1 || true)
+rm -f "$desktop_file"
+
+# Only our own fetched icons live under ICON_DIR with this name.
+rm -f "$ICON_DIR/${icon_field:-$(safe_icon_name "$APP_NAME")}.png"
+
+if [[ -f $CONF_FILE ]] && awk -F'|' -v n="$APP_NAME" 'tolower($1)==tolower(n){found=1} END{exit !found}' "$CONF_FILE"; then
+    echo "Note: '$APP_NAME' is still defined in $CONF_FILE."
+    echo "      Remove its line there, or it will be recreated by 'omunchy sync'."
+fi
+
+command -v notify-send >/dev/null 2>&1 &&
+    [[ ${OMUNCHY_REMOVE_NOTIFY:-true} != "false" ]] &&
+    notify-send -- "Web app removed" "$APP_NAME" 2>/dev/null || true
+
+command -v update-desktop-database >/dev/null 2>&1 &&
+    update-desktop-database "$DESKTOP_DIR" &>/dev/null || true
+
+echo "Removed web app: $APP_NAME"

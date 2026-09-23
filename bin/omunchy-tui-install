@@ -1,0 +1,141 @@
+#!/bin/bash
+
+# omunchy:summary=Create a desktop launcher for a terminal UI app
+# omunchy:args=[name command [window-style] [icon-url-or-name]]
+# omunchy:examples=omunchy tui install htop htop float utilities-system-monitor
+
+# Emulates Omarchy's bin/omarchy-tui-install. Window style feeds the app-id
+# (omunchy.TUI.float / omunchy.TUI.tile) so MangoWC window rules can target it.
+
+set -e
+
+ICON_DIR="$HOME/.local/share/icons/hicolor/256x256/apps"
+
+safe_icon_name() {
+  printf '%s\n' "$1" \
+    | tr '[:upper:]' '[:lower:]' \
+    | sed 's/[^[:alnum:]]\+/-/g; s/^-//; s/-$//'
+}
+
+icon_name_from_ref() {
+  local ref="$1"
+  local name
+  name=$(basename "$ref")
+
+  if [[ $name == *.* ]]; then
+    safe_icon_name "${name%.*}"
+  else
+    printf '%s\n' "$name"
+  fi
+}
+
+install_user_icon() {
+  local source="$1"
+  local name="$2"
+  local ext="${source##*.}"
+
+  [[ $ext == "$source" ]] && ext="png"
+  mkdir -p "$ICON_DIR"
+  cp "$source" "$ICON_DIR/$name.$ext"
+  gtk-update-icon-cache "$HOME/.local/share/icons/hicolor" &>/dev/null || true
+  printf '%s\n' "$name"
+}
+
+desktop_string_escape() {
+  # freedesktop Desktop Entry "string" value escaping (see webapp installer).
+  local value="$1"
+
+  value=${value//\\/\\\\}
+  value=${value//$'\t'/\\t}
+  value=${value//$'\r'/\\r}
+  value=${value//$'\n'/\\n}
+  [[ $value == " "* ]] && value="\\s${value# }"
+
+  printf '%s' "$value"
+}
+
+# Interactive fallback when gum is unavailable.
+ask() {
+  if command -v gum >/dev/null 2>&1; then
+    gum input --prompt "$1" --placeholder "${2:-}"
+  else
+    local reply
+    read -r -p "$1 " reply
+    printf '%s' "$reply"
+  fi
+}
+
+if (( $# < 2 )); then
+  echo -e "Let's create a TUI shortcut you can start with the app launcher.\n"
+  APP_NAME=$(ask "Name>" "My TUI")
+  APP_EXEC=$(ask "Launch Command>" "lazydocker or bash -c 'dust; read -n 1 -s'")
+  if command -v gum >/dev/null 2>&1; then
+    WINDOW_STYLE=$(gum choose --header "Window style" float tile)
+  else
+    read -r -p "Window style [float/tile] (default: float) " WINDOW_STYLE
+    WINDOW_STYLE=${WINDOW_STYLE:-float}
+  fi
+  ICON_REF=$(ask "Icon URL/name>" "See https://dashboardicons.com or enter an installed icon name")
+  INTERACTIVE_MODE=true
+else
+  APP_NAME="$1"
+  APP_EXEC="$2"
+  WINDOW_STYLE="${3:-float}"
+  ICON_REF="${4:-}"
+  INTERACTIVE_MODE=false
+fi
+
+if [[ -z $APP_NAME || -z $APP_EXEC ]]; then
+  echo "You must set app name and app command!"
+  exit 1
+fi
+
+case $WINDOW_STYLE in
+float) APP_CLASS="omunchy.TUI.float" ;;
+tile) APP_CLASS="omunchy.TUI.tile" ;;
+*) APP_CLASS="omunchy.TUI.float" ;;
+esac
+
+# Resolve the icon: URL -> download, file -> copy, empty -> generic, else themed name.
+if [[ -n $ICON_REF && $ICON_REF =~ ^https?:// ]]; then
+  ICON_VALUE=$(safe_icon_name "$APP_NAME")
+  mkdir -p "$ICON_DIR"
+  if ! curl -fsSL --max-time 10 -o "$ICON_DIR/$ICON_VALUE.png" "$ICON_REF"; then
+    echo "Error: Failed to download icon."
+    exit 1
+  fi
+  gtk-update-icon-cache "$HOME/.local/share/icons/hicolor" &>/dev/null || true
+elif [[ -n $ICON_REF && -f $ICON_REF ]]; then
+  ICON_VALUE=$(install_user_icon "$ICON_REF" "$(safe_icon_name "$APP_NAME")")
+elif [[ -n $ICON_REF ]]; then
+  # Themed icon name; resolves via the icon theme at render time.
+  ICON_VALUE=$(icon_name_from_ref "$ICON_REF")
+else
+  ICON_VALUE="utilities-terminal"
+fi
+
+DESKTOP_DIR="$HOME/.local/share/applications"
+DESKTOP_FILE="$DESKTOP_DIR/omunchy-tui-$(safe_icon_name "$APP_NAME").desktop"
+mkdir -p "$DESKTOP_DIR"
+
+name_field=$(desktop_string_escape "$APP_NAME")
+exec_field=$(desktop_string_escape "xdg-terminal-exec --app-id=$APP_CLASS -e $APP_EXEC")
+icon_field=$(desktop_string_escape "$ICON_VALUE")
+
+cat >"$DESKTOP_FILE" <<EOF
+[Desktop Entry]
+Version=1.0
+Name=$name_field
+Exec=$exec_field
+Terminal=false
+Type=Application
+Icon=$icon_field
+StartupNotify=true
+Categories=Utility;
+EOF
+
+chmod +x "$DESKTOP_FILE"
+
+if [[ $INTERACTIVE_MODE == "true" ]]; then
+  echo -e "You can now find $APP_NAME using the app launcher (SUPER + SPACE)\n"
+fi

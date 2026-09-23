@@ -1,0 +1,124 @@
+#!/bin/bash
+
+# omunchy:summary=Generate .desktop entries for every app defined in config/webapps.conf and config/tuis.conf
+# omunchy:args=[conf-dir]
+# omunchy:examples=omunchy sync
+
+set -euo pipefail
+
+BIN_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+CONF_DIR=${1:-$(cd -- "$BIN_DIR/.." && pwd)/config}
+
+WEBAPPS_CONF="$CONF_DIR/webapps.conf"
+TUIS_CONF="$CONF_DIR/tuis.conf"
+
+ok=0
+fail=0
+
+# Desktop entries reference omunchy-launch-webapp by name, so the scripts must
+# be on PATH (emulates how Omarchy installs its bin/ onto PATH).
+link_bin() {
+    local dest="$HOME/.local/bin"
+    mkdir -p "$dest"
+    local script name
+    for script in "$BIN_DIR"/omunchy-*; do
+        name=${script##*/}
+        ln -sfn "$script" "$dest/$name"
+    done
+    ln -sfn "$BIN_DIR/omunchy" "$dest/omunchy"
+    echo "[omunchy] Linked scripts into $dest"
+}
+
+sync_webapps() {
+    [[ -f $WEBAPPS_CONF ]] || {
+        echo "[omunchy] No webapps.conf at $WEBAPPS_CONF, skipping"
+        return 0
+    }
+    echo "[omunchy] Syncing web apps from $WEBAPPS_CONF"
+    while IFS='|' read -r name url icon || [[ -n $name ]]; do
+        name=${name//$'\r'/}
+        [[ -z ${name//[[:space:]]/} || $name == \#* ]] && continue
+        if "$BIN_DIR/omunchy-webapp-install" "$name" "$url" "$icon"; then
+            ok=$((ok + 1))
+        else
+            echo "[omunchy] FAILED: webapp '$name'" >&2
+            fail=$((fail + 1))
+        fi
+    done <"$WEBAPPS_CONF"
+}
+
+sync_tuis() {
+    [[ -f $TUIS_CONF ]] || {
+        echo "[omunchy] No tuis.conf at $TUIS_CONF, skipping"
+        return 0
+    }
+    echo "[omunchy] Syncing TUIs from $TUIS_CONF"
+    while IFS='|' read -r name cmd style icon || [[ -n $name ]]; do
+        name=${name//$'\r'/}
+        [[ -z ${name//[[:space:]]/} || $name == \#* ]] && continue
+        # Legacy 3-field lines (Name|Command|Icon) land the icon in $style.
+        if [[ $style != float && $style != tile ]]; then
+            icon=$style
+            style=float
+        fi
+        if "$BIN_DIR/omunchy-tui-install" "$name" "$cmd" "${style:-float}" "$icon"; then
+            ok=$((ok + 1))
+        else
+            echo "[omunchy] FAILED: tui '$name'" >&2
+            fail=$((fail + 1))
+        fi
+    done <"$TUIS_CONF"
+}
+
+# Bundled launcher menu entries: "Add Web App" / "Add TUI" run the interactive
+# installers from the app launcher (emulates Omarchy's install.webapp/tui menu
+# items). The installer wraps itself in the best available terminal, with an
+# absolute path since the session PATH cannot resolve ~/.local/bin.
+detect_terminal() {
+    if command -v xdg-terminal-exec >/dev/null 2>&1; then
+        printf 'xdg-terminal-exec --app-id=omunchy.Installer -e'
+    elif command -v foot >/dev/null 2>&1; then
+        printf 'foot -e'
+    elif command -v alacritty >/dev/null 2>&1; then
+        printf 'alacritty -e'
+    elif command -v kitty >/dev/null 2>&1; then
+        printf 'kitty -e'
+    else
+        return 1
+    fi
+}
+
+install_menu_entries() {
+    local APPS_DIR="$HOME/.local/share/applications"
+    mkdir -p "$APPS_DIR"
+    local term
+    if ! term=$(detect_terminal); then
+        echo "[omunchy] No terminal emulator found, skipping Add Web App / Add TUI menu entries"
+        return 0
+    fi
+    local spec label icon
+    for spec in "webapp:omunchy-webapp-install:Add Web App:list-add" "tui:omunchy-tui-install:Add TUI:utilities-terminal"; do
+        local kind script label icon out
+        IFS=: read -r kind script label icon <<<"$spec"
+        local out="$APPS_DIR/omunchy-add-$kind.desktop"
+        cat >"$out" <<EOF
+[Desktop Entry]
+Version=1.0
+Name=$label
+Exec=$term $HOME/.local/bin/$script
+Terminal=false
+Type=Application
+Icon=$icon
+StartupNotify=false
+Categories=Utility;
+EOF
+        echo "[omunchy] Menu entry: $out"
+    done
+}
+
+link_bin
+install_menu_entries
+sync_webapps
+sync_tuis
+
+echo "[omunchy] Sync complete: $ok created, $fail failed."
