@@ -1,6 +1,6 @@
  ArchBang Guide
 
-Welcome to ArchBang, a lightweight Arch-based Wayland live ISO built around MangoWC.
+Welcome to ArchBang, a lightweight Arch-based Wayland live ISO built around Hyprland.
 
 Note: Do not post ArchBang issues on the Arch Linux forums.
 
@@ -15,15 +15,12 @@ Network required for pacman or browser use in the live session.
 
 ---
 
-TAGS AND LAYOUTS
+WORKSPACES AND LAYOUTS
 
-MangoWC uses tags (1–9) instead of workspaces.
+Hyprland arranges windows automatically in a tiling layout (dwindle).
 
-Tag 1 is floating — windows behave like a traditional floating desktop.
-Tags 2–9 are tiling — windows are arranged automatically.
-
-Switch tags with Super+1 through Super+9.
-Toggle a window between floating and tiling with Super+S.
+Switch workspaces with Super+1 through Super+9.
+Toggle a window between floating and tiling with Super+T.
 
 ---
 
@@ -65,7 +62,7 @@ Install:  sudo pacman -S <package-name>
 CONSOLE KEYBOARD LAYOUT
 
 The installer sets the raw tty console (rescue mode, before mango starts) to
-a "us" keymap regardless of your location — only mango's own desktop keymap
+a "us" keymap regardless of your location — only the desktop keymap
 is set to match where you are. To change the console layout afterwards:
 
 sudo nano /etc/vconsole.conf   # set KEYMAP=<layout>, e.g. KEYMAP=uk
@@ -86,7 +83,7 @@ If you remove the unused one after installation, update your bootloader config
 
 INTEL GRAPHICS
 
-ArchBang uses Wayland with MangoWC, which relies on kernel modesetting via Mesa.
+ArchBang uses Wayland with Hyprland, which relies on kernel modesetting via Mesa.
 No additional Intel drivers needed — built-in kernel drivers handle acceleration.
 
 ---

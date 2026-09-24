@@ -5,7 +5,7 @@ choice=$(printf "󰍃  Logout\n󰑓  Reboot\n󰐥  Poweroff" | rofi -dmenu -p "P
     -theme-str 'inputbar { enabled: false; } listview { lines: 3; } window { width: 250px; }')
 
 case "$choice" in
-    *Logout)   pkill mango ;;
+    *Logout)   hyprctl dispatch exit ;;
     *Reboot)   systemctl reboot ;;
     *Poweroff) systemctl poweroff ;;
 esac

@@ -11,7 +11,6 @@ xz
 ## === OMUNCHY STACK (Omarchy-like, lean) ===
 pamixer
 polkit-gnome
-xdg-desktop-portal-wlr
 xdg-desktop-portal-gtk
 btop
 noto-fonts
@@ -23,12 +22,18 @@ adwaita-icon-theme
 ## === TERMINAL ===
 foot
 
-## === WAYLAND DESKTOP ENVIRONMENT (mango stack) ===
-mangowm
+## === WAYLAND DESKTOP ENVIRONMENT (hyprland stack, all from official repos) ===
+hyprland
+hyprland-guiutils
+hyprpicker
+hyprsunset
+hyprlock
+hyprpaper
+uwsm
+xdg-desktop-portal-hyprland
 swaybg
 waybar
 xorg-xwayland
-wlr-randr
 grim
 slurp
 wl-clipboard

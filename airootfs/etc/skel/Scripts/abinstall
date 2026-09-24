@@ -511,7 +511,7 @@ configure_vconsole(){
   print_title "CONSOLE KEYMAP"
   # Fixed to "us" rather than prompted: this only affects the raw tty
   # console (rescue/recovery, before a desktop is running), and almost
-  # every user is on mango/Wayland day to day, whose own keyboard layout
+  # every user is on Hyprland/Wayland day to day, whose own keyboard layout
   # is set separately in select_xkeymap below (derived from location).
   # Documents/Guide covers editing /etc/vconsole.conf post-install for
   # anyone who actually needs a different console layout.
@@ -521,8 +521,8 @@ configure_vconsole(){
 #}}}
 #SELECT KEYMAP {{{
 select_xkeymap(){
-  print_title "MANGO DESKTOP KEYBOARD LAYOUT"
-  print_info "Setting keyboard layout for mango compositor"
+  print_title "DESKTOP KEYBOARD LAYOUT"
+  print_info "Setting keyboard layout for the Hyprland compositor"
   if [[ -n "$DERIVED_XKB" ]]; then
     XKEYMAP="$DERIVED_XKB"
     print_success "Using keyboard layout ${XKEYMAP} (derived from ${LOCATION:-your location})."
@@ -533,7 +533,7 @@ select_xkeymap(){
       read_input_text "Confirm keymap: $XKEYMAP"
     done
   fi
-   sed -i "s/xkb_rules_layout=.*/xkb_rules_layout=${XKEYMAP}/" $MNT/home/${LIVE_USER}/.config/mango/config.conf
+   sed -i "s/kb_layout.*/kb_layout = ${XKEYMAP}/" $MNT/home/${LIVE_USER}/.config/hypr/hyprland.conf
 }
 #}}}
 
@@ -1186,7 +1186,7 @@ install_archbang(){
 
   # Copy the current wallpaper to a fixed path for greetd's login theme, before
   # /etc/skel is deleted later in this function
-  WALLPAPER_NAME=$(sed -n 's#.*swaybg -i [^ ]*/\([^ ]*\) .*#\1#p' "${MNT}/etc/skel/.config/mango/config.conf" 2>/dev/null | head -1)
+  WALLPAPER_NAME=$(sed -n 's#.*hyprpaper preload [^ ]*/\([^ ]*\) .*#\1#p' "${MNT}/etc/skel/.config/hypr/hyprland.conf" 2>/dev/null | head -1)
   if [[ -n "$WALLPAPER_NAME" && -f "${MNT}/etc/skel/Backgrounds/${WALLPAPER_NAME}" ]]; then
     mkdir -p "${MNT}/usr/share/backgrounds/archbang"
     cp -a "${MNT}/etc/skel/Backgrounds/${WALLPAPER_NAME}" "${MNT}/usr/share/backgrounds/archbang/current"
@@ -1372,7 +1372,7 @@ service = "greetd"
 EOF
 
     # gtkgreet's session dropdown reads this flat list, not .desktop files
-    echo "mango" > ${MNT}/etc/greetd/environments
+    echo "Hyprland" > ${MNT}/etc/greetd/environments
 
     # gtkgreet.css is not written here — already copied by install_archbang and
     # kept current by the archbang-theme skill; writing it here would clobber that
@@ -1616,7 +1616,7 @@ welcome_screen(){
   print_title "Welcome to ArchBang!"
 
   echo -e "${Bold}What is ArchBang?${Reset}"
-  echo -e "\tArch Linux with the MangoWC Wayland compositor."
+  echo -e "\tArch Linux with the Hyprland Wayland compositor."
   echo -e "\tA lean, keyboard-driven Arch-based live ISO.\n"
 
   echo -e "${Bold}System Requirements:${Reset}"
