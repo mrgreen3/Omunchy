@@ -37,7 +37,7 @@ case "$choice" in
     ;;
   Keybinds)
     grep -E "(Super|Ctrl|Vol|Mute|Alt)" ~/Documents/Keybindings \
-      | rofi -dmenu -p "Keybinds" -columns 2 -theme-str "listview {lines: 16;}"
+      | rofi -dmenu -p "Keybinds" -theme-str "listview {lines: 16; columns: 2;}"
     ;;
   Exit)
     ~/Scripts/powermenu
