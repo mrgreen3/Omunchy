@@ -11,3 +11,8 @@ background-color=#11131899
 text-color=#e2e2e9
 border-color=#adc6ff
 max-visible=3
+
+# DnD (bar indicator / `omunchy indicators toggle`): makoctl mode -t
+# do-not-disturb flips this mode; invisible=1 hides the toasts.
+[mode=do-not-disturb]
+invisible=1
