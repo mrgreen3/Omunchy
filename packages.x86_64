@@ -10,6 +10,7 @@ xz
 
 ## === OMUNCHY STACK (Omarchy-like, lean) ===
 pamixer
+pavucontrol
 polkit-gnome
 xdg-desktop-portal-gtk
 btop
@@ -43,6 +44,8 @@ swaylock
 mako
 reflector
 rofi
+blueman
+playerctl
 
 ## === GREETER (installed-system login only, configured/enabled by
 ## abinstall — not used or started on the live ISO itself) ===
