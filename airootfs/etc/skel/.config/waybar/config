@@ -1,48 +1,82 @@
 {
+  // Omunchy default bar — Omarchy quattro (shell.json) parity, waybar edition.
+  // Widget-for-widget mapping of Omarchy's default bar layout, per
+  // docs/bar-research.md §5. Module list mirrors shell.json's bar.layout
+  // (menu, workspaces | indicators, clock, keyboard, update | tray, network,
+  // audio, monitor, power) with the Omunchy substitutions: rofi for the
+  // quickshell menu, mako DnD for the notifications service, scripts for the
+  // indicator states. Omarchy's opt-in widgets (media/hyprland/window) are
+  // enabled here since waybar costs nothing for them; elsewhen and agents are
+  // Omarchy/Omunchy-specific and omitted.
+  //
+  // Colour: all colours live in style.css as @define-color lines, rewritten
+  // by `omunchy theme-set <name>` — no hex values in this file.
   "layer": "top",
-  "position": "bottom",
-  "height": 24,
-  "spacing": 2,
+  "position": "top",
+  "height": 34,
+  "spacing": 4,
+  "margin-top": 6,
+  "margin-left": 10,
+  "margin-right": 10,
+
   "modules-left": [
-    "custom/launcher",
-    "ext/workspaces"
+    "custom/menu",
+    "hyprland/workspaces"
   ],
   "modules-center": [
-    "wlr/taskbar"
+    "custom/indicators",
+    "clock",
+    "hyprland/language",
+    "custom/updates"
   ],
   "modules-right": [
     "tray",
+    "bluetooth",
     "network",
+    "pulseaudio",
+    "backlight",
     "battery",
-    "clock"
+    "power-profiles-daemon",
+    "custom/power",
+    "mpris"
   ],
-  "custom/launcher": {
-    "format": "",
-    "on-click": "~/Scripts/archbang-menu",
-    "tooltip": true,
-    "tooltip-format": "Main Menu"
+
+  // omarchy.menu — rofi launcher (omunchy-menu handles apps/webapps/TUIs/power)
+  "custom/menu": {
+    "format": "󰣇",
+    "on-click": "omunchy-menu",
+    "on-click-right": "foot",
+    "tooltip": false
   },
-  "wlr/taskbar": {
-    "format": "{icon} {name}",
-    "icon-size": 16,
-    "active-first": true,
-    "tooltip-format": "{title}",
+
+  // omarchy.workspaces — one pill per workspace; scroll cycles workspaces
+  "hyprland/workspaces": {
+    "format": "{icon}",
     "on-click": "activate",
-    "on-click-middle": "close"
+    "format-icons": {
+      "active": "󱓻",
+      "default": "{id}"
+    },
+    "on-scroll-up": "hyprctl dispatch workspace e+1",
+    "on-scroll-down": "hyprctl dispatch workspace e-1"
   },
-  "ext/workspaces": {
-    "format": "{id}",
-    "on-click": "activate",
-    "sort-by-id": true,
-    "all-outputs": true
+
+  // omarchy.indicators — DnD / NightLight / Recording / StayAwake pills
+  "custom/indicators": {
+    "format": "{}",
+    "exec": "~/.config/omunchy/bar/indicators.sh",
+    "return-type": "json",
+    "interval": 5,
+    "on-click": "~/.config/omunchy/bar/indicators.sh toggle",
+    "on-click-right": "~/.config/omunchy/bar/indicators.sh toggle-night",
+    "tooltip": false
   },
-  "tray": {
-    "spacing": 10
-  },
+
+  // omarchy.clock — "dddd HH:mm" in Omarchy; long-form date on right-click
   "clock": {
-    "format": "{:%H:%M}",
+    "format": "{:%a %d %b  %H:%M}",
     "format-alt": "{:%A %d %B  %H:%M}",
-    "tooltip-format": "<big>{:%A %d}</big>\n<tt>{calendar}</tt>",
+    "tooltip-format": "<big>{:%A, %d %B %Y}</big>\n<tt><small>{calendar}</small></tt>",
     "calendar": {
       "mode": "month",
       "weeks-pos": "right",
@@ -50,31 +84,129 @@
     },
     "interval": 60
   },
-  "network": {
-    "format-wifi": "󰤨",
-    "format-ethernet": "󰈀",
-    "format-disconnected": "󰤭",
-    "on-click": "bash -c 'networkmanager_dmenu'",
-    "tooltip-format-wifi": "{essid} {signalStrength}%",
-    "tooltip-format-ethernet": "{ipaddr}",
-    "tooltip-format-disconnected": "Disconnected"
+
+  // omarchy.keyboard-layout — hidden when only one layout is configured
+  "hyprland/language": {
+    "format": "{}",
+    "format-en": "US",
+    "on-click": "hyprctl switchxkblayout current next"
   },
-  "battery": {
+
+  // omarchy.system-update — badge only when updates are pending; 6 h poll
+  "custom/updates": {
+    "format": "{}",
+    "exec": "~/.config/omunchy/bar/updates.sh",
+    "return-type": "json",
+    "interval": 21600,
+    "on-click": "foot -e omunchy-update",
+    "signal": 8
+  },
+
+  // omarchy.tray
+  "tray": {
+    "icon-size": 16,
+    "spacing": 6,
+    "show-passive-items": false
+  },
+
+  // omarchy.bluetooth — rofi menu as the panel-equivalent
+  "bluetooth": {
     "format": "{icon}",
-    "format-charging": "󰂄",
-    "format-full": "󰁹",
-    "format-unknown": "",
-    "format-icons": [
-      "󰁻",
-      "󰁼",
-      "󰁽",
-      "󰁾",
-      "󰁿"
-    ],
-    "states": {
-      "warning": 30,
-      "critical": 15
+    "format-disabled": "",
+    "format-icons": {
+      "enabled": "󰂯",
+      "disabled": "󰂲",
+      "connected": "󰂱"
     },
+    "on-click": "blueman-manager",
+    "tooltip-format": "Bluetooth: {status}"
+  },
+
+  // omarchy.network — networkmanager-dmenu as the panel-equivalent
+  "network": {
+    "format": "{icon}",
+    "format-icons": {
+      "wifi": "󰤨",
+      "ethernet": "󰈀",
+      "disconnected": "󰤭"
+    },
+    "tooltip-format": "{essid} ({signalStrength}%)",
+    "tooltip-format-ethernet": "{ipaddr}",
+    "tooltip-format-disconnected": "Disconnected",
+    "on-click": "networkmanager_dmenu"
+  },
+
+  // omarchy.audio — pamixer toggle/scroll; pavucontrol as the mixer panel
+  "pulseaudio": {
+    "format": "{icon} {volume:2}%",
+    "format-muted": "󰝟",
+    "format-icons": {
+      "default": ["󰕿", "󰖀", "󰕾"]
+    },
+    "on-click": "pamixer -t",
+    "on-click-middle": "pavucontrol",
+    "on-scroll-up": "pamixer -i 5",
+    "on-scroll-down": "pamixer -d 5",
+    "tooltip-format": "{desc}"
+  },
+
+  // omarchy.monitor — brightness control (not a CPU/RAM readout; Omarchy's
+  // default bar has no sysmon widgets either)
+  "backlight": {
+    "format": "{icon} {percent}%",
+    "format-icons": ["󰃞", "󰃟", "󰃠"],
+    "on-scroll-up": "brightnessctl set +5%",
+    "on-scroll-down": "brightnessctl set 5%-"
+  },
+
+  // omarchy.power — battery via UPower (built into the waybar package)
+  "battery": {
+    "format": "{icon} {capacity}%",
+    "format-charging": "󰂄 {capacity}%",
+    "format-full": "󰁹 {capacity}%",
+    "format-icons": ["󰁺", "󰁼", "󰁾", "󰂀", "󰂂"],
+    "states": {
+      "warning": 20,
+      "critical": 10
+    },
+    "interval": 60,
     "tooltip-format": "{capacity}% · {time} remaining · {power}W"
+  },
+
+  // omarchy.power — power-profiles-daemon; click cycles profiles
+  "power-profiles-daemon": {
+    "format": "{icon}",
+    "tooltip-format": "Power profile: {profile}",
+    "format-icons": {
+      "power-saver": "󰌪",
+      "balanced": "󰾅",
+      "performance": "󰓅"
+    }
+  },
+
+  // omarchy power panel-equivalent — existing Omunchy powermenu
+  "custom/power": {
+    "format": "󰐥",
+    "on-click": "~/Scripts/powermenu",
+    "tooltip": false
+  },
+
+  // omarchy.media (opt-in) — MPRIS now-playing; playerctl is a waybar dep
+  "mpris": {
+    "format": "{player_icon} {dynamic}",
+    "format-paused": "{status_icon} {dynamic}",
+    "player-icons": {
+      "default": "󰏥",
+      "chromium": "󰈹",
+      "mpv": "󰦖",
+      "spotify": "󰓇"
+    },
+    "status-icons": {
+      "paused": "󰐊"
+    },
+    "dynamic-order": ["title", "artist"],
+    "max-length": 40,
+    "interval": 5,
+    "tooltip": false
   }
 }

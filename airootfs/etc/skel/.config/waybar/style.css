@@ -1,4 +1,13 @@
-/* ---------- Palette pulled from aesthetic.jpg ---------- */
+/* Omunchy bar — Omarchy quattro look, themed via omunchy-theme-set.
+ *
+ * The @define-color lines below are the ONLY place hex colours appear:
+ * `omunchy theme-set <name>` rewrites them (plus every alpha(@bg, x) —
+ * keep the alpha value on its own so the sed rule can update it).
+ * Layout/spacing follow Omarchy's shell.toml tokens: fg-on-bg pills at
+ * 4-8% fill, 1px borders at 40%, fully opaque bar background.
+ */
+
+/* ---------- Palette (rewritten by bin/omunchy-theme-set) ---------- */
 @define-color bg        #111318;
 @define-color surface   #44474f;
 @define-color fg        #e2e2e9;
@@ -8,153 +17,164 @@
 @define-color red       #ffb4ab;
 @define-color green     #ffadc6;
 @define-color yellow    #e6adff;
-@define-color mauve     #debcdf;
-@define-color on-mauve  #402843;
 
 /* ---------- Base ---------- */
 * {
-    border-radius: 2px;
-    font-family: "JetBrains Mono", monospace;
-    font-size: 14px;
+    border: none;
+    border-radius: 0;
+    min-height: 0;
+    font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", monospace;
+    font-size: 13px;
 }
 
 window#waybar {
-    background-color: alpha(@bg, 0.38);
+    background: alpha(@bg, 0.38);
     color: @fg;
-    border: none;
-    border-radius: 0;
-    padding: 0;
 }
 
-/* ---------- Launcher ---------- */
-#custom-launcher {
-    color: @fg;
-    font-family: "Symbols Nerd Font Mono";
-    font-size: 14px;
-    padding: 0 12px;
-    margin: 2px 2px;
-    min-height: 0;
+/* Rounded pill sections: one background pill per widget group, Omarchy-style */
+.modules-left > widget > box,
+.modules-center > widget > box,
+.modules-right > widget > box {
+    background: alpha(@fg, 0.06);
+    border: 1px solid alpha(@fg, 0.1);
+    border-radius: 17px;
+    padding: 2px 8px;
+    margin-top: 2px;
+    margin-bottom: 2px;
 }
 
-#custom-launcher:hover {
+.modules-left > widget > box,
+.modules-right > widget > box {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+/* ---------- Menu ---------- */
+#custom-menu {
+    color: @fg;
+    padding: 0 12px 0 8px;
+    border-radius: 17px;
+}
+
+#custom-menu:hover {
     color: @accent;
 }
 
-/* ---------- Workspaces / tags ---------- */
+/* ---------- Workspaces (pills) ---------- */
 #workspaces {
-    margin: 0;
+    padding: 0 4px;
 }
 
 #workspaces button {
-    padding: 0 4px;
-    margin: 0;
-    color: @fg;
+    padding: 0 6px;
+    margin: 3px 2px;
+    border-radius: 10px;
+    color: alpha(@fg, 0.5);
     background: transparent;
-    border: none;
-    min-height: 0;
-    font-weight: 400;
+}
+
+#workspaces button.occupied {
+    color: alpha(@fg, 0.8);
 }
 
 #workspaces button.active {
-    color: @accent;
+    color: @on-accent;
     background: @accent;
-    border-radius: 2px;
-    font-weight: 400;
-    padding: 0px 2px;
-    margin: 3px 4px;
-}
-
-#workspaces button:not(.active) {
-    color: @fg;
-}
-
-#workspaces button:hover {
-    color: @accent;
-    background: transparent;
-}
-
-#workspaces button.active:hover {
-    color: @fg;
 }
 
 #workspaces button.urgent {
-    color: @accent;
-    background: transparent;
-    border: 1px solid @accent;
-    border-radius: 2px;
-    font-weight: bold;
-    padding: 0 4px;
-    margin: 2px 3px;
+    color: @on-accent;
+    background: @red;
 }
 
-/* ---------- Taskbar (active window) ---------- */
-#taskbar {
-    margin: 0;
-}
-
-#taskbar button {
-    padding: 0 6px;
-    margin: 0;
-    background: transparent;
-    border: none;
-    min-height: 0;
-}
-
-#taskbar button label {
-    font-size: 0;
-    margin: 0;
-    padding: 0;
-}
-
-#taskbar button.active label {
-    font-size: 14px;
-    margin-left: 6px;
+#workspaces button:hover:not(.active) {
     color: @fg;
-    font-weight: 400;
+    background: alpha(@fg, 0.08);
 }
 
-#taskbar button:not(.active) {
-    opacity: 0;
-    min-width: 0px;
-    min-height: 0px;
-    padding: 0;
-    margin: 0;
-    border: none;
-    background: none;
+/* ---------- Indicators ---------- */
+#custom-indicators {
+    color: @fg;
+    padding: 0 8px;
 }
 
-#taskbar button:not(.active) image {
-    -gtk-icon-transform: scale(0);
+/* Active states (DnD on, night light on, recording, stay awake) */
+#custom-indicators.dnd {
+    color: @yellow;
+}
+
+#custom-indicators.night {
+    color: @yellow;
+}
+
+#custom-indicators.recording {
+    /* Omarchy: recording/attention colour is the red token */
+    color: @red;
+}
+
+#custom-indicators.awake {
+    color: @fg;
 }
 
 /* ---------- Clock ---------- */
 #clock {
     color: @fg;
-    padding: 0 14px;
-    font-weight: 400;
+    font-weight: bold;
+    padding: 0 10px;
 }
 
-/* ---------- Common section styling ---------- */
-#tray, #battery, #network {
-    margin: 0;
+/* ---------- Keyboard layout ---------- */
+#hyprland-language {
+    color: @fg-dim;
     padding: 0 6px;
+}
+
+/* ---------- Updates (attention colour, as in Omarchy) ---------- */
+#custom-updates {
     color: @fg;
 }
 
-/* ---------- Network ---------- */
-#network {
-    font-family: "Symbols Nerd Font Mono";
-    font-size: 14px;
-    color: @accent;
+#custom-updates.pending {
+    color: @red;
+}
+
+/* ---------- Tray ---------- */
+#tray {
+    padding: 0 6px;
+}
+
+#tray > .passive {
+    -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+    -gtk-icon-effect: highlight;
+}
+
+/* ---------- Right-side widgets ---------- */
+#bluetooth,
+#network,
+#pulseaudio,
+#backlight,
+#battery,
+#power-profiles-daemon,
+#custom-power,
+#mpris {
+    color: @fg;
+    padding: 0 7px;
 }
 
 #network.disconnected {
     color: @red;
 }
 
-/* ---------- Battery ---------- */
-#battery {
-    font-size: 14px;
+#bluetooth.connected {
+    color: @accent;
+}
+
+#pulseaudio.muted {
+    color: @fg-dim;
 }
 
 #battery.warning {
@@ -169,21 +189,24 @@ window#waybar {
     color: @green;
 }
 
-/* ---------- Tray ---------- */
-#tray {
-    padding: 0 6px;
+/* ---------- Media (opt-in widget, Omarchy omarchy.media) ---------- */
+#mpris {
+    color: @fg;
 }
 
-/* ---------- Tooltips ---------- */
+#mpris.paused {
+    color: @fg-dim;
+}
+
+/* ---------- Tooltips (Omarchy: near-opaque bg, hairline border) ---------- */
 tooltip {
-    background-color: @surface;
-    border: 3px solid @accent;
-    border-radius: 2px;
-    padding: 4px 8px;
+    background: alpha(@bg, 0.38);
+    border: 1px solid alpha(@fg, 0.25);
+    border-radius: 8px;
+    padding: 6px 10px;
 }
 
 tooltip label {
     color: @fg;
-    font-family: "JetBrains Mono", monospace;
-    font-size: 14px;
+    font-size: 12px;
 }
