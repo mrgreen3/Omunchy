@@ -9,6 +9,7 @@ APPLICATIONS
 
 Super + Return          Terminal (foot)
 Super + Space           Launcher (rofi)
+Super + a               Omunchy Menu (omunchy menu)
 Super + b               Web Browser (firefox)
 Super + e               File Manager (thunar)
 Super + s               System Monitor (dgop)

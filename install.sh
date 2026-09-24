@@ -72,6 +72,14 @@ install_configs() {
         cp "$SKEL_DIR/Backgrounds/aesthetic.jpg" "$HOME/Backgrounds/"
         echo "[omunchy] Installed default wallpaper: ~/Backgrounds/aesthetic.jpg"
     fi
+    # Install the omunchy CLI onto PATH so keybinds (SUPER+A menu etc.) and
+    # `omunchy <verb>` work from anywhere, not just inside the repo checkout.
+    mkdir -p "$HOME/.local/bin"
+    for f in "$SCRIPT_DIR"/bin/omunchy "$SCRIPT_DIR"/bin/omunchy-*; do
+        [[ -f $f && -x $f ]] || continue
+        install -m 0755 "$f" "$HOME/.local/bin/"
+    done
+    echo "[omunchy] Installed CLI: ~/.local/bin/omunchy (+ verbs)"
 }
 
 install_base_stack
