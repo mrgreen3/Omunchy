@@ -1,0 +1,145 @@
+#!/bin/bash
+
+# omunchy:summary=Switch the desktop colour theme (foot, waybar, rofi, mako)
+# omunchy:args=<name>
+# omunchy:examples=omunchy theme set omunchy-light
+
+# Lean theme system: themes are plain shell fragments (NAME=hex) in
+# config/themes/<name>.conf. theme-set rewrites the colour lines in the
+# user's configs and persists a copy under ~/.config/omunchy. No per-app
+# theming, no Lua — the shipped waybar/mako/rofi files carry this same
+# palette, so writing it back is round-trip safe.
+
+set -euo pipefail
+
+# Resolve through any symlink (installed via ~/.local/bin) to the repo config.
+SOURCE=${BASH_SOURCE[0]}
+while [[ -L $SOURCE ]]; do
+    DIR=$(cd -P "$(dirname -- "$SOURCE")" && pwd)
+    SOURCE=$(readlink -- "$SOURCE")
+    [[ $SOURCE == /* ]] || SOURCE="$DIR/$SOURCE"
+done
+THEMES_DIR="$(cd -P "$(dirname -- "$SOURCE")/../config/themes" && pwd)"
+
+STATE_DIR="$HOME/.config/omunchy"
+HYPRLAND_DIR="$HOME/.config/hypr"
+
+usage() {
+    printf 'Usage: omunchy theme set <name>\n'
+    printf 'Themes live in config/themes/*.conf (repo) or ~/.config/omunchy/themes/*.conf.\n'
+    printf 'Available: '
+    { ls "$THEMES_DIR"/*.conf 2>/dev/null; ls "$STATE_DIR"/themes/*.conf 2>/dev/null; } \
+        | xargs -rn1 basename 2>/dev/null | sed 's/\.conf$//' | sort -u | tr '\n' ' '
+    printf '\n'
+}
+
+if [[ ${1:-} == -h || ${1:-} == --help || $# -ne 1 ]]; then
+    usage
+    [[ ${1:-} == -h || ${1:-} == --help ]] && exit 0
+    exit 1
+fi
+
+THEME=$1
+SRC="$THEMES_DIR/$THEME.conf"
+[[ -f $SRC ]] || SRC="$STATE_DIR/themes/$THEME.conf"
+[[ -f $SRC ]] || {
+    echo "Unknown theme: $THEME" >&2
+    usage >&2
+    exit 1
+}
+
+# --- Load the palette (strict NAME=hex lines only, never exec'd) ------------
+unset FOOT_BG FOOT_FG FOOT_ALPHA
+unset WAYBAR_BG WAYBAR_BG_ALPHA WAYBAR_SURFACE WAYBAR_FG WAYBAR_FG_DIM
+unset WAYBAR_ACCENT WAYBAR_ON_ACCENT WAYBAR_RED WAYBAR_GREEN WAYBAR_YELLOW
+unset MAKO_BG MAKO_TEXT MAKO_BORDER
+unset ROFI_BG ROFI_BG_ALT ROFI_FG ROFI_FG_DIM ROFI_ACCENT ROFI_URGENT ROFI_SELECTED_FG
+unset HYPRLAND_ACTIVE_BORDER HYPRLAND_INACTIVE_BORDER
+
+while IFS= read -r line || [[ -n $line ]]; do
+    [[ $line == \#* || -z ${line//[[:space:]]/} ]] && continue
+    # Only NAME=VALUE with a sane NAME survives — no shell metachars, so the
+    # eval below can never execute anything. Dots allowed (foot alpha=0.9).
+    [[ $line =~ ^[A-Z_][A-Z0-9_]*=[0-9a-fA-F.]+$ ]] || continue
+    eval "$line"
+done <"$SRC"
+
+# --- foot -------------------------------------------------------------------
+FOOT="$HOME/.config/foot/foot.ini"
+if [[ -f $FOOT && -n ${FOOT_BG:-} ]]; then
+    sed -i -e "s/^alpha=.*/alpha=$FOOT_ALPHA/" \
+        -e "s/^background = .*/background = $FOOT_BG/" \
+        -e "s/^foreground = .*/foreground = $FOOT_FG/" "$FOOT"
+fi
+
+# --- waybar (@define-color lines in style.css) -------------------------------
+WAYBAR_CSS="$HOME/.config/waybar/style.css"
+if [[ -f $WAYBAR_CSS && -n ${WAYBAR_BG:-} ]]; then
+    sed -i \
+        -e "s/^@define-color bg .*/@define-color bg        #$WAYBAR_BG;/" \
+        -e "s/^@define-color surface .*/@define-color surface   #$WAYBAR_SURFACE;/" \
+        -e "s/^@define-color fg .*/@define-color fg        #$WAYBAR_FG;/" \
+        -e "s/^@define-color fg-dim .*/@define-color fg-dim    #$WAYBAR_FG_DIM;/" \
+        -e "s/^@define-color accent .*/@define-color accent    #$WAYBAR_ACCENT;/" \
+        -e "s/^@define-color on-accent .*/@define-color on-accent #$WAYBAR_ON_ACCENT;/" \
+        -e "s/^@define-color red .*/@define-color red       #$WAYBAR_RED;/" \
+        -e "s/^@define-color green .*/@define-color green     #$WAYBAR_GREEN;/" \
+        -e "s/^@define-color yellow .*/@define-color yellow    #$WAYBAR_YELLOW;/" \
+        -e "s/alpha(@bg, [0-9.]*);/alpha(@bg, $WAYBAR_BG_ALPHA);/" \
+        "$WAYBAR_CSS"
+fi
+
+# --- mako ---------------------------------------------------------------------
+MAKO_CONF="$HOME/.config/mako/config"
+if [[ -f $MAKO_CONF && -n ${MAKO_BG:-} ]]; then
+    sed -i \
+        -e "s/^background-color=.*/background-color=#$MAKO_BG/" \
+        -e "s/^text-color=.*/text-color=#$MAKO_TEXT/" \
+        -e "s/^border-color=.*/border-color=#$MAKO_BORDER/" "$MAKO_CONF"
+fi
+
+# --- rofi (theme.rasi variables) -----------------------------------------------
+ROFI_THEME="$HOME/.config/rofi/theme.rasi"
+if [[ -f $ROFI_THEME && -n ${ROFI_ACCENT:-} ]]; then
+    sed -i \
+        -e "s/^    bg:         .*/    bg:         #${ROFI_BG};/" \
+        -e "s/^    bg-alt:     .*/    bg-alt:     #${ROFI_BG_ALT};/" \
+        -e "s/^    fg:         .*/    fg:         #${ROFI_FG};/" \
+        -e "s/^    fg-dim:     .*/    fg-dim:     #${ROFI_FG_DIM};/" \
+        -e "s/^    accent:     .*/    accent:     #${ROFI_ACCENT};/" \
+        -e "s/^    urgent:     .*/    urgent:     #${ROFI_URGENT};/" \
+        -e "s/^    selected-fg:.*/    selected-fg:#${ROFI_SELECTED_FG};/" \
+        "$ROFI_THEME"
+fi
+
+# --- Hyprland borders (theme.conf sourced by hyprland.conf) --------------------
+if [[ -d $HYPRLAND_DIR && -n ${HYPRLAND_ACTIVE_BORDER:-} ]]; then
+    cat >"$HYPRLAND_DIR/theme.conf" <<EOF
+# Written by omunchy-theme-set (theme: $THEME)
+general {
+    col.active_border = rgba($HYPRLAND_ACTIVE_BORDER)
+    col.inactive_border = rgba($HYPRLAND_INACTIVE_BORDER)
+}
+
+group {
+    col.border_active = rgba($HYPRLAND_ACTIVE_BORDER)
+    col.border_inactive = rgba($HYPRLAND_INACTIVE_BORDER)
+}
+EOF
+fi
+
+# --- Persist for future sessions ------------------------------------------------
+mkdir -p "$STATE_DIR/themes"
+cp "$SRC" "$STATE_DIR/themes/$THEME.conf"
+ln -sfn "themes/$THEME.conf" "$STATE_DIR/theme.conf"
+
+# --- Restart colour consumers (non-fatal when not running) ----------------------
+pkill -x waybar 2>/dev/null || true
+pkill -x mako 2>/dev/null || true
+sleep 0.3
+(waybar &>/dev/null & disown) 2>/dev/null || true
+(mako &>/dev/null & disown) 2>/dev/null || true
+hyprctl reload &>/dev/null || true
+
+echo "Theme set: $THEME (foot, waybar, rofi, mako, hyprland borders)"
+echo "Run 'omunchy bg set <image>' to match the wallpaper."

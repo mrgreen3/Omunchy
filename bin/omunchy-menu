@@ -1,0 +1,102 @@
+#!/bin/bash
+
+# omunchy:summary=Open the rofi launcher menu (apps, web apps, TUIs, keybinds, power)
+# omunchy:args=[webapps|tuis|keybinds|power]
+# omunchy:examples=omunchy menu
+
+# Emulates Omarchy's menu system with rofi: one entry point for the desktop,
+# drun for everything installed, plus the omunchy verbs. The compositor
+# keybind and waybar's launcher both call this script with no arguments.
+
+set -euo pipefail
+
+MENU_THEME_STR='inputbar { enabled: false; } window { width: 250px; }'
+
+rofi_pick() {
+    # $1 prompt, $2 lines, stdin = choices
+    rofi -dmenu -p "$1" -theme ~/.config/rofi/theme.rasi \
+        -theme-str "listview { lines: $2; } $MENU_THEME_STR"
+}
+
+# --- Submenus -------------------------------------------------------------
+
+menu_keybinds() {
+    # rofi has no -columns flag (dmenu2-ism); the listview columns property
+    # is the real one (rofi-theme(5)).
+    grep -E "(Super|Ctrl|Vol|Mute|Bright)" ~/Documents/Keybindings \
+        | rofi -dmenu -p Keybinds \
+            -theme-str 'listview { lines: 18; columns: 2; spacing: 4; }'
+}
+
+menu_power() {
+    local choice
+    choice=$(printf '󰍃  Logout\n󰑓  Reboot\n󰐥  Poweroff' | rofi -dmenu -p Power \
+        -theme ~/.config/rofi/theme.rasi \
+        -theme-str 'inputbar { enabled: false; } listview { lines: 3; } window { width: 250px; }')
+    case "$choice" in
+        *Logout)   hyprctl dispatch exit ;;
+        *Reboot)   systemctl reboot ;;
+        *Poweroff) systemctl poweroff ;;
+    esac
+}
+
+menu_webapps() {
+    # List installed omunchy web app launchers by their .desktop Name.
+    local apps_dir="$HOME/.local/share/applications" file name choice
+    for file in "$apps_dir"/omunchy-webapp-*.desktop; do
+        [[ -f $file ]] || continue
+        name=$(sed -n 's/^Name=//p' "$file" | head -1)
+        printf '%s\n' "${name:-$(basename "${file%.desktop}")}"
+    done | rofi_pick "Web App" "$(for f in "$apps_dir"/omunchy-webapp-*.desktop; do [[ -f $f ]] && echo x; done | wc -l)" | {
+        read -r choice || exit 0
+        for file in "$apps_dir"/omunchy-webapp-*.desktop; do
+            [[ -f $file ]] || continue
+            [[ $(sed -n 's/^Name=//p' "$file" | head -1) == "$choice" ]] && exec gtk-launch "$(basename "${file%.desktop}")"
+        done
+    }
+}
+
+menu_tuis() {
+    # Same, for TUI launchers.
+    local apps_dir="$HOME/.local/share/applications" file name choice
+    for file in "$apps_dir"/omunchy-tui-*.desktop; do
+        [[ -f $file ]] || continue
+        name=$(sed -n 's/^Name=//p' "$file" | head -1)
+        printf '%s\n' "${name:-$(basename "${file%.desktop}")}"
+    done | rofi_pick "TUI" "$(for f in "$apps_dir"/omunchy-tui-*.desktop; do [[ -f $f ]] && echo x; done | wc -l)" | {
+        read -r choice || exit 0
+        for file in "$apps_dir"/omunchy-tui-*.desktop; do
+            [[ -f $file ]] || continue
+            [[ $(sed -n 's/^Name=//p' "$file" | head -1) == "$choice" ]] && exec gtk-launch "$(basename "${file%.desktop}")"
+        done
+    }
+}
+
+# --- Top menu -------------------------------------------------------------
+
+if [[ ${1:-} == -h || ${1:-} == --help ]]; then
+    printf 'Usage: omunchy menu [webapps|tuis|keybinds|power]\n'
+    printf 'With no argument: the main rofi menu (Applications, Web Apps, TUIs, Keybinds, Power).\n'
+    exit 0
+fi
+
+case ${1:-} in
+    webapps)  menu_webapps ;;
+    tuis)     menu_tuis ;;
+    keybinds) menu_keybinds ;;
+    power)    menu_power ;;
+esac
+
+[[ $# -gt 0 ]] && exit 0
+
+choice=$(printf 'Applications\0icon\x1fapplication-x-executable\nWeb Apps\0icon\x1fapplication-web-browser\nTUIs\0icon\x1futilities-terminal\nKeybinds\0icon\x1finput-keyboard\nPower\0icon\x1fsystem-shutdown' \
+    | rofi -dmenu -p "Omunchy" -show-icons \
+        -theme-str "listview { lines: 5; } $MENU_THEME_STR")
+
+case "$choice" in
+    Applications) rofi -show drun ;;
+    "Web Apps")   menu_webapps ;;
+    TUIs)         menu_tuis ;;
+    Keybinds)     menu_keybinds ;;
+    Power)        menu_power ;;
+esac

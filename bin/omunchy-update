@@ -1,0 +1,66 @@
+#!/bin/bash
+
+# omunchy:summary=Update the system: mirrors, pacman -Syu, AUR (if any), orphan prune
+# omunchy:args=[-y]
+# omunchy:examples=omunchy update
+
+# Lean update: reflector (best-rated 5, skipped gracefully when offline or
+# missing) -> pacman -Syu -> yay -ua only when yay exists and AUR packages
+# are installed -> orphan prune with a prompt. Guarded by a mkdir lockfile
+# (emulates Omarchy's update-lock) so two runs cannot interleave.
+
+set -euo pipefail
+
+LOCK_DIR=/tmp/omunchy-update-lock
+
+if [[ ${1:-} == -h || ${1:-} == --help ]]; then
+    printf 'Usage: omunchy update [-y]\n  -y  unattended (no confirmation prompt, keep orphans listed)\n'
+    exit 0
+fi
+
+if ! mkdir -- "$LOCK_DIR" 2>/dev/null; then
+    echo "Another omunchy update is running (lock: $LOCK_DIR)." >&2
+    exit 1
+fi
+trap 'rmdir -- "$LOCK_DIR" 2>/dev/null || true' EXIT
+
+# --- Mirrors (best-rated 5) ---
+if command -v reflector >/dev/null 2>&1 && ping -c1 -W2 archlinux.org >/dev/null 2>&1; then
+    echo "[omunchy] Refreshing mirrors (reflector, best 5)..."
+    sudo reflector --latest 5 --sort rate --save /etc/pacman.d/mirrorlist || \
+        echo "[omunchy] reflector failed, keeping the current mirrorlist" >&2
+else
+    echo "[omunchy] Skipping mirror refresh (offline or reflector missing)"
+fi
+
+# --- Official repos ---
+echo "[omunchy] pacman -Syu..."
+sudo pacman -Syu --noconfirm
+
+# --- AUR, only when there is something to update ---
+if command -v yay >/dev/null 2>&1 && pacman -Qm 2>/dev/null | grep -q .; then
+    echo "[omunchy] AUR packages present — yay -ua..."
+    yay -ua --noconfirm || echo "[omunchy] yay update failed (non-fatal)" >&2
+else
+    echo "[omunchy] No AUR packages (or yay missing) — skipping yay"
+fi
+
+# --- Orphans ---
+orphans=$(pacman -Qtdq 2>/dev/null || true)
+if [[ -z $orphans ]]; then
+    echo "[omunchy] No orphan packages."
+    exit 0
+fi
+
+echo "[omunchy] Orphan packages:"
+echo "$orphans"
+if [[ ${1:-} == -y ]]; then
+    echo "[omunchy] Unattended mode: keeping orphans."
+    exit 0
+fi
+read -r -p "Remove them? [y/N] " answer
+if [[ $answer == [yY] ]]; then
+    sudo pacman -Rns -- $orphans
+else
+    echo "[omunchy] Kept."
+fi

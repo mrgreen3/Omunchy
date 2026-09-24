@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# omunchy:summary=Set the desktop wallpaper image (rewrites the hyprpaper line)
+# omunchy:args=<image-path>
+# omunchy:examples=omunchy bg set ~/Backgrounds/sunset-lake.png
+
+set -euo pipefail
+
+usage() {
+    printf 'Usage: omunchy bg set <image-path>\n'
+    printf 'Rewrites the hyprpaper exec-once line in ~/.config/hypr/hyprland.conf\n'
+    printf 'and applies it to the running session via hyprctl.\n'
+}
+
+if [[ ${1:-} == -h || ${1:-} == --help || $# -ne 1 ]]; then
+    usage
+    [[ ${1:-} == -h || ${1:-} == --help ]] && exit 0
+    exit 1
+fi
+
+IMG=$1
+[[ -f $IMG ]] || {
+    echo "Not a file: $IMG" >&2
+    exit 1
+}
+IMG=$(readlink -f -- "$IMG")
+
+HYPR_CONF="$HOME/.config/hypr/hyprland.conf"
+[[ -f $HYPR_CONF ]] || {
+    echo "No $HYPR_CONF — install the Omunchy configs first." >&2
+    exit 1
+}
+
+# Copy into ~/Backgrounds so the wallpaper survives the source file moving
+# (matches how the ISO ships Backgrounds/).
+BG_DIR="$HOME/Backgrounds"
+mkdir -p "$BG_DIR"
+cp -n "$IMG" "$BG_DIR/" 2>/dev/null || true
+INSTALLED="$BG_DIR/$(basename -- "$IMG")"
+[[ -f $INSTALLED ]] || INSTALLED=$IMG
+
+# Replace ONLY the hyprpaper preload+wallpaper exec-once lines.
+sed -i \
+    -e "s|^exec-once = .*hyprctl hyprpaper preload .*|exec-once = sleep 1 \&\& hyprctl hyprpaper preload $INSTALLED \&\& hyprctl hyprpaper wallpaper ,\$INSTALLED|" \
+    "$HYPR_CONF"
+
+# Apply to the running session right away.
+if command -v hyprctl >/dev/null 2>&1; then
+    hyprctl hyprpaper preload "$INSTALLED" &>/dev/null || true
+    hyprctl hyprpaper wallpaper ",$INSTALLED" &>/dev/null || true
+    hyprctl hyprpaper unload /dev/null &>/dev/null || true
+fi
+
+echo "Wallpaper set: $INSTALLED"

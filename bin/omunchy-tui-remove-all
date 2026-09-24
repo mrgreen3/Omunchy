@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# omunchy:summary=Remove every TUI launcher installed by omunchy
+# omunchy:args=
+# omunchy:examples=omunchy tui remove all
+
+# Emulates Omarchy's omarchy-tui-remove-all: TUI launchers are identified by
+# grepping the xdg-terminal-exec app-id pattern they were installed with
+# (omunchy.TUI.float / omunchy.TUI.tile).
+
+set -euo pipefail
+
+DESKTOP_DIR="$HOME/.local/share/applications"
+ICON_DIR="$HOME/.local/share/icons/hicolor/256x256/apps"
+
+if [[ ${1:-} == -h || ${1:-} == --help ]]; then
+    printf 'Usage: omunchy tui remove all\nRemoves every .desktop whose Exec= carries the omunchy.TUI app-id.\n'
+    exit 0
+fi
+
+[[ -d $DESKTOP_DIR ]] || { echo "No $DESKTOP_DIR — nothing to remove."; exit 0; }
+
+removed=0
+for file in "$DESKTOP_DIR"/*.desktop; do
+    [[ -f $file ]] || continue
+    grep -q 'app-id=omunchy\.TUI\.' "$file" || continue
+    icon=$(sed -n 's/^Icon=//p' "$file" | head -1)
+    rm -f "$file"
+    if [[ -n $icon && $icon != *.* && -f "$ICON_DIR/$icon.png" ]]; then
+        rm -f "$ICON_DIR/$icon.png"
+    fi
+    echo "Removed: $(basename "$file")"
+    removed=$((removed + 1))
+done
+
+if ((removed == 0)); then
+    echo "No omunchy TUIs to remove."
+    exit 0
+fi
+
+command -v update-desktop-database >/dev/null 2>&1 && \
+    update-desktop-database "$DESKTOP_DIR" &>/dev/null || true
+
+echo "Removed $removed TUI(s)."
+echo "Note: entries still defined in config/tuis.conf will be recreated by 'omunchy sync'."
