@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# omunchy:summary=Toggle bar indicator states (DnD; `night` for night light)
+# omunchy:args=[toggle-night]
+# omunchy:examples=omunchy indicators-toggle toggle
+
+# Thin wrapper so the waybar custom module can toggle through the omunchy
+# CLI (auto-discovered from bin/omunchy-*), like every other desktop verb.
+
+set -euo pipefail
+
+exec ~/.config/omunchy/bar/indicators.sh "${1:-toggle}"
