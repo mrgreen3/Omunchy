@@ -1,0 +1,171 @@
+## === AUDIO ===
+pipewire
+pipewire-pulse
+
+## === ARCHIVE TOOLS ===
+zip
+unzip
+7zip
+xz
+
+## === OMUNCHY STACK (Omarchy-like, lean) ===
+pamixer
+polkit-gnome
+xdg-desktop-portal-wlr
+xdg-desktop-portal-gtk
+btop
+noto-fonts
+noto-fonts-emoji
+ttf-jetbrains-mono-nerd
+adw-gtk-theme
+adwaita-icon-theme
+
+## === TERMINAL ===
+foot
+
+## === WAYLAND DESKTOP ENVIRONMENT (mango stack) ===
+mangowm
+swaybg
+waybar
+xorg-xwayland
+wlr-randr
+grim
+slurp
+wl-clipboard
+brightnessctl
+swaylock
+mako
+reflector
+rofi
+
+## === GREETER (installed-system login only, configured/enabled by
+## abinstall — not used or started on the live ISO itself) ===
+greetd
+greetd-gtkgreet
+cage
+
+## === FILE MANAGER & UTILITIES ===
+thunar
+thunar-volman
+gvfs
+udisks2
+
+## === TEXT EDITORS ===
+vim
+l3afpad
+
+## === THEMES & FONTS ===
+adw-gtk-theme
+adwaita-icon-theme
+ttf-jetbrains-mono
+ttf-nerd-fonts-symbols-mono
+ttf-dejavu
+
+## === SYSTEM MONITORING ===
+dgop
+fastfetch
+laptop-detect
+
+## === DISK & PARTITION TOOLS ===
+gparted
+parted
+gptfdisk
+ddrescue
+testdisk
+ntfs-3g
+
+## === NETWORK MANAGEMENT ===
+networkmanager
+networkmanager-dmenu-git
+usb_modeswitch
+broadcom-wl
+
+## === DESKTOP UTILITIES ===
+polkit
+libsecret
+xdg-user-dirs
+
+## === SYSTEM TOOLS ===
+dialog
+sudo
+fontconfig
+kbd
+
+## === COMMAND-LINE TOOLS ===
+openssh
+arch-install-scripts
+curl
+pacman-contrib
+fzf
+eza
+
+## === MEDIA APPLICATIONS ===
+firefox
+imv
+
+## === BUILD & DEVELOPMENT TOOLS ===
+squashfs-tools
+rsync
+pv
+dosfstools
+btrfs-progs
+
+## === BOOTLOADER & FIRMWARE ===
+grub
+os-prober
+lsb-release
+syslinux
+efibootmgr
+intel-ucode
+amd-ucode
+
+## === CORE SYSTEM PACKAGES (Arch Linux base) ===
+## Essential packages required for system operation
+bash
+bzip2
+coreutils
+cryptsetup
+device-mapper
+diffutils
+e2fsprogs
+file
+filesystem
+findutils
+gawk
+gcc-libs
+gettext
+glibc
+grep
+gzip
+inetutils
+iproute2
+iputils
+less
+licenses
+linux
+linux-firmware
+logrotate
+lvm2
+man-db
+man-pages
+nano
+ex-vi-compat
+pacman
+pciutils
+perl
+procps-ng
+psmisc
+sed
+shadow
+sysfsutils
+systemd-sysvcompat
+tar
+usbutils
+util-linux
+which
+memtest86+
+memtest86+-efi
+mkinitcpio
+mkinitcpio-archiso
+archlinux-keyring
+

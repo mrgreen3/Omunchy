@@ -1,0 +1,79 @@
+ArchBang KEYBINDINGS
+═════════════════════
+
+NOTE: Super = Windows Key
+
+
+APPLICATIONS
+───────────────────────
+
+Super + Return          Terminal (foot)
+Super + Space           Launcher (rofi)
+Super + w               Web Browser (firefox)
+Super + f               File Manager (thunar)
+Super + s               System Monitor (dgop)
+Super + p               Screenshot (full)
+Super + Shift + s       Screenshot (region)
+Super + k               Show Keybindings
+
+
+WINDOW CONTROLS
+───────────────────────
+
+Super + q               Close Window
+Super + Ctrl + s        Toggle Float
+Super + F11             Fullscreen
+Super + Shift + f       Fake Fullscreen
+Super + a               Maximise
+Super + i               Minimise
+Super + Shift + I       Restore Minimised
+Super + z               Scratchpad
+Super + o               Toggle Overlay
+
+
+FOCUS & MOVEMENT
+───────────────────────
+
+Super + Tab             Next Window
+Super + Ctrl + ←/→/↑/↓   Focus Direction
+Super + Shift + ←/→/↑/↓  Swap Window Direction
+Ctrl + Shift + ←/→/↑/↓   Move Window (50px)
+Ctrl + Super + ←/→/↑/↓   Resize Window (50px)
+
+
+WORKSPACES
+───────────────────────
+
+Super + [1-9]           Switch to Workspace
+Super + Shift + [1-9]   Send Window to Workspace
+Super + Left/Right      Previous/Next Workspace
+Ctrl + Left/Right       Move with Window to Prev/Next
+
+
+LAYOUT
+───────────────────────
+
+Super + n               Switch Layout Mode
+Super + e               Set Proportion Full
+Super + x               Cycle Proportion Preset
+Super + g               Toggle Gaps
+Super + Shift + X       Increase Gaps
+Super + Shift + Z       Decrease Gaps
+
+
+MULTI-MONITOR
+───────────────────────
+
+Super + Alt + Left/Right        Focus Monitor
+Super + Ctrl + Alt + Left/Right Send to Monitor
+
+
+SYSTEM
+───────────────────────
+
+Super + l               Lock Screen
+Super + r               Reload Config
+Super + m               Quit MangoWC
+Vol Up (XF86)           Increase Volume
+Vol Down (XF86)         Decrease Volume
+Mute (XF86)             Toggle Mute

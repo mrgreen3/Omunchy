@@ -1,0 +1,108 @@
+ ArchBang Guide
+
+Welcome to ArchBang, a lightweight Arch-based Wayland live ISO built around MangoWC.
+
+Note: Do not post ArchBang issues on the Arch Linux forums.
+
+---
+
+PACMAN (LIVE SESSION)
+
+Network required for pacman or browser use in the live session.
+
+- Wired connections work automatically.
+- Wireless: left-click the network icon in waybar, select network, enter password.
+
+---
+
+TAGS AND LAYOUTS
+
+MangoWC uses tags (1–9) instead of workspaces.
+
+Tag 1 is floating — windows behave like a traditional floating desktop.
+Tags 2–9 are tiling — windows are arranged automatically.
+
+Switch tags with Super+1 through Super+9.
+Toggle a window between floating and tiling with Super+S.
+
+---
+
+INSTALLATION
+
+1. Right-click on the desktop (or Super+Space for rofi)
+2. Select Install from the menu
+
+The installer (abinstall) is menu-driven.
+
+---
+
+POST-INSTALLATION
+
+SUDO
+
+Installed system requires password for sudo. Live session used passwordless sudo
+for convenience — installed system does not.
+
+---
+
+INITIALIZE PACMAN
+
+pacman will not work until keys are initialized:
+
+fix-keys
+
+This creates keys, refreshes the package cache, and updates archlinux-keyring.
+
+---
+
+BASIC PACKAGE USAGE
+
+Search:   sudo pacman -Ss <package-name>
+Install:  sudo pacman -S <package-name>
+
+---
+
+CONSOLE KEYBOARD LAYOUT
+
+The installer sets the raw tty console (rescue mode, before mango starts) to
+a "us" keymap regardless of your location — only mango's own desktop keymap
+is set to match where you are. To change the console layout afterwards:
+
+sudo nano /etc/vconsole.conf   # set KEYMAP=<layout>, e.g. KEYMAP=uk
+sudo mkinitcpio -P             # regenerate initramfs to pick it up
+
+List available layouts with: localectl list-keymaps
+
+---
+
+MICROCODE
+
+ArchBang includes both intel-ucode and amd-ucode. You only need one.
+
+If you remove the unused one after installation, update your bootloader config
+(regenerate GRUB or edit loader.conf) before rebooting.
+
+---
+
+INTEL GRAPHICS
+
+ArchBang uses Wayland with MangoWC, which relies on kernel modesetting via Mesa.
+No additional Intel drivers needed — built-in kernel drivers handle acceleration.
+
+---
+
+LIVE SESSION DISK SPACE
+
+If the live session runs out of space:
+
+sudo mount -o remount,size=8G /run/archiso/cowspace
+
+---
+
+NEED HELP?
+
+Arch Wiki: https://wiki.archlinux.org
+
+---
+
+Copyright 2025 ArchBang
