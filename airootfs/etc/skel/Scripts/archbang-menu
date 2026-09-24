@@ -3,7 +3,7 @@
 
 nol=9
 
-items="Terminal\0icon\x1futilities-terminal\nFirefox\0icon\x1ffirefox\nFiles\0icon\x1fsystem-file-manager\nApplications\0icon\x1fsystem-run\nSystem Monitor\0icon\x1futilities-system-monitor"
+items="Terminal\0icon\x1futilities-terminal\nChromium\0icon\x1fchromium\nFiles\0icon\x1fsystem-file-manager\nApplications\0icon\x1fsystem-run\nSystem Monitor\0icon\x1futilities-system-monitor"
 
 # nol drops by one when the installer isn't present
 [[ -x ~/Scripts/abinstall ]] && items="$items\nInstall\0icon\x1fsystem-software-install" || nol=8
@@ -17,8 +17,8 @@ case "$choice" in
   Terminal)
     foot
     ;;
-  Firefox)
-    firefox
+  Chromium)
+    chromium
     ;;
   Files)
     thunar

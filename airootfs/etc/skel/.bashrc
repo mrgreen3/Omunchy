@@ -1,7 +1,7 @@
 # add vim as default editor
 export EDITOR=vim
 export TERMINAL=foot
-export BROWSER=firefox
+export BROWSER=chromium
 
 # Add scripts path safely
 if [[ ":$PATH:" != *":$HOME/Scripts:"* ]]; then
