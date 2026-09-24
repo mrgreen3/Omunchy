@@ -37,6 +37,7 @@ xorg-xwayland
 grim
 slurp
 wl-clipboard
+libnotify
 brightnessctl
 swaylock
 mako

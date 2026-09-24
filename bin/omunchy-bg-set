@@ -41,7 +41,7 @@ INSTALLED="$BG_DIR/$(basename -- "$IMG")"
 
 # Replace ONLY the hyprpaper preload+wallpaper exec-once lines.
 sed -i \
-    -e "s|^exec-once = .*hyprctl hyprpaper preload .*|exec-once = sleep 1 \&\& hyprctl hyprpaper preload $INSTALLED \&\& hyprctl hyprpaper wallpaper ,\$INSTALLED|" \
+    -e "s|^exec-once = .*hyprctl hyprpaper preload .*|exec-once = sleep 1 \\&\\& hyprctl hyprpaper preload $INSTALLED \\&\\& hyprctl hyprpaper wallpaper ,$INSTALLED|" \
     "$HYPR_CONF"
 
 # Apply to the running session right away.

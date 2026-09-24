@@ -61,7 +61,7 @@ Install:  sudo pacman -S <package-name>
 
 CONSOLE KEYBOARD LAYOUT
 
-The installer sets the raw tty console (rescue mode, before mango starts) to
+The installer sets the raw tty console (rescue mode, before Hyprland starts) to
 a "us" keymap regardless of your location — only the desktop keymap
 is set to match where you are. To change the console layout afterwards:
 
