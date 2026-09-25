@@ -1,15 +1,15 @@
 #!/bin/bash
 
-# omunchy:summary=Reload the Hyprland session config (hyprctl reload)
+# omunchy:summary=Reload the sway session config (swaymsg reload)
 # omunchy:args=
-# omunchy:examples=omunchy hypr reload
+# omunchy:examples=omunchy sway reload
 
 set -euo pipefail
 
-if ! command -v hyprctl >/dev/null 2>&1; then
-    echo "omunchy-hypr-reload: hyprctl not found (is Hyprland running?)" >&2
+if ! command -v swaymsg >/dev/null 2>&1; then
+    echo "omunchy-sway-reload: swaymsg not found (is sway running?)" >&2
     exit 1
 fi
 
-# HYPRLAND_INSTANCE_SIGNATURE picks the right session when several are logged in.
-exec hyprctl reload
+# SWAYSOCK picks the right session when several are logged in.
+exec swaymsg reload
