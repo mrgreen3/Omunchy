@@ -35,6 +35,7 @@ sway-contrib
 wlsunset
 xdg-desktop-portal-wlr
 swaybg
+autotiling
 waybar
 xorg-xwayland
 grim

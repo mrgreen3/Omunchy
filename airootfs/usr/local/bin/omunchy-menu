@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omunchy:summary=Open the rofi launcher menu (apps, web apps, TUIs, keybinds, power)
+# omunchy:summary=Open the rofi launcher menu (apps, web apps, TUIs, keybinds, autotiling, power)
 # omunchy:args=[webapps|tuis|keybinds|power]
 # omunchy:examples=omunchy menu
 
@@ -40,6 +40,18 @@ menu_power() {
     esac
 }
 
+menu_autotile() {
+    # On/off flip for the dwindle-style tiling helper (bin/omunchy-autotile).
+    local state
+    if [[ -e $HOME/.config/omunchy/autotiling-off ]]; then
+        state="Enable"
+    else
+        state="Disable"
+    fi
+    omunchy autotile toggle
+    notify-send "Autotiling" "$state" 2>/dev/null || true
+}
+
 menu_webapps() {
     # List installed omunchy web app launchers by their .desktop Name.
     local apps_dir="$HOME/.local/share/applications" file name choice
@@ -76,7 +88,7 @@ menu_tuis() {
 
 if [[ ${1:-} == -h || ${1:-} == --help ]]; then
     printf 'Usage: omunchy menu [webapps|tuis|keybinds|power]\n'
-    printf 'With no argument: the main rofi menu (Applications, Web Apps, TUIs, Keybinds, Power).\n'
+    printf 'With no argument: the main rofi menu (Applications, Web Apps, TUIs, Keybinds, Autotiling, Power).\n'
     exit 0
 fi
 
@@ -89,9 +101,9 @@ esac
 
 [[ $# -gt 0 ]] && exit 0
 
-choice=$(printf 'Applications\0icon\x1fapplication-x-executable\nWeb Apps\0icon\x1fapplication-web-browser\nTUIs\0icon\x1futilities-terminal\nKeybinds\0icon\x1finput-keyboard\nPower\0icon\x1fsystem-shutdown' \
+choice=$(printf 'Applications\0icon\x1fapplication-x-executable\nWeb Apps\0icon\x1fapplication-web-browser\nTUIs\0icon\x1futilities-terminal\nKeybinds\0icon\x1finput-keyboard\nAutotiling\0icon\x1fview-grid\nPower\0icon\x1fsystem-shutdown' \
     | rofi -dmenu -p "Omunchy" -show-icons \
-        -theme-str "listview { lines: 5; } $MENU_THEME_STR")
+        -theme-str "listview { lines: 6; } $MENU_THEME_STR")
 
 case "$choice" in
     Applications) rofi -show drun ;;
@@ -99,4 +111,5 @@ case "$choice" in
     TUIs)         menu_tuis ;;
     Keybinds)     menu_keybinds ;;
     Power)        menu_power ;;
+    Autotiling)   menu_autotile ;;
 esac

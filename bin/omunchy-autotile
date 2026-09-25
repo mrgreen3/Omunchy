@@ -1,0 +1,63 @@
+#!/bin/bash
+
+# omunchy:summary=Toggle dwindle-style autotiling (autotiling drives sway split orientation)
+# omunchy:args=[start|toggle]
+# omunchy:examples=omunchy autotile toggle
+
+# autotiling (nwg-piotr/autotiling, packages.x86_64) flips the focused
+# container's split orientation to match its shape — the dwindle behaviour
+# Hyprland gave us natively. One instance per session:
+#   start   exec_always entry (sway looknfeel): pkill-then-start, so
+#           `swaymsg reload` re-runs it without stacking duplicates
+#   toggle  user-facing on/off (omunchy menu "Autotiling")
+# Off-state is the ~/.config/omunchy/autotiling-off sentinel: without it
+# reload re-starts autotiling (fresh installs default on); with it, start
+# only pkills — a user-disabled autotiling survives reload/theme switches.
+
+set -euo pipefail
+
+STATE="$HOME/.config/omunchy/autotiling-off"
+
+# The IPC socket appears when sway execs its config lines, but not always
+# before the first exec_always runs — wait briefly, then give up quietly.
+wait_for_sway_socket() {
+    for ((i = 0; i < 50; i++)); do
+        [[ -n ${SWAYSOCK:-} ]] && swaymsg -qq >/dev/null 2>&1 && return 0
+        sleep 0.1
+    done
+    return 1
+}
+
+case ${1:-} in
+    start)
+        command -v autotiling >/dev/null 2>&1 || exit 0  # not installed: stay quiet
+        pkill -x autotiling 2>/dev/null || true
+        [[ -e $STATE ]] || {
+            wait_for_sway_socket || exit 0  # no session socket: nothing to drive
+            exec autotiling >/dev/null 2>&1 # dies cleanly (with a socket) on exit
+        }
+        ;;
+    toggle)
+        command -v autotiling >/dev/null 2>&1 || {
+            echo "omunchy-autotile: autotiling not installed" >&2
+            exit 1
+        }
+        if [[ -e $STATE ]]; then
+            rm -f "$STATE"
+            setsid autotiling >/dev/null 2>&1 &
+        else
+            mkdir -p -- "$(dirname -- "$STATE")"
+            touch "$STATE"
+            pkill -x autotiling 2>/dev/null || true
+        fi
+        ;;
+    -h | --help)
+        printf 'Usage: omunchy autotile [start|toggle]\n'
+        printf '  start   exec_always entry: restart autotiling unless toggled off\n'
+        printf '  toggle  flip autotiling for this session (menu: Autotiling)\n'
+        ;;
+    *)
+        printf 'Usage: omunchy autotile [start|toggle]\n' >&2
+        exit 2
+        ;;
+esac

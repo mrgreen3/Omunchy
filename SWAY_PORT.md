@@ -19,6 +19,7 @@ era and are left as written (each carries a dated header note).
 | hyprsunset (+ `hyprsunset.conf` profile) | wlsunset (`-T <K>`; identity = not running) |
 | xdg-desktop-portal-hyprland | xdg-desktop-portal-wlr |
 | waybar `hyprland/*` modules | `sway/*` modules (workspaces, language) |
+| dwindle layout | `autotiling` (nwg-piotr) via `exec_always omunchy-autotile start` (pkill-then-start wrapper, reload-safe) |
 | window rule `class = ^omunchy\.TUI\.float$` | `for_window [app_id="^omunchy\.TUI\.float$"] floating enable` |
 | `hl.window_rule` float for `omunchy.Installer` | same mechanism, app_id `omunchy.Installer` |
 | `env =` exports + Hyprland's own systemd/dbus export | `.bash_profile` exports before `exec sway`; `exec_always systemctl --user set-environment` + `dbus-update-activation-environment` in the sway config |
@@ -30,6 +31,14 @@ era and are left as written (each carries a dated header note).
 
 ## Dropped or approximated (Hyprland-only, no sway equivalent)
 
+- **Dwindle layout** — approximated with the `autotiling` package (added
+  2026-09-25): it flips the focused container's split orientation to match
+  its shape, which is the behaviour Hyprland's dwindle gave. Not exact:
+  no depth/balance rules, just shape-following splits (`-l` can emulate a
+  master-stack feel). Started from the sway `looknfeel` via
+  `exec_always omunchy-autotile start`; the wrapper pkills first, so
+  `swaymsg reload` never stacks duplicates, and a user-toggled off state
+  (`omunchy autotile toggle`, also in the rofi menu) survives reload.
 - **Animations** — dropped entirely. The Omarchy-exact animation set
   (bezier curves easeOutQuint/easeInOutCubic/quick, per-animation speeds,
   `windowsIn popin 87%`, layer fades) has no sway counterpart; sway draws
@@ -72,7 +81,8 @@ era and are left as written (each carries a dated header note).
 ## Files changed
 
 - Added: `airootfs/etc/skel/.config/sway/{config,binds,looknfeel,theme}`,
-  `bin/omunchy-sway-reload`, this file.
+  `bin/omunchy-sway-reload`, `bin/omunchy-autotile` (dwindle-style
+  autotiling wrapper; airootfs mirror too), this file.
 - Removed: `airootfs/etc/skel/.config/hypr/*` (5 Lua files),
   `bin/omunchy-hypr-reload` + its airootfs mirror.
 - Converted: waybar config (`sway/workspaces`, `sway/language`, swaymsg
@@ -107,3 +117,7 @@ era and are left as written (each carries a dated header note).
 9. Screenshot, swaylock (Super+L), power menu logout (`swaymsg exit`).
 10. swayidle: shipped in packages but no config is installed — decide
     whether to add a lock-on-idle config or drop the package (lean rule).
+11. autotiling: `exec_always omunchy-autotile start` opens a tall window,
+    then narrow ones (split flips h/v with the window shape); `swaymsg
+    reload` twice → still exactly one `autotiling` process (check
+    `pgrep -ax autotiling`); menu toggle off → reload → stays off.

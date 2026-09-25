@@ -7,6 +7,7 @@ Omunchy is an all-in installer script — not a standalone distro — that layer
 ## Stack
 
 - **Compositor:** [sway](https://swaywm.org) — from the official Arch repos (i3-compatible Wayland; whole stack official-repo)
+- **Tiling:** [autotiling](https://github.com/nwg-piotr/autotiling) — dwindle-style split-orientation switching (Hyprland dwindle parity), toggle in the menu
 - **Bar:** Waybar
 - **Launcher:** Rofi
 - **Notifications:** Mako
@@ -41,6 +42,7 @@ omunchy bg set ~/Backgrounds/kanagawa.jpg                    # switch wallpaper
 omunchy menu                                                 # rofi launcher menu
 omunchy sway reload                                         # swaymsg reload
 omunchy update                                               # reflector + pacman -Syu + orphans
+omunchy autotile toggle                                      # dwindle-style autotiling on/off
 omunchy help                                                 # everything, with examples
 ```
 
@@ -103,7 +105,8 @@ bin/omunchy-launch-webapp      Chromium --app= launcher used by web app entries
 bin/omunchy-sway-reload        reload the sway session config
 bin/omunchy-theme-set          switch the desktop colour theme
 bin/omunchy-bg-set             switch the wallpaper (rewrites the swaybg line)
-bin/omunchy-menu               rofi launcher menu (apps / web apps / TUIs / keybinds / power)
+bin/omunchy-menu               rofi launcher menu (apps / web apps / TUIs / keybinds / autotiling / power)
+bin/omunchy-autotile           dwindle-style autotiling: start (exec_always) / toggle
 bin/omunchy-update             mirrors -> pacman -> yay -> orphan prune, lock-guarded
 config/webapps.conf            Name|URL|Icon per line
 config/tuis.conf               Name|Command|Style|Icon per line

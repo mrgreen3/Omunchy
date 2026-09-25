@@ -24,6 +24,9 @@ Super + t               Toggle Float
 Super + f               Fullscreen
 Super + v               Toggle Split
 
+Tiling helper: windows auto-split dwindle-style (autotiling). Toggle via
+the Omunchy Menu (Super + a > Autotiling).
+
 
 FOCUS & MOVEMENT
 ───────────────────────
