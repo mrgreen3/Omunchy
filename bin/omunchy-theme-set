@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omunchy:summary=Switch the desktop colour theme (foot, waybar, rofi, mako)
+# omunchy:summary=Switch the desktop colour theme (foot, waybar, rofi, mako, hyprland borders)
 # omunchy:args=<name>
 # omunchy:examples=omunchy theme set omunchy-light
 
@@ -112,20 +112,30 @@ if [[ -f $ROFI_THEME && -n ${ROFI_ACCENT:-} ]]; then
         "$ROFI_THEME"
 fi
 
-# --- Hyprland borders (theme.conf sourced by hyprland.conf) --------------------
+# --- Hyprland borders (theme.lua, required by hyprland.lua) ---------------------
 if [[ -d $HYPRLAND_DIR && -n ${HYPRLAND_ACTIVE_BORDER:-} ]]; then
-    cat >"$HYPRLAND_DIR/theme.conf" <<EOF
-# Written by omunchy-theme-set (theme: $THEME)
-general {
-    col.active_border = rgba($HYPRLAND_ACTIVE_BORDER)
-    col.inactive_border = rgba($HYPRLAND_INACTIVE_BORDER)
-}
-
-group {
-    col.border_active = rgba($HYPRLAND_ACTIVE_BORDER)
-    col.border_inactive = rgba($HYPRLAND_INACTIVE_BORDER)
-}
+    cat >"$HYPRLAND_DIR/theme.lua" <<EOF
+-- Written by omunchy-theme-set (theme: $THEME)
+hl.config({
+    general = {
+        col = {
+            active_border   = "rgba($HYPRLAND_ACTIVE_BORDER)",
+            inactive_border = "rgba($HYPRLAND_INACTIVE_BORDER)",
+        },
+    },
+    group = {
+        col = {
+            border_active   = "rgba($HYPRLAND_ACTIVE_BORDER)",
+            border_inactive = "rgba($HYPRLAND_INACTIVE_BORDER)",
+        },
+    },
+})
 EOF
+    # Live-apply without a reload: hyprctl eval runs the same hl.config call.
+    # (0.56 socket1 has no keyword handler — eval is the only live path.)
+    if command -v hyprctl >/dev/null 2>&1; then
+        hyprctl eval 'hl.config({general={col={active_border="rgba('"$HYPRLAND_ACTIVE_BORDER"')",inactive_border="rgba('"$HYPRLAND_INACTIVE_BORDER"')"}},group={col={border_active="rgba('"$HYPRLAND_ACTIVE_BORDER"')",border_inactive="rgba('"$HYPRLAND_INACTIVE_BORDER"')"}}})' &>/dev/null || true
+    fi
 fi
 
 # --- Persist for future sessions ------------------------------------------------

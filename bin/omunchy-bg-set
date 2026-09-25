@@ -2,13 +2,13 @@
 
 # omunchy:summary=Set the desktop wallpaper image (rewrites the hyprpaper line)
 # omunchy:args=<image-path>
-# omunchy:examples=omunchy bg set ~/Backgrounds/sunset-lake.png
+# omunchy:examples=omunchy bg set ~/Backgrounds/kanagawa.jpg
 
 set -euo pipefail
 
 usage() {
     printf 'Usage: omunchy bg set <image-path>\n'
-    printf 'Rewrites the hyprpaper exec-once line in ~/.config/hypr/hyprland.conf\n'
+    printf 'Rewrites the hyprpaper exec line in ~/.config/hypr/looknfeel.lua\n'
     printf 'and applies it to the running session via hyprctl.\n'
 }
 
@@ -25,7 +25,7 @@ IMG=$1
 }
 IMG=$(readlink -f -- "$IMG")
 
-HYPR_CONF="$HOME/.config/hypr/hyprland.conf"
+HYPR_CONF="$HOME/.config/hypr/looknfeel.lua"
 [[ -f $HYPR_CONF ]] || {
     echo "No $HYPR_CONF — install the Omunchy configs first." >&2
     exit 1
@@ -39,16 +39,17 @@ cp -n "$IMG" "$BG_DIR/" 2>/dev/null || true
 INSTALLED="$BG_DIR/$(basename -- "$IMG")"
 [[ -f $INSTALLED ]] || INSTALLED=$IMG
 
-# Replace ONLY the hyprpaper preload+wallpaper exec-once lines.
+# Replace ONLY the WALLPAPER_MARKER exec line (hyprpaper 0.8 has no
+# preload/unload — one wallpaper call is the whole IPC; the sleep guards
+# hyprpaper's own start).
 sed -i \
-    -e "s|^exec-once = .*hyprctl hyprpaper preload .*|exec-once = sleep 1 \\&\\& hyprctl hyprpaper preload $INSTALLED \\&\\& hyprctl hyprpaper wallpaper ,$INSTALLED|" \
+    -e "s|^.*hl.exec_cmd.*WALLPAPER_MARKER.*|    hl.exec_cmd(\"sleep 1 \\&\\& hyprctl hyprpaper wallpaper '$INSTALLED'\") -- WALLPAPER_MARKER|" \
     "$HYPR_CONF"
 
-# Apply to the running session right away.
+# Apply to the running session right away (all-monitors form; hyprpaper 0.8
+# takes the whole call as one request).
 if command -v hyprctl >/dev/null 2>&1; then
-    hyprctl hyprpaper preload "$INSTALLED" &>/dev/null || true
     hyprctl hyprpaper wallpaper ",$INSTALLED" &>/dev/null || true
-    hyprctl hyprpaper unload /dev/null &>/dev/null || true
 fi
 
 echo "Wallpaper set: $INSTALLED"

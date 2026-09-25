@@ -8,8 +8,12 @@
 #      the one AUR leftover (networkmanager-dmenu-git) goes through yay
 #      when it exists
 #   2. copies the skel configs (foot/waybar/rofi/mako/hypr), backing up any
-#      existing ones
-#   3. hands off to bin/omunchy sync for the web app + TUI launchers
+#      existing ones — the Hyprland side is Lua (hyprland.lua + modules,
+#      see airootfs/etc/skel/.config/hypr/)
+#   3. installs the omunchy CLI into ~/Scripts (on PATH via .bashrc, and
+#      the archbang-menu app entry lives there) so keybinds that call
+#      ~/Scripts/... and `omunchy <verb>` both resolve
+#   4. hands off to bin/omunchy sync for the web app + TUI launchers
 
 set -euo pipefail
 
@@ -66,20 +70,23 @@ install_configs() {
         cp -r "$src" "$dest"
         echo "[omunchy] Installed configs: ~/.config/$app"
     done
-    # The shipped hyprland.conf preloads this wallpaper by path.
+    # The shipped looknfeel.lua sets this wallpaper on hyprland start.
     if [[ ! -e $HOME/Backgrounds/aesthetic.jpg && -f $SKEL_DIR/Backgrounds/aesthetic.jpg ]]; then
         mkdir -p "$HOME/Backgrounds"
         cp "$SKEL_DIR/Backgrounds/aesthetic.jpg" "$HOME/Backgrounds/"
         echo "[omunchy] Installed default wallpaper: ~/Backgrounds/aesthetic.jpg"
     fi
-    # Install the omunchy CLI onto PATH so keybinds (SUPER+A menu etc.) and
-    # `omunchy <verb>` work from anywhere, not just inside the repo checkout.
-    mkdir -p "$HOME/.local/bin"
+    # Install the omunchy CLI into ~/Scripts (already on PATH via .bashrc; the
+    # menu/launcher keybinds call ~/Scripts/... paths, and the archbang-menu
+    # "Applications" entry is what the dead arch-logo menu should have been).
+    # Symlinks rather than copies so `omunchy sync`'s repo-checkout link_bin and
+    # this agree on one source of truth.
+    mkdir -p "$HOME/Scripts"
     for f in "$SCRIPT_DIR"/bin/omunchy "$SCRIPT_DIR"/bin/omunchy-*; do
         [[ -f $f && -x $f ]] || continue
-        install -m 0755 "$f" "$HOME/.local/bin/"
+        ln -sfn "$f" "$HOME/Scripts/${f##*/}"
     done
-    echo "[omunchy] Installed CLI: ~/.local/bin/omunchy (+ verbs)"
+    echo "[omunchy] Installed CLI: ~/Scripts/omunchy (+ verbs)"
 }
 
 install_base_stack

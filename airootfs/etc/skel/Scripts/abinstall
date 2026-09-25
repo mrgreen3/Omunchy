@@ -533,7 +533,7 @@ select_xkeymap(){
       read_input_text "Confirm keymap: $XKEYMAP"
     done
   fi
-   sed -i "s/kb_layout.*/kb_layout = ${XKEYMAP}/" $MNT/home/${LIVE_USER}/.config/hypr/hyprland.conf
+   sed -i "s/kb_layout.*/kb_layout       = \"${XKEYMAP}\",/" $MNT/home/${LIVE_USER}/.config/hypr/looknfeel.lua
 }
 #}}}
 
@@ -1185,8 +1185,9 @@ install_archbang(){
   fi
 
   # Copy the current wallpaper to a fixed path for greetd's login theme, before
-  # /etc/skel is deleted later in this function
-  WALLPAPER_NAME=$(sed -n 's#.*hyprpaper preload [^ ]*/\([^ ]*\) .*#\1#p' "${MNT}/etc/skel/.config/hypr/hyprland.conf" 2>/dev/null | head -1)
+  # /etc/skel is deleted later in this function. The WALLPAPER_MARKER line in
+  # looknfeel.lua reads: … hyprctl hyprpaper wallpaper '<dir>/<file>'
+  WALLPAPER_NAME=$(sed -n "s#.*wallpaper '[^ ]*/\([^']*\)'.*#\1#p" "${MNT}/etc/skel/.config/hypr/looknfeel.lua" 2>/dev/null | head -1)
   if [[ -n "$WALLPAPER_NAME" && -f "${MNT}/etc/skel/Backgrounds/${WALLPAPER_NAME}" ]]; then
     mkdir -p "${MNT}/usr/share/backgrounds/archbang"
     cp -a "${MNT}/etc/skel/Backgrounds/${WALLPAPER_NAME}" "${MNT}/usr/share/backgrounds/archbang/current"
@@ -1382,6 +1383,10 @@ EOF
 
     arch_chroot "systemctl enable greetd.service"
     arch_chroot "systemctl set-default graphical.target"
+
+    # Bluetooth + CPU frequency scaling daemons for the installed system.
+    # (The live ISO enables its own set via multi-user.target.wants symlinks.)
+    arch_chroot "systemctl enable bluetooth.service power-profiles-daemon.service"
 
     print_info "Greeter configuration complete."
     pause_function
