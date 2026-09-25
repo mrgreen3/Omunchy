@@ -1,6 +1,9 @@
 ## === AUDIO ===
 pipewire
 pipewire-pulse
+cmus
+flac
+faad2
 
 ## === ARCHIVE TOOLS ===
 zip
