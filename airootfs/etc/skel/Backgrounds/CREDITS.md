@@ -100,7 +100,7 @@ Excluded candidates and reasons:
 
 Note: `aesthetic.jpg` predates this parity work in Omunchy's own history and
 its origin was never recorded. It is grandfathered into the ISO for now (it
-is referenced by `theme.conf` and install.sh), but it fails the same
+is referenced by `looknfeel.lua` (WALLPAPER_MARKER line) and install.sh), but it fails the same
 verification standard applied to everything above and should be replaced or
 re-sourced when convenient.
 
