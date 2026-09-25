@@ -533,7 +533,7 @@ select_xkeymap(){
       read_input_text "Confirm keymap: $XKEYMAP"
     done
   fi
-   sed -i "s/kb_layout.*/kb_layout       = \"${XKEYMAP}\",/" $MNT/home/${LIVE_USER}/.config/hypr/looknfeel.lua
+   sed -i "s/^\([[:space:]]*kb_layout\).*/\1       = \"${XKEYMAP}\",/" $MNT/home/${LIVE_USER}/.config/hypr/looknfeel.lua
 }
 #}}}
 

@@ -65,14 +65,14 @@ omunchy help                                                 # everything, with 
   Wayland), so there is one place to later add launch-or-focus behaviour.
 - TUI entries run via `xdg-terminal-exec` with app-id `omunchy.TUI.float` /
   `omunchy.TUI.tile`, so Hyprland window rules can target floating/tiled TUIs
-  (the shipped `hyprland.conf` floats `omunchy.TUI.float`).
+  (the shipped `binds.lua` floats `omunchy.TUI.float`).
 - `omunchy theme set <name>` applies a theme from `config/themes/<name>.conf` —
   plain shell-sourceable `NAME=hex` fragments, no Lua, no per-app theming —
   rewriting the colour lines in foot/waybar/mako/rofi configs and the Hyprland
   border colours, then restarting the bar and reloading Hyprland. Two ship:
   `omunchy-dark` (default, warm dark like ArchBang) and `omunchy-light`.
-- `omunchy bg set <image>` rewrites the hyprpaper `exec-once` line in
-  `~/.config/hypr/hyprland.conf` and applies it to the running session.
+- `omunchy bg set <image>` rewrites the hyprpaper exec line (WALLPAPER_MARKER)
+  in `~/.config/hypr/looknfeel.lua` and applies it to the running session.
 - `omunchy update` refreshes mirrors with reflector (best-rated 5, skipped when
   offline), runs `pacman -Syu`, updates AUR packages via yay only when any are
   installed, and prompts to prune orphans — guarded by a lock so two updates
@@ -80,8 +80,9 @@ omunchy help                                                 # everything, with 
 
 ## Keybindings
 
-The shipped `~/.config/hypr/hyprland.conf` mirrors Omarchy's bindings in plain
-Hyprland conf (no Lua): `Super+Return` foot, `Super+Space` rofi, `Super+Q` close,
+The shipped `~/.config/hypr/hyprland.lua` (+ `binds.lua`/`looknfeel.lua`/
+`theme.lua` modules) mirrors Omarchy's bindings as Hyprland 0.56 Lua:
+`Super+Return` foot, `Super+Space` rofi, `Super+Q` close,
 `Super+F` fullscreen, `Super+T` float, `Super+V` split, `Super+P` screenshot,
 `Super+L` hyprlock, `Super+Shift+E` power menu, `Super+1..9` workspaces,
 XF86 audio/brightness via pamixer/brightnessctl. The full list lives in

@@ -280,17 +280,19 @@ The Hyprland delta over Mango is real (~150 MB) but not decisive above 4 GB.
    fine under Hyprland too), `swaylock` (replace with `hyprlock` for Omarchy-style lock,
    or keep swaylock — both work).
 2. **Config** — replace `airootfs/etc/skel/.config/mango/config.conf` with a fresh
-   `airootfs/etc/skel/.config/hypr/hyprland.conf`, Omarchy-style:
-   - `exec-once = waybar`, `exec-once = mako`, `exec-once = uwsm app -- chromium …` (or plain)
-   - window rules for `omunchy.TUI.float|tile` app-ids (`windowrule = float, class:omunchy.TUI.float`)
+   `airootfs/etc/skel/.config/hypr/hyprland.lua` (Hyprland 0.55+ deprecated hyprlang
+   `.conf`; Omunchy now ships Lua — see §5.1 note), Omarchy-style:
+   - autostart via `hl.on("hyprland.start", …)` + `hl.exec_cmd`: waybar, mako, hyprpaper
+   - window rules for `omunchy.TUI.float|tile` app-ids (`hl.window_rule{ match = { class = … }, float = true }`)
    - binds: SUPER+Return foot, SUPER+SPACE rofi, SUPER+K keybind cheatsheet (rofi or wofish),
      SUPER+Q close, SUPER+F fullscreen, SUPER+T float toggle, audio/brightness via
      pamixer/brightnessctl, screenshot SUPER+P grim+slurp
-   - `monitor=` defaults, gestures, gaps/in/animation (Omarchy looknfeel parity:
+   - `hl.monitor` defaults, gestures (`hl.gesture`), gaps/animations (Omarchy looknfeel parity:
      `default/hypr/looknfeel.lua`)
    - note: Omarchy ships its config as **Lua** (`config/hypr/hyprland.lua` requiring
-     `$OMARCHY_PATH/default/hypr/*.lua`) — Omunchy should stay plain `hyprland.conf`
-     (no Lua bootstrap), just mirror the resulting bindings.
+     `$OMARCHY_PATH/default/hypr/*.lua`) — Omunchy now does the same (error-isolated
+     `require()` modules: hyprland.lua → looknfeel/binds/theme), mirroring the
+     resulting bindings.
 3. **Flag for review** (Mango-specific bits that need a decision):
    - `airootfs/etc/skel/.config/networkmanager-dmenu/config.ini` — rofi dmenu backend is
      compositor-agnostic (keep), but check whether Kev wants `nm-connection-editor` or a
@@ -312,9 +314,11 @@ The Hyprland delta over Mango is real (~150 MB) but not decisive above 4 GB.
 ## 5. Recommendation
 
 1. **Adopt Hyprland as decided**: swap the mango package/config for the 6-package Hyprland set
-   and a plain (non-Lua) `~/.config/hypr/hyprland.conf` with Omarchy-parity bindings wired to
-   the existing waybar/rofi/mako/foot stack. Cost vs Mango: ~150 MB idle RAM — acceptable on
-   4–8 GB, and it buys Omarchy's exact compositor behaviour (hyprctl, animations, effects).
+   and a Lua `~/.config/hypr/hyprland.lua` (hyprlang `.conf` is deprecated in Hyprland 0.55+;
+   updated 2026-09-25 — Omunchy ships Lua modules, not plain conf) with Omarchy-parity bindings
+   wired to the existing waybar/rofi/mako/foot stack. Cost vs Mango: ~150 MB idle RAM —
+   acceptable on 4–8 GB, and it buys Omarchy's exact compositor behaviour (hyprctl,
+   animations, effects).
 2. **Keep the Omunchy CLI exactly as-is** (dispatcher + webapp/tui verbs): it already mirrors
    Omarchy's metadata-header dispatcher. Add only `webapp-remove-all`, `tui-remove-all`, and a
    lean `omunchy theme-set`/`bg-set` + `omunchy-menu` (rofi). Everything else Omarchy has is
