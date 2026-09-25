@@ -5,7 +5,7 @@
 # omunchy:examples=omunchy tui install htop htop float utilities-system-monitor
 
 # Emulates Omarchy's bin/omarchy-tui-install. Window style feeds the app-id
-# (omunchy.TUI.float / omunchy.TUI.tile) so Hyprland window rules can target it.
+# (omunchy.TUI.float / omunchy.TUI.tile) so sway window rules can target it.
 
 set -e
 

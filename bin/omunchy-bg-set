@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omunchy:summary=Set the desktop wallpaper image (rewrites the hyprpaper line)
+# omunchy:summary=Set the desktop wallpaper image (rewrites the swaybg exec line)
 # omunchy:args=<image-path>
 # omunchy:examples=omunchy bg set ~/Backgrounds/kanagawa.jpg
 
@@ -8,8 +8,8 @@ set -euo pipefail
 
 usage() {
     printf 'Usage: omunchy bg set <image-path>\n'
-    printf 'Rewrites the hyprpaper exec line in ~/.config/hypr/looknfeel.lua\n'
-    printf 'and applies it to the running session via hyprctl.\n'
+    printf 'Rewrites the swaybg exec line in ~/.config/sway/looknfeel\n'
+    printf 'and applies it to the running session via swaymsg.\n'
 }
 
 if [[ ${1:-} == -h || ${1:-} == --help || $# -ne 1 ]]; then
@@ -25,9 +25,9 @@ IMG=$1
 }
 IMG=$(readlink -f -- "$IMG")
 
-HYPR_CONF="$HOME/.config/hypr/looknfeel.lua"
-[[ -f $HYPR_CONF ]] || {
-    echo "No $HYPR_CONF — install the Omunchy configs first." >&2
+SWAY_CONF="$HOME/.config/sway/looknfeel"
+[[ -f $SWAY_CONF ]] || {
+    echo "No $SWAY_CONF — install the Omunchy configs first." >&2
     exit 1
 }
 
@@ -39,17 +39,17 @@ cp -n "$IMG" "$BG_DIR/" 2>/dev/null || true
 INSTALLED="$BG_DIR/$(basename -- "$IMG")"
 [[ -f $INSTALLED ]] || INSTALLED=$IMG
 
-# Replace ONLY the WALLPAPER_MARKER exec line (hyprpaper 0.8 has no
-# preload/unload — one wallpaper call is the whole IPC; the sleep guards
-# hyprpaper's own start).
+# Replace ONLY the WALLPAPER_MARKER exec line (swaybg has no preload/unload —
+# each invocation is a full background set; the sleep guards sway's startup).
 sed -i \
-    -e "s|^.*hl.exec_cmd.*WALLPAPER_MARKER.*|    hl.exec_cmd(\"sleep 1 \\&\\& hyprctl hyprpaper wallpaper ',$INSTALLED'\") -- WALLPAPER_MARKER|" \
-    "$HYPR_CONF"
+    -e "s|^exec sleep 1 && swaybg.*WALLPAPER_MARKER.*|exec sleep 1 \&\& swaybg -i '$INSTALLED' -m fill  # WALLPAPER_MARKER|" \
+    -e "s|^exec .*swaybg.*WALLPAPER_MARKER.*|exec sleep 1 \&\& swaybg -i '$INSTALLED' -m fill  # WALLPAPER_MARKER|" \
+    "$SWAY_CONF"
 
-# Apply to the running session right away (all-monitors form; hyprpaper 0.8
-# takes the whole call as one request).
-if command -v hyprctl >/dev/null 2>&1; then
-    hyprctl hyprpaper wallpaper ",$INSTALLED" &>/dev/null || true
+# Apply to the running session right away (kills the old swaybg first so the
+# new one owns the background; swaybg draws all outputs by default).
+if command -v swaymsg >/dev/null 2>&1; then
+    swaymsg exec -- sh -c "pkill -x swaybg 2>/dev/null; sleep 1; exec swaybg -i '$INSTALLED' -m fill" &>/dev/null || true
 fi
 
 echo "Wallpaper set: $INSTALLED"

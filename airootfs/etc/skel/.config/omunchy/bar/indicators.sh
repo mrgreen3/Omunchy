@@ -13,8 +13,8 @@
 #
 # State sources (mirroring Omarchy's quattro widgets):
 #   dnd         makoctl mode  (mode "do-not-disturb" present = on)
-#   night       hyprctl hyprsunset temperature < 6000K = on
-#               (bin/omarchy-toggle-nightlight: identity 6000K)
+#   night       wlsunset running with -T < 6000K = on (process args; wlsunset
+#               has no IPC, identity = wlsunset not running at all)
 #   recording   pgrep -f "^wf-recorder|^gpu-screen-recorder"
 #   stay-awake  pgrep -f "systemd-inhibit.*omunchy-stay-awake"
 #               (a tagged systemd-inhibit sleep process is inspectable and
@@ -37,9 +37,9 @@ dnd_on() {
 }
 
 night_on() {
-    command -v hyprctl >/dev/null 2>&1 || return 1
+    # wlsunset has no IPC — the tint level lives on its own command line (-T).
     local temp
-    temp=$(hyprctl hyprsunset temperature 2>/dev/null | grep -oE '[0-9]+' | head -n1) || return 1
+    temp=$(pgrep -x wlsunset -a 2>/dev/null | grep -oE '\-T [0-9]+' | head -n1 | grep -oE '[0-9]+') || return 1
     [[ -n $temp && $temp -lt $IDENTITY_TEMP ]]
 }
 
@@ -58,29 +58,17 @@ toggle_dnd() {
     makoctl mode -t do-not-disturb >/dev/null 2>&1 || true
 }
 
-ensure_hyprsunset() {
-    pgrep -x hyprsunset >/dev/null 2>&1 && return 0
-    command -v hyprsunset >/dev/null 2>&1 || return 1
-    setsid hyprsunset >/dev/null 2>&1 &
-    sleep 0.5
-}
-
 nightlight_toggle() {
-    # Start hyprsunset lazily; a fresh instance carries no tint until set.
-    ensure_hyprsunset || return 0
     if night_on; then
-        target=6500
-    else
-        target=$NIGHT_TEMP
+        # Back to identity: stop wlsunset entirely (no IPC to neutralise the
+        # tint — not running = no tint).
+        pkill -x wlsunset >/dev/null 2>&1 || true
+        return 0
     fi
-    # hyprsunset applies its boot temperature after startup — resend until
-    # the value sticks (same workaround as Omarchy's toggle script).
-    for _ in {1..10}; do
-        hyprctl hyprsunset temperature "$target" >/dev/null 2>&1 || true
-        sleep 0.2
-        current=$(hyprctl hyprsunset temperature 2>/dev/null | grep -oE '[0-9]+' | head -n1)
-        [[ $current == "$target" ]] && return 0
-    done
+    # Night on: start wlsunset lazily at the night temperature.
+    command -v wlsunset >/dev/null 2>&1 || return 0
+    setsid wlsunset -T "$NIGHT_TEMP" >/dev/null 2>&1 &
+    sleep 0.5
 }
 
 stayawake_toggle() {
@@ -150,7 +138,7 @@ toggle-night)
     echo "Usage: indicators.sh [toggle|toggle-night]"
     echo "  (no args)  print waybar JSON state"
     echo "  toggle     toggle do-not-disturb (mako)"
-    echo "  toggle-night  toggle night light (hyprsunset 4000K)"
+    echo "  toggle-night  toggle night light (wlsunset 4000K)"
     exit 0
     ;;
 esac

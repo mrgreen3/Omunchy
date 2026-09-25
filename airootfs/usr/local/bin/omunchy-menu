@@ -34,7 +34,7 @@ menu_power() {
         -theme ~/.config/rofi/theme.rasi \
         -theme-str 'inputbar { enabled: false; } listview { lines: 3; } window { width: 250px; }')
     case "$choice" in
-        *Logout)   hyprctl dispatch "hl.dsp.exit()" ;; # lua config: legacy 'dispatch exit' is a nil global to hl.dispatch
+        *Logout)   swaymsg exit ;; # sway IPC: ends the compositor session
         *Reboot)   systemctl reboot ;;
         *Poweroff) systemctl poweroff ;;
     esac

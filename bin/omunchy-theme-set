@@ -1,14 +1,14 @@
 #!/bin/bash
 
-# omunchy:summary=Switch the desktop colour theme (foot, waybar, rofi, mako, hyprland borders)
+# omunchy:summary=Switch the desktop colour theme (foot, waybar, rofi, mako, sway borders)
 # omunchy:args=<name>
 # omunchy:examples=omunchy theme set omunchy-light
 
 # Lean theme system: themes are plain shell fragments (NAME=hex) in
 # config/themes/<name>.conf. theme-set rewrites the colour lines in the
 # user's configs and persists a copy under ~/.config/omunchy. No per-app
-# theming, no Lua — the shipped waybar/mako/rofi files carry this same
-# palette, so writing it back is round-trip safe.
+# theming — the shipped waybar/mako/rofi files carry this same palette, so
+# writing it back is round-trip safe.
 
 set -euo pipefail
 
@@ -24,7 +24,7 @@ done
 THEMES_DIR="$(cd -P "$(dirname -- "$SOURCE")/../config/themes" 2>/dev/null && pwd)" || THEMES_DIR=""
 
 STATE_DIR="$HOME/.config/omunchy"
-HYPRLAND_DIR="$HOME/.config/hypr"
+SWAY_DIR="$HOME/.config/sway"
 
 usage() {
     printf 'Usage: omunchy theme set <name>\n'
@@ -56,7 +56,7 @@ unset WAYBAR_BG WAYBAR_BG_ALPHA WAYBAR_SURFACE WAYBAR_FG WAYBAR_FG_DIM
 unset WAYBAR_ACCENT WAYBAR_ON_ACCENT WAYBAR_RED WAYBAR_GREEN WAYBAR_YELLOW
 unset MAKO_BG MAKO_TEXT MAKO_BORDER
 unset ROFI_BG ROFI_BG_ALT ROFI_FG ROFI_FG_DIM ROFI_ACCENT ROFI_URGENT ROFI_SELECTED_FG
-unset HYPRLAND_ACTIVE_BORDER HYPRLAND_INACTIVE_BORDER
+unset SWAY_ACTIVE_BORDER SWAY_INACTIVE_BORDER
 
 while IFS= read -r line || [[ -n $line ]]; do
     [[ $line == \#* || -z ${line//[[:space:]]/} ]] && continue
@@ -114,30 +114,14 @@ if [[ -f $ROFI_THEME && -n ${ROFI_ACCENT:-} ]]; then
         "$ROFI_THEME"
 fi
 
-# --- Hyprland borders (theme.lua, required by hyprland.lua) ---------------------
-if [[ -d $HYPRLAND_DIR && -n ${HYPRLAND_ACTIVE_BORDER:-} ]]; then
-    cat >"$HYPRLAND_DIR/theme.lua" <<EOF
--- Written by omunchy-theme-set (theme: $THEME)
-hl.config({
-    general = {
-        col = {
-            active_border   = "rgba($HYPRLAND_ACTIVE_BORDER)",
-            inactive_border = "rgba($HYPRLAND_INACTIVE_BORDER)",
-        },
-    },
-    group = {
-        col = {
-            border_active   = "rgba($HYPRLAND_ACTIVE_BORDER)",
-            border_inactive = "rgba($HYPRLAND_INACTIVE_BORDER)",
-        },
-    },
-})
+# --- sway borders (theme, included by the sway config) -----------------------
+if [[ -d $SWAY_DIR && -n ${SWAY_ACTIVE_BORDER:-} ]]; then
+    cat >"$SWAY_DIR/theme" <<EOF
+# Written by omunchy-theme-set (theme: $THEME)
+client.focused          #${SWAY_ACTIVE_BORDER%%??} #${SWAY_ACTIVE_BORDER%%??} #111318 #${SWAY_ACTIVE_BORDER%%??} #${SWAY_ACTIVE_BORDER%%??}
+client.focused_inactive #${SWAY_INACTIVE_BORDER%%??} #${SWAY_INACTIVE_BORDER%%??} #111318 #${SWAY_INACTIVE_BORDER%%??} #${SWAY_INACTIVE_BORDER%%??}
+client.unfocused        #${SWAY_INACTIVE_BORDER%%??} #${SWAY_INACTIVE_BORDER%%??} #111318 #${SWAY_INACTIVE_BORDER%%??} #${SWAY_INACTIVE_BORDER%%??}
 EOF
-    # Live-apply without a reload: hyprctl eval runs the same hl.config call.
-    # (0.56 socket1 has no keyword handler — eval is the only live path.)
-    if command -v hyprctl >/dev/null 2>&1; then
-        hyprctl eval 'hl.config({general={col={active_border="rgba('"$HYPRLAND_ACTIVE_BORDER"')",inactive_border="rgba('"$HYPRLAND_INACTIVE_BORDER"')"}},group={col={border_active="rgba('"$HYPRLAND_ACTIVE_BORDER"')",border_inactive="rgba('"$HYPRLAND_INACTIVE_BORDER"')"}}})' &>/dev/null || true
-    fi
 fi
 
 # --- Persist for future sessions ------------------------------------------------
@@ -152,7 +136,7 @@ pkill -x mako 2>/dev/null || true
 sleep 0.3
 (waybar &>/dev/null & disown) 2>/dev/null || true
 (mako &>/dev/null & disown) 2>/dev/null || true
-hyprctl reload &>/dev/null || true
+swaymsg reload &>/dev/null || true
 
-echo "Theme set: $THEME (foot, waybar, rofi, mako, hyprland borders)"
+echo "Theme set: $THEME (foot, waybar, rofi, mako, sway borders)"
 echo "Run 'omunchy bg set <image>' to match the wallpaper."
