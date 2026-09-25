@@ -87,7 +87,6 @@ ntfs-3g
 networkmanager
 networkmanager-dmenu-git
 usb_modeswitch
-broadcom-wl
 
 ## === DESKTOP UTILITIES ===
 polkit

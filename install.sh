@@ -5,8 +5,8 @@
 # Layers the desktop onto an existing ArchBang install:
 #   1. installs the package stack from packages.x86_64 — the desktop stack
 #      (hyprland included) is all official-repo now that MangoWC is gone;
-#      the two AUR leftovers (networkmanager-dmenu-git, broadcom-wl) go
-#      through yay when it exists
+#      the one AUR leftover (networkmanager-dmenu-git) goes through yay
+#      when it exists
 #   2. copies the skel configs (foot/waybar/rofi/mako/hypr), backing up any
 #      existing ones
 #   3. hands off to bin/omunchy sync for the web app + TUI launchers
