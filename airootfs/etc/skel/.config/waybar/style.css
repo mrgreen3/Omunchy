@@ -125,7 +125,7 @@ window#waybar {
 }
 
 /* ---------- Keyboard layout ---------- */
-#hyprland-language {
+#sway-language {
     color: @fg-dim;
     padding: 0 6px;
 }

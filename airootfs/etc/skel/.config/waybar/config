@@ -5,7 +5,7 @@
   // (menu, workspaces | indicators, clock, keyboard, update | tray, network,
   // audio, monitor, power) with the Omunchy substitutions: rofi for the
   // quickshell menu, mako DnD for the notifications service, scripts for the
-  // indicator states. Omarchy's opt-in widgets (media/hyprland/window) are
+  // indicator states. Omarchy's opt-in widgets (media/sway/window) are
   // enabled here since waybar costs nothing for them; elsewhen and agents are
   // Omarchy/Omunchy-specific and omitted.
   //
@@ -21,12 +21,12 @@
 
   "modules-left": [
     "custom/menu",
-    "hyprland/workspaces"
+    "sway/workspaces"
   ],
   "modules-center": [
     "custom/indicators",
     "clock",
-    "hyprland/language",
+    "sway/language",
     "custom/updates"
   ],
   "modules-right": [
@@ -50,15 +50,15 @@
   },
 
   // omarchy.workspaces — one pill per workspace; scroll cycles workspaces
-  "hyprland/workspaces": {
+  "sway/workspaces": {
     "format": "{icon}",
     "on-click": "activate",
     "format-icons": {
       "active": "󱓻",
       "default": "{id}"
     },
-    "on-scroll-up": "hyprctl dispatch \"hl.dsp.focus({workspace='e+1'})\"",
-    "on-scroll-down": "hyprctl dispatch \"hl.dsp.focus({workspace='e-1'})\""
+    "on-scroll-up": "swaymsg workspace next_on_output",
+    "on-scroll-down": "swaymsg workspace prev_on_output"
   },
 
   // omarchy.indicators — DnD / NightLight / Recording / StayAwake pills
@@ -86,10 +86,10 @@
   },
 
   // omarchy.keyboard-layout — hidden when only one layout is configured
-  "hyprland/language": {
+  "sway/language": {
     "format": "{}",
     "format-en": "US",
-    "on-click": "hyprctl switchxkblayout current next"
+    "on-click": "swaymsg input '*' xkb_switch_layout next"
   },
 
   // omarchy.system-update — badge only when updates are pending; 6 h poll
