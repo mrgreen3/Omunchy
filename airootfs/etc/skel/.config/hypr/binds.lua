@@ -55,5 +55,5 @@ hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl s 5%-"),  { repe
 hl.bind("SUPER + P",        hl.dsp.exec_cmd("~/Scripts/screenshot"))
 hl.bind("SUPER + SHIFT + S", hl.dsp.exec_cmd("~/Scripts/screenshot -r"))
 hl.bind("SUPER + L",        hl.dsp.exec_cmd("hyprlock"))
-hl.bind("SUPER + R",        hl.dsp.reload_config())
+hl.bind("SUPER + R",        hl.dsp.exec_cmd("hyprctl reload"))
 hl.bind("SUPER + SHIFT + E", hl.dsp.exec_cmd("~/Scripts/powermenu"))
