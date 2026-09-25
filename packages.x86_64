@@ -123,6 +123,7 @@ rsync
 pv
 dosfstools
 btrfs-progs
+opencode
 
 ## === BOOTLOADER & FIRMWARE ===
 grub
