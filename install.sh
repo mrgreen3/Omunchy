@@ -3,10 +3,11 @@
 # omunchy — lightweight Omarchy-inspired desktop installer for ArchBang
 #
 # Layers the desktop onto an existing ArchBang install:
-#   1. installs the package stack from packages.x86_64 — the desktop stack
-#      (hyprland included) is all official-repo now that MangoWC is gone;
-#      the one AUR leftover (networkmanager-dmenu-git) goes through yay
-#      when it exists
+#   1. installs the package stack from packages.x86_64 — everything including
+#      the desktop stack (hyprland included) is official-repo now (the last
+#      AUR leftover, networkmanager-dmenu-git, was swapped for the extra/
+#      networkmanager-dmenu package: same binary, same config); AUR entries
+#      would still go through yay when they exist
 #   2. copies the skel configs (foot/waybar/rofi/mako/hypr), backing up any
 #      existing ones — the Hyprland side is Lua (hyprland.lua + modules,
 #      see airootfs/etc/skel/.config/hypr/)

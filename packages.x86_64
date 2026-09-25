@@ -22,8 +22,6 @@ btop
 noto-fonts
 noto-fonts-emoji
 ttf-jetbrains-mono-nerd
-adw-gtk-theme
-adwaita-icon-theme
 
 ## === TERMINAL ===
 foot
@@ -96,7 +94,7 @@ ntfs-3g
 
 ## === NETWORK MANAGEMENT ===
 networkmanager
-networkmanager-dmenu-git
+networkmanager-dmenu
 usb_modeswitch
 
 ## === DESKTOP UTILITIES ===

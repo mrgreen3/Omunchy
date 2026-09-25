@@ -6,7 +6,7 @@ Omunchy is an all-in installer script — not a standalone distro — that layer
 
 ## Stack
 
-- **Compositor:** [Hyprland](https://hypr.land) — from the official Arch repos (MangoWC was the only AUR dep; two network tools remain from AUR)
+- **Compositor:** [Hyprland](https://hypr.land) — from the official Arch repos (MangoWC was the only AUR dep; the whole stack is official-repo now)
 - **Bar:** Waybar
 - **Launcher:** Rofi
 - **Notifications:** Mako
