@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# omunchy:summary=Launch a URL as a web app window via Chromium app mode
+# omunchy:args=<url> [extra-chromium-flags...]
+
+set -e
+
+if (($# < 1)); then
+    echo "Usage: omunchy-launch-webapp <url> [extra-chromium-flags...]" >&2
+    exit 1
+fi
+
+exec chromium --app="$1" --ozone-platform=wayland "${@:2}"

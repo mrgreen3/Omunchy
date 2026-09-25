@@ -59,7 +59,7 @@ install_base_stack() {
 
 install_configs() {
     local app src dest backup
-    for app in foot waybar rofi mako hypr; do
+    for app in foot waybar rofi mako hypr omunchy; do
         src="$SKEL_DIR/.config/$app"
         [[ -d $src ]] || continue
         dest="$HOME/.config/$app"

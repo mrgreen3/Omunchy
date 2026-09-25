@@ -1,4 +1,7 @@
 #!/bin/bash
+# ~/Pictures may not exist yet (xdg-user-dirs runs at first login); grim will
+# not create it, so make it here.
+mkdir -p ~/Pictures
 f=~/Pictures/$(date +%d%m%y%H%M).png
 case "$1" in
     -r) grim -g "$(slurp)" "$f" ;;

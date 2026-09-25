@@ -1,6 +1,7 @@
 ## === AUDIO ===
 pipewire
 pipewire-pulse
+wireplumber
 cmus
 xmms2
 libmad
@@ -25,6 +26,7 @@ ttf-jetbrains-mono-nerd
 
 ## === TERMINAL ===
 foot
+xdg-terminal-exec
 
 ## === WAYLAND DESKTOP ENVIRONMENT (hyprland stack, all from official repos) ===
 hyprland

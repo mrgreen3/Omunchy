@@ -110,7 +110,7 @@ hl.on("hyprland.start", function()
     -- The sleep guard goes on the spawned command (keybind handlers and the
     -- hyprland.start callback must not block — wiki binds warning).
     -- MARKER: omunchy-bg-set rewrites ONLY the exec_cmd line below.
-    hl.exec_cmd("sleep 1 && hyprctl hyprpaper wallpaper '~/Backgrounds/aesthetic.jpg'") -- WALLPAPER_MARKER
+    hl.exec_cmd("sleep 1 && hyprctl hyprpaper wallpaper \",$HOME/Backgrounds/aesthetic.jpg\"") -- WALLPAPER_MARKER
 end)
 
 -- NOTE: the old `exec-once = dbus-update-activation-environment --systemd …`

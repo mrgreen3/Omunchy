@@ -1,2 +1,6 @@
 # Reference material — upstream Omarchy scripts kept for study, not part of omunchy
 .reference/
+
+# mkarchiso build artefacts (sync.sh --build creates these in-tree)
+work/
+out/

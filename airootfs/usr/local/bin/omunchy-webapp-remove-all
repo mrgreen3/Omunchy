@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# omunchy:summary=Remove every web app launcher installed by omunchy
+# omunchy:args=
+# omunchy:examples=omunchy webapp remove all
+
+# Emulates Omarchy's omarchy-webapp-remove-all: the installed launchers are
+# found by grepping their Exec= line (omunchy-launch-webapp), so one-off
+# entries created through the installer are removed even though sync knows
+# nothing about them.
+
+set -euo pipefail
+
+DESKTOP_DIR="$HOME/.local/share/applications"
+ICON_DIR="$HOME/.local/share/icons/hicolor/256x256/apps"
+
+if [[ ${1:-} == -h || ${1:-} == --help ]]; then
+    printf 'Usage: omunchy webapp remove all\nRemoves every .desktop whose Exec= references omunchy-launch-webapp.\n'
+    exit 0
+fi
+
+[[ -d $DESKTOP_DIR ]] || { echo "No $DESKTOP_DIR — nothing to remove."; exit 0; }
+
+removed=0
+for file in "$DESKTOP_DIR"/*.desktop; do
+    [[ -f $file ]] || continue
+    grep -q 'omunchy-launch-webapp' "$file" || continue
+    icon=$(sed -n 's/^Icon=//p' "$file" | head -1)
+    rm -f "$file"
+    # Only omunchy-fetched icons live under ICON_DIR with this name; skip
+    # anything else (themed icon names etc).
+    if [[ -n $icon && $icon != *.* && -f "$ICON_DIR/$icon.png" ]]; then
+        rm -f "$ICON_DIR/$icon.png"
+    fi
+    echo "Removed: $(basename "$file")"
+    removed=$((removed + 1))
+done
+
+if ((removed == 0)); then
+    echo "No omunchy web apps to remove."
+    exit 0
+fi
+
+command -v update-desktop-database >/dev/null 2>&1 && \
+    update-desktop-database "$DESKTOP_DIR" &>/dev/null || true
+
+echo "Removed $removed web app(s)."
+echo "Note: entries still defined in config/webapps.conf will be recreated by 'omunchy sync'."
