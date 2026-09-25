@@ -114,6 +114,20 @@ docs/omarchy-parity.md         Omarchy feature parity analysis and decisions
 .reference/                    upstream Omarchy scripts kept for reference (not committed)
 ```
 
+## Known issues
+
+- **Workspace pill left-click is broken with waybar 0.15.0 + Hyprland 0.56
+  (Lua config).** waybar's click handler hardcodes legacy hyprlang dispatch
+  strings (`dispatch workspace N`, `dispatch togglespecialworkspace …`) that
+  Hyprland's socket1 rewrites to invalid Lua under the Lua parser — the click
+  is a no-op and Hyprland logs a syntax error. Scroll on the pills
+  (`on-scroll-up/down`), keyboard binds, urgent highlighting, and window
+  counts all work; `Super+1..9` and `Super+Tab` cover navigation. Fixed
+  upstream on waybar master (configProvider-aware `IPC::dispatch` that
+  translates to `hl.dsp.*`), ships with waybar 0.16.0 — nothing to fix here;
+  see `docs/waybar-hyprland-compat.md` for the full audit matrix. Do not
+  patch/pin waybar for this (lean rule).
+
 ## Status
 
 Entry generation, interactive installers, removal, sync, the Hyprland session,
