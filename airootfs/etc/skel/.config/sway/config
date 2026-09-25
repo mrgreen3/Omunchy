@@ -1,0 +1,37 @@
+# =============================================================================
+# Omunchy — sway configuration (sway 1.12+, i3-compatible).
+#
+# Omarchy-parity bindings on the waybar/foot/mako/rofi stack. Reload:
+#   omunchy sway reload   (swaymsg reload)
+#
+# Split into modules via `include`; each file is an isolated scope, so a
+# typo in one file will not kill the whole config.
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# OUTPUT
+# ---------------------------------------------------------------------------
+output * scale 1
+
+# ---------------------------------------------------------------------------
+# ENVIRONMENT + PORTALS
+# ---------------------------------------------------------------------------
+# Session env vars (XDG_CURRENT_DESKTOP, XCURSOR_*, MOZ_ENABLE_WAYLAND,
+# GDK_BACKEND) are exported in .bash_profile before `exec sway` — sway has no
+# env command, and exec'd clients inherit the compositor's own environment.
+# These exec_always lines push the session identity to systemd user services
+# and dbus activation (xdg-desktop-portal-wlr picks it up from there).
+exec_always systemctl --user set-environment XDG_CURRENT_DESKTOP=sway
+exec_always systemctl --user set-environment XDG_SESSION_TYPE=wayland
+exec_always systemctl --user set-environment XDG_SESSION_DESKTOP=sway
+exec_always systemctl --user import-environment WAYLAND_DISPLAY SWAYSOCK XDG_CURRENT_DESKTOP
+
+exec_always hash dbus-update-activation-environment 2>/dev/null && \
+     dbus-update-activation-environment --systemd WAYLAND_DISPLAY SWAYSOCK XDG_CURRENT_DESKTOP=sway
+
+# ---------------------------------------------------------------------------
+# MODULES
+# ---------------------------------------------------------------------------
+include binds
+include looknfeel
+include theme

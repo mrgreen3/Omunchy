@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# omunchy:summary=Reload the sway session config (swaymsg reload)
+# omunchy:args=
+# omunchy:examples=omunchy sway reload
+
+set -euo pipefail
+
+if ! command -v swaymsg >/dev/null 2>&1; then
+    echo "omunchy-sway-reload: swaymsg not found (is sway running?)" >&2
+    exit 1
+fi
+
+# SWAYSOCK picks the right session when several are logged in.
+exec swaymsg reload

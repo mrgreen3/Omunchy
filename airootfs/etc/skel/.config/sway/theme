@@ -1,0 +1,11 @@
+# =============================================================================
+# Omunchy — sway border / focus colours (default: omunchy-dark palette).
+# Written by `omunchy theme-set <name>` (which rewrites this whole file).
+# Palette: warm dark from Backgrounds/aesthetic.jpg (matches waybar/rofi/mako/foot)
+# =============================================================================
+
+# Sway uses i3-style client.* colour classes; each takes 3-5 hex colours
+# in the order: border background text [indicator] [child_border]
+
+client.focused         #adc6ff #adc6ff #000000 #adc6ff #adc6ff
+client.focused_inactive #44474f #44474f #000000 #44474f #44474f

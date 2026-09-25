@@ -1,0 +1,82 @@
+# =============================================================================
+# Omunchy — keybinds (sway 1.12). Omarchy-parity bindings.
+# Keys are xkbcommon keysyms; modifiers: Super/Shift/Alt/Ctrl.
+# =============================================================================
+
+set $terminal foot
+
+# --- Apps ---
+bindsym Super+Return exec $terminal
+bindsym Super+Space  exec rofi -show drun
+bindsym Super+A      exec omunchy menu
+bindsym Super+B      exec chromium
+bindsym Super+E      exec thunar
+bindsym Super+S      exec "foot -e dgop top"
+bindsym Super+K      exec "grep -E '(Super|Ctrl|Vol|Mute|Bright)' ~/Documents/Keybindings | rofi -dmenu -p Keybinds -theme-str 'listview { lines: 18; columns: 2; }'"
+
+# --- Windows ---
+bindsym Super+Q kill
+bindsym Super+F fullscreen toggle
+bindsym Super+T floating toggle
+bindsym Super+V split toggle
+
+# --- Focus & movement ---
+bindsym Super+Left        focus left
+bindsym Super+Right       focus right
+bindsym Super+Up          focus up
+bindsym Super+Down        focus down
+bindsym Super+Shift+Left  move left
+bindsym Super+Shift+Right move right
+bindsym Super+Shift+Up    move up
+bindsym Super+Shift+Down  move down
+bindsym Super+Tab         workspace next
+bindsym Super+Shift+Tab   workspace prev
+
+# --- Workspaces 1-9 (switch / send window) ---
+set $ws1  1
+set $ws2  2
+set $ws3  3
+set $ws4  4
+set $ws5  5
+set $ws6  6
+set $ws7  7
+set $ws8  8
+set $ws9  9
+
+bindsym Super+1 workspace $ws1
+bindsym Super+2 workspace $ws2
+bindsym Super+3 workspace $ws3
+bindsym Super+4 workspace $ws4
+bindsym Super+5 workspace $ws5
+bindsym Super+6 workspace $ws6
+bindsym Super+7 workspace $ws7
+bindsym Super+8 workspace $ws8
+bindsym Super+9 workspace $ws9
+
+bindsym Super+Shift+1 move container to workspace $ws1; workspace $ws1
+bindsym Super+Shift+2 move container to workspace $ws2; workspace $ws2
+bindsym Super+Shift+3 move container to workspace $ws3; workspace $ws3
+bindsym Super+Shift+4 move container to workspace $ws4; workspace $ws4
+bindsym Super+Shift+5 move container to workspace $ws5; workspace $ws5
+bindsym Super+Shift+6 move container to workspace $ws6; workspace $ws6
+bindsym Super+Shift+7 move container to workspace $ws7; workspace $ws7
+bindsym Super+Shift+8 move container to workspace $ws8; workspace $ws8
+bindsym Super+Shift+9 move container to workspace $ws9; workspace $ws9
+
+# --- Monitors ---
+bindsym Super+Alt+Left  focus output left
+bindsym Super+Alt+Right focus output right
+
+# --- Audio & brightness ---
+bindsym --locked XF86AudioRaiseVolume  exec pamixer -i 5
+bindsym --locked XF86AudioLowerVolume  exec pamixer -d 5
+bindsym --locked XF86AudioMute         exec pamixer -t
+bindsym --locked XF86MonBrightnessUp   exec brightnessctl s +5%
+bindsym --locked XF86MonBrightnessDown exec brightnessctl s 5%-
+
+# --- Session ---
+bindsym Super+P       exec ~/Scripts/screenshot
+bindsym Super+Shift+S exec "~/Scripts/screenshot -r"
+bindsym Super+L       exec swaylock
+bindsym Super+R       exec swaymsg reload
+bindsym Super+Shift+E exec ~/Scripts/powermenu

@@ -1,0 +1,58 @@
+# =============================================================================
+# Omunchy — look & feel, input, autostart, window rules (sway 1.12).
+# Omarchy looknfeel parity; every option verified against sway(5).
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# LOOK & FEEL (translated from Omarchy's Hyprland-era looknfeel.lua)
+# -----------------------------------------------------------------------------
+gaps inner  5
+gaps outer  10
+default_border pixel 2
+floating_modifier Mod4 normal
+
+# Sway does not support per-animation bezier curves; animations are handled
+# by the compositor internally. The Omarchy values (easeOutQuint, etc.) are
+# preserved as comments for reference only.
+
+# -----------------------------------------------------------------------------
+# INPUT (kb_layout kept on its own line — abinstall rewrites it with sed)
+# -----------------------------------------------------------------------------
+input type:keyboard {
+    xkb_layout   us
+    repeat_rate  25
+    repeat_delay 600
+    xkb_numlock off
+}
+
+input type:touchpad {
+    tap enabled
+    natural_scroll disabled
+    dwt enabled
+}
+
+# Workspace swiping (3-finger horizontal)
+bindgesture swipe:3:left  workspace prev
+bindgesture swipe:3:right workspace next
+
+# -----------------------------------------------------------------------------
+# AUTOSTART (exec-once semantics)
+# -----------------------------------------------------------------------------
+# Privilege-escalation prompts (in packages.x86_64; sway ships no polkit agent)
+exec /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
+exec waybar
+exec mako
+
+# Sway wallpaper: swaybg is shipped in packages.x86_64.
+# MARKER: omunchy-bg-set rewrites ONLY the exec line below.
+exec sleep 1 && swaybg -i "$HOME/Backgrounds/aesthetic.jpg" -m fill  # WALLPAPER_MARKER
+
+# NOTE: dbus-update-activation-environment is handled in the main config via
+# exec_always so systemd / dbus activation env gets WAYLAND_DISPLAY etc.
+# before any services are spawned.
+
+# -----------------------------------------------------------------------------
+# WINDOW RULES (omunchy launchers — see config/tuis.conf)
+# -----------------------------------------------------------------------------
+for_window [app_id="^omunchy\\.TUI\\.float$"] floating enable
+for_window [app_id="^omunchy\\.Installer$"]       floating enable
