@@ -1,5 +1,12 @@
 # Omunchy bar research: what can mimic Omarchy's bar, without a shell daemon?
 
+> **2026-09-25: note.** Since the sway port the waybar modules in use are
+> the sway equivalents (`sway/workspaces`, `sway/language`) — same
+> in-tree native-module situation as the hyprland/* modules analysed
+> below. Hyprland references describe Omarchy's own bar and the modules
+> considered during the original research.
+
+Researched 2026-09-24.
 Researched 2026-09-24. Companion to `docs/omarchy-parity.md` — this doc stress-tests
 parity-table row 12 ("keep waybar, no IPC parity needed").
 

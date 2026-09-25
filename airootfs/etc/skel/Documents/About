@@ -4,7 +4,7 @@ ArchBang: About
 What is ArchBang?
 ------------------
 
-ArchBang is a lightweight, Arch Linux-based live ISO built around Hyprland, a Wayland
+ArchBang is a lightweight, Arch Linux-based live ISO built around sway, a Wayland
 compositor, with a warm brown and yellow palette.
 
 
@@ -21,36 +21,36 @@ MrGreen has maintained ArchBang for years — through window manager changes, th
 Wayland, and the shift to labwc.
 
 ArchBang is MrGreen's personal spin: the same base, the same installer, but built around
-Hyprland and a warm dark theme rather than the stock ArchBang configuration.
+sway and a warm dark theme rather than the stock ArchBang configuration.
 
 
 Design Philosophy
 -----------------
 
   * Lightweight - Minimal base, runs well on modest hardware
-  * Wayland-first - Hyprland compositor, no Xorg
+  * Wayland-first - sway compositor, no Xorg
   * Coherent - Warm brown/yellow palette throughout (waybar, mako, rofi)
   * Arch underneath - Full pacman access, rolling release
 
 
-Why Hyprland?
--------------
+Why sway?
+---------
 
-Hyprland is a Wayland compositor providing a tiling and floating hybrid layout with
-dynamic tiling, animations and effects. It ships in the official Arch repositories,
-so no AUR packages are needed for a working desktop.
+sway is a Wayland compositor with an i3-compatible tiling layout. It ships in
+the official Arch repositories, so no AUR packages are needed for a working
+desktop, and it is among the leanest full compositors on RAM.
 
 
 Features
 --------
 
 Desktop
-  - Hyprland Wayland compositor
+  - sway Wayland compositor
   - waybar panel with workspace indicators
   - foot terminal
   - rofi launcher (Super+Space)
   - mako notification daemon
-  - hyprpaper wallpaper
+  - swaybg wallpaper
 
 Installation
   - Menu-driven installer (abinstall)

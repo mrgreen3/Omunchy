@@ -1,5 +1,12 @@
 # waybar 0.15.0 × Hyprland 0.56.2 (Lua config) — IPC compatibility matrix
 
+> **2026-09-25: superseded.** Omunchy now uses sway with waybar's
+> `sway/workspaces` module; the Lua-parser click breakage documented here
+> (hyprland/workspaces pill clicks) does not exist on sway — the sway
+> module takes the standard AModule click path. Kept as a historical
+> record of the Hyprland era.
+
+Audited 2026-09-25
 Audited 2026-09-25 against waybar tag `0.15.0` (Arch extra 0.15.0-3) and
 Hyprland `0.56.2` (source at `/tmp/hyprland-src`, commit efb50993).
 Method: every socket1 string waybar (or our scripts) sends was replayed through

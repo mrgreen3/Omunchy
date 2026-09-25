@@ -1,6 +1,6 @@
  ArchBang Guide
 
-Welcome to ArchBang, a lightweight Arch-based Wayland live ISO built around Hyprland.
+Welcome to ArchBang, a lightweight Arch-based Wayland live ISO built around sway.
 
 Note: Do not post ArchBang issues on the Arch Linux forums.
 
@@ -17,7 +17,7 @@ Network required for pacman or browser use in the live session.
 
 WORKSPACES AND LAYOUTS
 
-Hyprland arranges windows automatically in a tiling layout (dwindle).
+sway arranges windows automatically in a tiling layout.
 
 Switch workspaces with Super+1 through Super+9.
 Toggle a window between floating and tiling with Super+T.
@@ -61,7 +61,7 @@ Install:  sudo pacman -S <package-name>
 
 CONSOLE KEYBOARD LAYOUT
 
-The installer sets the raw tty console (rescue mode, before Hyprland starts) to
+The installer sets the raw tty console (rescue mode, before sway starts) to
 a "us" keymap regardless of your location — only the desktop keymap
 is set to match where you are. To change the console layout afterwards:
 
@@ -83,7 +83,7 @@ If you remove the unused one after installation, update your bootloader config
 
 INTEL GRAPHICS
 
-ArchBang uses Wayland with Hyprland, which relies on kernel modesetting via Mesa.
+ArchBang uses Wayland with sway, which relies on kernel modesetting via Mesa.
 No additional Intel drivers needed — built-in kernel drivers handle acceleration.
 
 ---

@@ -1,5 +1,13 @@
 # Omarchy → Omunchy parity & bloat analysis
 
+> **2026-09-25: superseded.** Omunchy now runs sway, not Hyprland — see
+> `SWAY_PORT.md` and the `sway-port` branch. This file is kept as the
+> historical decision record: §4 documents why Hyprland was chosen at the
+> time (Omarchy parity), and everything below is a record of that
+> decision era. Hyprland references below describe **Omarchy's** config
+> (which is Hyprland-based) and are correct as written.
+
+Researched 2026-09-24
 Researched 2026-09-24 from `github.com/omacom/omarchy` @ branch `quattro`
 (`main` 404s). Raw files via `https://raw.githubusercontent.com/omacom/omarchy/quattro/<path>`,
 listings via `https://api.github.com/repos/omacom/omarchy/contents/<path>?ref=quattro`.

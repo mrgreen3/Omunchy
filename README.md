@@ -6,14 +6,14 @@ Omunchy is an all-in installer script — not a standalone distro — that layer
 
 ## Stack
 
-- **Compositor:** [Hyprland](https://hypr.land) — from the official Arch repos (MangoWC was the only AUR dep; the whole stack is official-repo now)
+- **Compositor:** [sway](https://swaywm.org) — from the official Arch repos (i3-compatible Wayland; whole stack official-repo)
 - **Bar:** Waybar
 - **Launcher:** Rofi
 - **Notifications:** Mako
 - **Terminal:** foot
 - **Web apps:** Chromium, locked down, using the `--app=` / PWA install mechanism for per-app windows rather than a full browser
 
-This stack was chosen specifically to avoid the RAM overhead of a full shell daemon (e.g. quickshell) on constrained hardware such as Chromebooks. Hyprland costs ~150 MB of idle RAM over a minimal compositor — accepted deliberately for exact Omarchy behaviour (hyprctl, animations, effects); everything else stays file-configured with no daemons.
+This stack was chosen specifically to avoid the RAM overhead of a full shell daemon (e.g. quickshell) on constrained hardware such as Chromebooks. sway is among the leanest full Wayland compositors (idle desktop within ~tens of MB of a bare compositor); everything else stays file-configured with no daemons. The Omarchy-exact animation set was dropped — see `SWAY_PORT.md`.
 
 ## Features
 
@@ -39,7 +39,7 @@ omunchy sync                                                 # batch from config
 omunchy theme set omunchy-light                              # switch colour theme
 omunchy bg set ~/Backgrounds/kanagawa.jpg                    # switch wallpaper
 omunchy menu                                                 # rofi launcher menu
-omunchy hypr reload                                          # hyprctl reload
+omunchy sway reload                                         # swaymsg reload
 omunchy update                                               # reflector + pacman -Syu + orphans
 omunchy help                                                 # everything, with examples
 ```
@@ -64,15 +64,15 @@ omunchy help                                                 # everything, with 
 - Web app entries launch through `bin/omunchy-launch-webapp` (Chromium `--app=` mode,
   Wayland), so there is one place to later add launch-or-focus behaviour.
 - TUI entries run via `xdg-terminal-exec` with app-id `omunchy.TUI.float` /
-  `omunchy.TUI.tile`, so Hyprland window rules can target floating/tiled TUIs
-  (the shipped `binds.lua` floats `omunchy.TUI.float`).
+  `omunchy.TUI.tile`, so sway window rules can target floating/tiled TUIs
+  (the shipped `looknfeel` floats `omunchy.TUI.float`).
 - `omunchy theme set <name>` applies a theme from `config/themes/<name>.conf` —
   plain shell-sourceable `NAME=hex` fragments, no Lua, no per-app theming —
-  rewriting the colour lines in foot/waybar/mako/rofi configs and the Hyprland
-  border colours, then restarting the bar and reloading Hyprland. Two ship:
+  rewriting the colour lines in foot/waybar/mako/rofi configs and the sway
+  border colours, then restarting the bar and reloading sway. Two ship:
   `omunchy-dark` (default, warm dark like ArchBang) and `omunchy-light`.
-- `omunchy bg set <image>` rewrites the hyprpaper exec line (WALLPAPER_MARKER)
-  in `~/.config/hypr/looknfeel.lua` and applies it to the running session.
+- `omunchy bg set <image>` rewrites the swaybg exec line (WALLPAPER_MARKER)
+  in `~/.config/sway/looknfeel` and applies it to the running session.
 - `omunchy update` refreshes mirrors with reflector (best-rated 5, skipped when
   offline), runs `pacman -Syu`, updates AUR packages via yay only when any are
   installed, and prompts to prune orphans — guarded by a lock so two updates
@@ -80,11 +80,11 @@ omunchy help                                                 # everything, with 
 
 ## Keybindings
 
-The shipped `~/.config/hypr/hyprland.lua` (+ `binds.lua`/`looknfeel.lua`/
-`theme.lua` modules) mirrors Omarchy's bindings as Hyprland 0.56 Lua:
-`Super+Return` foot, `Super+Space` rofi, `Super+Q` close,
-`Super+F` fullscreen, `Super+T` float, `Super+V` split, `Super+P` screenshot,
-`Super+L` hyprlock, `Super+Shift+E` power menu, `Super+1..9` workspaces,
+The shipped `~/.config/sway/config` (+ `binds`/`looknfeel`/`theme` includes)
+mirrors Omarchy's bindings as i3-style sway config: `Super+Return` foot,
+`Super+Space` rofi, `Super+Q` close, `Super+F` fullscreen, `Super+T` float,
+`Super+V` split, `Super+P` screenshot, `Super+L` swaylock,
+`Super+Shift+E` power menu, `Super+1..9` workspaces,
 XF86 audio/brightness via pamixer/brightnessctl. The full list lives in
 `Documents/Keybindings` (`Super+K` shows it in rofi).
 
@@ -100,37 +100,33 @@ bin/omunchy-tui-remove         remove a TUI launcher (fzf or numbered picker)
 bin/omunchy-webapp-remove-all  remove every omunchy web app launcher
 bin/omunchy-tui-remove-all     remove every omunchy TUI launcher
 bin/omunchy-launch-webapp      Chromium --app= launcher used by web app entries
-bin/omunchy-hypr-reload        reload the Hyprland session config
+bin/omunchy-sway-reload        reload the sway session config
 bin/omunchy-theme-set          switch the desktop colour theme
-bin/omunchy-bg-set             switch the wallpaper (rewrites the hyprpaper line)
+bin/omunchy-bg-set             switch the wallpaper (rewrites the swaybg line)
 bin/omunchy-menu               rofi launcher menu (apps / web apps / TUIs / keybinds / power)
 bin/omunchy-update             mirrors -> pacman -> yay -> orphan prune, lock-guarded
 config/webapps.conf            Name|URL|Icon per line
 config/tuis.conf               Name|Command|Style|Icon per line
 config/themes/*.conf           theme palettes (omunchy-dark, omunchy-light)
 install.sh                     bootstrap: base stack + configs + sync
-airootfs/                      archbang-derived archiso skeleton (Hyprland skel config included)
+airootfs/                      archbang-derived archiso skeleton (sway skel config included)
 docs/omarchy-parity.md         Omarchy feature parity analysis and decisions
 .reference/                    upstream Omarchy scripts kept for reference (not committed)
 ```
 
 ## Known issues
 
-- **Workspace pill left-click is broken with waybar 0.15.0 + Hyprland 0.56
-  (Lua config).** waybar's click handler hardcodes legacy hyprlang dispatch
-  strings (`dispatch workspace N`, `dispatch togglespecialworkspace …`) that
-  Hyprland's socket1 rewrites to invalid Lua under the Lua parser — the click
-  is a no-op and Hyprland logs a syntax error. Scroll on the pills
-  (`on-scroll-up/down`), keyboard binds, urgent highlighting, and window
-  counts all work; `Super+1..9` and `Super+Tab` cover navigation. Fixed
-  upstream on waybar master (configProvider-aware `IPC::dispatch` that
-  translates to `hl.dsp.*`), ships with waybar 0.16.0 — nothing to fix here;
-  see `docs/waybar-hyprland-compat.md` for the full audit matrix. Do not
-  patch/pin waybar for this (lean rule).
+- **Workspace pill left-click:** fixed by the sway port — the waybar 0.15
+  breakage (`hyprland/workspaces` + Hyprland's Lua config parser, see
+  `docs/waybar-hyprland-compat.md`) does not exist on sway; the
+  `sway/workspaces` module takes the standard click path. Scroll on the
+  pills, keyboard binds, urgent highlighting, and window counts all work;
+  `Super+1..9` and `Super+Tab` cover navigation. Full audit matrix in that
+  doc.
 
 ## Status
 
-Entry generation, interactive installers, removal, sync, the Hyprland session,
+Entry generation, interactive installers, removal, sync, the sway session,
 theme/wallpaper switching, the update flow, and the base-stack installer are
 working. Dispatcher aliases/group descriptions are a possible next step.
 
