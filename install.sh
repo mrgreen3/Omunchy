@@ -4,13 +4,13 @@
 #
 # Layers the desktop onto an existing ArchBang install:
 #   1. installs the package stack from packages.x86_64 — everything including
-#      the desktop stack (hyprland included) is official-repo now (the last
+#      the desktop stack (sway included) is official-repo now (the last
 #      AUR leftover, networkmanager-dmenu-git, was swapped for the extra/
 #      networkmanager-dmenu package: same binary, same config); AUR entries
 #      would still go through yay when they exist
-#   2. copies the skel configs (foot/waybar/rofi/mako/hypr), backing up any
-#      existing ones — the Hyprland side is Lua (hyprland.lua + modules,
-#      see airootfs/etc/skel/.config/hypr/)
+#   2. copies the skel configs (foot/waybar/rofi/mako/sway), backing up any
+#      existing ones — the sway config is i3-style (config + binds + looknfeel
+#      + theme, see airootfs/etc/skel/.config/sway/)
 #   3. installs the omunchy CLI into ~/Scripts (on PATH via .bashrc, and
 #      the archbang-menu app entry lives there) so keybinds that call
 #      ~/Scripts/... and `omunchy <verb>` both resolve
@@ -59,7 +59,7 @@ install_base_stack() {
 
 install_configs() {
     local app src dest backup
-    for app in foot waybar rofi mako hypr omunchy; do
+    for app in foot waybar rofi mako sway omunchy; do
         src="$SKEL_DIR/.config/$app"
         [[ -d $src ]] || continue
         dest="$HOME/.config/$app"
@@ -71,7 +71,7 @@ install_configs() {
         cp -r "$src" "$dest"
         echo "[omunchy] Installed configs: ~/.config/$app"
     done
-    # The shipped looknfeel.lua sets this wallpaper on hyprland start.
+    # The shipped looknfeel sets this wallpaper on sway start.
     if [[ ! -e $HOME/Backgrounds/aesthetic.jpg && -f $SKEL_DIR/Backgrounds/aesthetic.jpg ]]; then
         mkdir -p "$HOME/Backgrounds"
         cp "$SKEL_DIR/Backgrounds/aesthetic.jpg" "$HOME/Backgrounds/"

@@ -28,15 +28,12 @@ ttf-jetbrains-mono-nerd
 foot
 xdg-terminal-exec
 
-## === WAYLAND DESKTOP ENVIRONMENT (hyprland stack, all from official repos) ===
-hyprland
-hyprland-guiutils
-hyprpicker
-hyprsunset
-hyprlock
-hyprpaper
-uwsm
-xdg-desktop-portal-hyprland
+## === WAYLAND DESKTOP ENVIRONMENT (sway stack, all from official repos) ===
+sway
+swayidle
+sway-contrib
+wlsunset
+xdg-desktop-portal-wlr
 swaybg
 waybar
 xorg-xwayland
