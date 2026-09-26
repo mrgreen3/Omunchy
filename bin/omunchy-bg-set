@@ -2,7 +2,7 @@
 
 # omunchy:summary=Set the desktop wallpaper image (rewrites the swaybg exec line)
 # omunchy:args=<image-path>
-# omunchy:examples=omunchy bg set ~/Backgrounds/kanagawa.jpg
+# omunchy:examples=omunchy bg set ~/Backgrounds/sunset-lake.jpg
 
 set -euo pipefail
 

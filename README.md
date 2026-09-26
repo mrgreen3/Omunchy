@@ -38,7 +38,7 @@ omunchy webapp remove all                                    # bulk removal
 omunchy tui remove all                                       # bulk removal
 omunchy sync                                                 # batch from config/
 omunchy theme set omunchy-light                              # switch colour theme
-omunchy bg set ~/Backgrounds/kanagawa.jpg                    # switch wallpaper
+omunchy bg set ~/Backgrounds/sunset-lake.jpg                    # switch wallpaper
 omunchy menu                                                 # rofi launcher menu
 omunchy sway reload                                         # swaymsg reload
 omunchy update                                               # reflector + pacman -Syu + orphans
