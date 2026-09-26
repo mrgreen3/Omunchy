@@ -18,7 +18,8 @@
 
   "modules-left": [
     "custom/menu",
-    "sway/workspaces"
+    "sway/workspaces",
+    "mpris"
   ],
   "modules-center": [
     "custom/indicators",
@@ -33,8 +34,7 @@
     "backlight",
     "battery",
     "power-profiles-daemon",
-    "custom/power",
-    "mpris"
+    "custom/power"
   ],
 
   // omarchy.menu — rofi launcher (omunchy-menu handles apps/webapps/TUIs/power)
