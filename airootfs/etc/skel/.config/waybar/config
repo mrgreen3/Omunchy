@@ -21,7 +21,9 @@
     "sway/workspaces"
   ],
   "modules-center": [
-    "custom/indicators",
+    "custom/dnd",
+    "custom/night",
+    "custom/awake",
     "clock",
     "custom/updates"
   ],
@@ -53,15 +55,30 @@
     "on-scroll-down": "swaymsg workspace prev_on_output"
   },
 
-  // omarchy.indicators — DnD / NightLight / Recording / StayAwake pills
-  "custom/indicators": {
+  // omarchy.indicators — DnD / NightLight / StayAwake: dim until on, click toggles
+  "custom/dnd": {
     "format": "{}",
-    "exec": "~/Scripts/indicators.sh",
+    "exec": "~/Scripts/indicators.sh state dnd",
     "return-type": "json",
     "interval": 5,
-    "on-click": "~/Scripts/indicators.sh toggle",
-    "on-click-right": "~/Scripts/indicators.sh toggle-night",
-    "tooltip": false
+    "signal": 8,
+    "on-click": "~/Scripts/indicators.sh toggle-dnd"
+  },
+  "custom/night": {
+    "format": "{}",
+    "exec": "~/Scripts/indicators.sh state night",
+    "return-type": "json",
+    "interval": 5,
+    "signal": 9,
+    "on-click": "~/Scripts/indicators.sh toggle-night"
+  },
+  "custom/awake": {
+    "format": "{}",
+    "exec": "~/Scripts/indicators.sh state awake",
+    "return-type": "json",
+    "interval": 5,
+    "signal": 10,
+    "on-click": "~/Scripts/indicators.sh toggle-awake"
   },
 
   // omarchy.clock — "dddd HH:mm" in Omarchy; long-form date on right-click

@@ -93,27 +93,32 @@ window#waybar {
 }
 
 /* ---------- Indicators ---------- */
-#custom-indicators {
+/* Ghost icons: always present but faint; lit when the mode is on, brighter on
+   hover; click toggles the mode. */
+#custom-dnd,
+#custom-night,
+#custom-awake {
     color: @fg;
-    padding: 0 8px;
+    padding: 0 6px;
+    opacity: 0.3;
 }
 
-/* Active states (DnD on, night light on, recording, stay awake) */
-#custom-indicators.dnd {
+#custom-dnd.active,
+#custom-night.active {
     color: @yellow;
+    opacity: 1;
 }
 
-#custom-indicators.night {
-    color: @yellow;
+#custom-awake.active {
+    color: @accent;
+    opacity: 1;
 }
 
-#custom-indicators.recording {
-    /* Omarchy: recording/attention colour is the red token */
-    color: @red;
-}
-
-#custom-indicators.awake {
-    color: @fg;
+#custom-dnd:hover:not(.active),
+#custom-night:hover:not(.active),
+#custom-awake:hover:not(.active) {
+    color: @accent;
+    opacity: 1;
 }
 
 /* ---------- Clock ---------- */

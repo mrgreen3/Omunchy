@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# omunchy:summary=Waybar indicators: DnD / night light / recording / stay awake (JSON for the bar; `toggle` flips DnD + night light)
-# omunchy:args=[toggle|toggle-night|--help]
-# omunchy:examples=omunchy indicators-toggle
+# omunchy:summary=Waybar indicators: DnD / night light / stay awake (one JSON state per mode; click toggles it)
+# omunchy:args=[state <mode>|toggle|toggle-dnd|toggle-night|toggle-awake|--help]
+# omunchy:examples=omunchy indicators-toggle toggle-night
 
 # Omarchy quattro omarchy.indicators widget, waybar edition
 # (docs/bar-research.md §5). Emits one JSON object for waybar's
@@ -83,6 +83,31 @@ stayawake_toggle() {
     fi
 }
 
+# waybar re-runs a module's exec on SIGRTMIN+N ("signal": N in the config), so a
+# click updates the icon immediately instead of waiting for the poll interval.
+SIG_DND=8
+SIG_NIGHT=9
+SIG_AWAKE=10
+refresh() { pkill -RTMIN+"$1" waybar >/dev/null 2>&1 || true; }
+
+# One waybar module per mode: dim ("inactive") until the mode is on, then lit
+# ("active"). style.css turns inactive into a faint icon that brightens on hover.
+state() { # $1 = dnd|night|awake|recording
+    local icon label on=1
+    case $1 in
+    dnd) icon=$ICON_DND label="Do Not Disturb"; dnd_on && on=0 ;;
+    night) icon=$ICON_NIGHT label="Night light"; night_on && on=0 ;;
+    awake) icon=$ICON_AWAKE label="Stay awake"; awake_on && on=0 ;;
+    recording) icon=$ICON_REC label="Screen recording"; recording_on && on=0 ;;
+    *) return 1 ;;
+    esac
+    if ((on == 0)); then
+        printf '{"text": "%s", "tooltip": "%s: on (click to turn off)", "class": "active"}\n' "$icon" "$label"
+    else
+        printf '{"text": "%s", "tooltip": "%s: off (click to turn on)", "class": "inactive"}\n' "$icon" "$label"
+    fi
+}
+
 # --- output -------------------------------------------------------------------
 
 render() {
@@ -130,17 +155,32 @@ render() {
 }
 
 case ${1:-} in
-toggle)
+state)
+    state "${2:-}"
+    exit
+    ;;
+toggle | toggle-dnd)
     toggle_dnd
+    refresh "$SIG_DND"
+    exit 0
     ;;
 toggle-night)
     nightlight_toggle
+    refresh "$SIG_NIGHT"
+    exit 0
+    ;;
+toggle-awake)
+    stayawake_toggle
+    refresh "$SIG_AWAKE"
+    exit 0
     ;;
 --help | -h)
-    echo "Usage: indicators.sh [toggle|toggle-night]"
-    echo "  (no args)  print waybar JSON state"
-    echo "  toggle     toggle do-not-disturb (mako)"
-    echo "  toggle-night  toggle night light (wlsunset 4000K)"
+    echo "Usage: indicators.sh [state <mode>|toggle-dnd|toggle-night|toggle-awake]"
+    echo "  state <mode>   print waybar JSON for dnd | night | awake | recording"
+    echo "  toggle-dnd     toggle do-not-disturb (mako); 'toggle' is an alias"
+    echo "  toggle-night   toggle night light (wlsunset 4000K)"
+    echo "  toggle-awake   toggle stay-awake (idle inhibit, 8 h max)"
+    echo "  (no args)      print the combined JSON of all active modes"
     exit 0
     ;;
 esac
