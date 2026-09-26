@@ -86,7 +86,7 @@ The shipped `~/.config/sway/config` (+ `binds`/`looknfeel`/`theme` includes)
 mirrors Omarchy's bindings as i3-style sway config: `Super+Return` foot,
 `Super+Space` rofi, `Super+Q` close, `Super+F` fullscreen, `Super+T` float,
 `Super+V` split, `Super+P` screenshot, `Super+L` swaylock,
-`Super+Shift+E` power menu, `Super+1..9` workspaces,
+`Super+Shift+E` power menu, `Super+1..5` workspaces,
 XF86 audio/brightness via pamixer/brightnessctl. The full list lives in
 `Documents/Keybindings` (`Super+K` shows it in rofi).
 
@@ -124,7 +124,7 @@ docs/omarchy-parity.md         Omarchy feature parity analysis and decisions
   `docs/waybar-hyprland-compat.md`) does not exist on sway; the
   `sway/workspaces` module takes the standard click path. Scroll on the
   pills, keyboard binds, urgent highlighting, and window counts all work;
-  `Super+1..9` and `Super+Tab` cover navigation. Full audit matrix in that
+  `Super+1..5` and `Super+Tab` cover navigation. Full audit matrix in that
   doc.
 
 ## Status

@@ -19,7 +19,7 @@ WORKSPACES AND LAYOUTS
 
 sway arranges windows automatically in a tiling layout.
 
-Switch workspaces with Super+1 through Super+9.
+Switch workspaces with Super+1 through Super+5.
 Toggle a window between floating and tiling with Super+T.
 
 ---

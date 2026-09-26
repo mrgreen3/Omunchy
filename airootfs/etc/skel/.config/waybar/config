@@ -18,8 +18,7 @@
 
   "modules-left": [
     "custom/menu",
-    "sway/workspaces",
-    "mpris"
+    "sway/workspaces"
   ],
   "modules-center": [
     "custom/indicators",
@@ -34,6 +33,7 @@
     "backlight",
     "battery",
     "power-profiles-daemon",
+    "mpris",
     "custom/power"
   ],
 
@@ -123,7 +123,7 @@
 
   // omarchy.audio — pamixer toggle/scroll; pavucontrol as the mixer panel
   "pulseaudio": {
-    "format": "{icon} {volume:2}%",
+    "format": "{icon}",
     "format-muted": "󰝟",
     "format-icons": {
       "default": ["󰕿", "󰖀", "󰕾"]
@@ -178,8 +178,10 @@
 
   // omarchy.media (opt-in) — MPRIS now-playing; playerctl is a waybar dep
   "mpris": {
-    "format": "{player_icon} {dynamic}",
-    "format-paused": "{status_icon} {dynamic}",
+    "format": "{player_icon}",
+    "format-paused": "{status_icon}",
+    "tooltip-format": "{dynamic}",
+    "tooltip-format-paused": "Paused: {dynamic}",
     "player-icons": {
       "default": "󰏥",
       "chromium": "󰈹",
@@ -190,8 +192,7 @@
       "paused": "󰐊"
     },
     "dynamic-order": ["title", "artist"],
-    "max-length": 40,
     "interval": 5,
-    "tooltip": false
+    "tooltip": true
   }
 }

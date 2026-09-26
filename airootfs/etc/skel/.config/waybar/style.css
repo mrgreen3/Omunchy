@@ -56,7 +56,7 @@ window#waybar {
 }
 
 #workspaces button {
-    padding: 0 6px;
+    padding: 0 1px;
     margin: 0 1px;
     color: alpha(@fg, 0.5);
     background: transparent;
@@ -66,19 +66,30 @@ window#waybar {
     color: alpha(@fg, 0.8);
 }
 
+/* Highlight is a fixed-size centred background so it can be smaller than the
+   button (a button cannot be shorter than its text, margins would just shift it) */
 #workspaces button.focused {
-    color: @on-accent;
-    background: @accent;
+    color: @accent;
+    background-image: linear-gradient(@accent, @accent);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 14px 14px;
 }
 
 #workspaces button.urgent {
     color: @on-accent;
-    background: @red;
+    background-image: linear-gradient(@red, @red);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 14px 14px;
 }
 
 #workspaces button:hover:not(.focused) {
     color: @fg;
-    background: alpha(@fg, 0.08);
+    background-image: linear-gradient(alpha(@fg, 0.08), alpha(@fg, 0.08));
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 14px 14px;
 }
 
 /* ---------- Indicators ---------- */

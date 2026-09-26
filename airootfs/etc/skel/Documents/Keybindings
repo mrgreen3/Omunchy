@@ -40,8 +40,8 @@ Super + Shift + Tab      Previous Workspace
 WORKSPACES
 ───────────────────────
 
-Super + [1-9]           Switch to Workspace
-Super + Shift + [1-9]   Send Window to Workspace
+Super + [1-5]           Switch to Workspace
+Super + Shift + [1-5]   Send Window to Workspace
 
 
 MULTI-MONITOR
