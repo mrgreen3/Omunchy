@@ -1,6 +1,6 @@
-NAME="ArchBang"
-PRETTY_NAME="ArchBang"
-ID=archbang
+NAME="Omunchy"
+PRETTY_NAME="Omunchy"
+ID=omunchy
 ID_LIKE=arch
 BUILD_ID=rolling
 

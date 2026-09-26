@@ -1,10 +1,10 @@
-ArchBang: About
+Omunchy: About
 ================
 
-What is ArchBang?
+What is Omunchy?
 ------------------
 
-ArchBang is a lightweight, Arch Linux-based live ISO built around sway, a Wayland
+Omunchy is a lightweight, Arch Linux-based live ISO built around sway, a Wayland
 compositor, with a warm brown and yellow palette.
 
 
@@ -20,7 +20,7 @@ ArchBang emerged from that community, built on Arch Linux's rolling release foun
 MrGreen has maintained ArchBang for years — through window manager changes, the move to
 Wayland, and the shift to labwc.
 
-ArchBang is MrGreen's personal spin: the same base, the same installer, but built around
+Omunchy is MrGreen's personal spin: the same base, the same installer, but built around
 sway and a warm dark theme rather than the stock ArchBang configuration.
 
 
@@ -64,8 +64,8 @@ Getting Help
 
 For Arch-related questions: https://wiki.archlinux.org
 
-ArchBang is not affiliated with Arch Linux.
+Omunchy is not affiliated with Arch Linux.
 
 ---
 
-Copyright 2025 ArchBang
+Copyright 2025 Omunchy

@@ -1,4 +1,4 @@
-" Basic Vim config for ArchBang
+" Basic Vim config for Omunchy
 syntax on
 set number
 set showmode

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Abinstall ArchBang installer
+# Abinstall Omunchy installer
 # Based on lilo fifo scripts, created by helmuthdu (helmuthdu[at]gmail[dot]com)
 # Contribution: flexiondotorg
 
@@ -164,7 +164,7 @@ fi
   } #}}}
   check_archiso() { #{{{
     if [[ ! -d "/run/archiso/airootfs" ]]; then
-      error_msg "ERROR! Not running from ArchBang live environment"
+      error_msg "ERROR! Not running from Omunchy live environment"
     fi
   } #}}}
   read_input() { #{{{
@@ -1160,9 +1160,9 @@ copy_progress() {
 }
 
 #}}}
-#INSTALL ARCHBANG {{{
-install_archbang(){
-  print_title "INSTALL ARCHBANG"
+#INSTALL OMUNCHY {{{
+install_omunchy(){
+  print_title "INSTALL OMUNCHY"
   print_info "Installing please wait..."
 
   # Check if running from live environment
@@ -1191,8 +1191,8 @@ install_archbang(){
   # either quote style and any $HOME/ or absolute dir prefix.
   WALLPAPER_NAME=$(sed -n "s#.*swaybg -i [\"'][^\"']*/\([^\"']*\)[\"'].*#\1#p" "${MNT}/etc/skel/.config/sway/looknfeel" 2>/dev/null | head -1)
   if [[ -n "$WALLPAPER_NAME" && -f "${MNT}/etc/skel/Backgrounds/${WALLPAPER_NAME}" ]]; then
-    mkdir -p "${MNT}/usr/share/backgrounds/archbang"
-    cp -a "${MNT}/etc/skel/Backgrounds/${WALLPAPER_NAME}" "${MNT}/usr/share/backgrounds/archbang/current"
+    mkdir -p "${MNT}/usr/share/backgrounds/omunchy"
+    cp -a "${MNT}/etc/skel/Backgrounds/${WALLPAPER_NAME}" "${MNT}/usr/share/backgrounds/omunchy/current"
   fi
 
   # Generate unique machine id
@@ -1260,7 +1260,7 @@ configure_hostname() {
     read -p "Hostname [ex: arch]: " host_name
   fi
 
-  host_name="${host_name:-archbang}"
+  host_name="${host_name:-omunchy}"
 
   print_info "Using hostname: ${host_name}"
   echo "${host_name}" > "${MNT}/etc/hostname"
@@ -1377,7 +1377,7 @@ EOF
     # gtkgreet's session dropdown reads this flat list, not .desktop files
     echo "sway" > ${MNT}/etc/greetd/environments
 
-    # gtkgreet.css is not written here — already copied by install_archbang and
+    # gtkgreet.css is not written here — already copied by install_omunchy and
     # kept current by the archbang-theme skill; writing it here would clobber that
 
     # GTK_THEME via /etc/environment so gtkgreet matches the desktop's adw-gtk3-dark
@@ -1608,7 +1608,7 @@ setup_user(){
 #}}}
 #FINISH {{{
 finish(){
-  print_title "ARCHBANG INSTALL COMPLETED..."
+  print_title "OMUNCHY INSTALL COMPLETED..."
   read_input_text "Reboot system"
   if [[ $OPTION == y ]]; then
     umount_partitions
@@ -1620,20 +1620,20 @@ finish(){
 
 #WELCOME SCREEN {{{
 welcome_screen(){
-  print_title "Welcome to ArchBang!"
+  print_title "Welcome to Omunchy!"
 
-  echo -e "${Bold}What is ArchBang?${Reset}"
+  echo -e "${Bold}What is Omunchy?${Reset}"
   echo -e "\tArch Linux with the sway Wayland compositor."
   echo -e "\tA lean, keyboard-driven Arch-based live ISO.\n"
 
   echo -e "${Bold}System Requirements:${Reset}"
   echo -e "\t✓ 20GB+ free disk space"
   echo -e "\t✓ 2GB+ RAM"
-  echo -e "\t✓ Booted from ArchBang live ISO\n"
+  echo -e "\t✓ Booted from Omunchy live ISO\n"
 
   echo -e "${Bold}Installation Steps (8 total):${Reset}"
   echo -e "\t1. Partition your disk (Default, LVM, or LVM+LUKS)"
-  echo -e "\t2. Install ArchBang system files"
+  echo -e "\t2. Install Omunchy system files"
   echo -e "\t3. Set hostname"
   echo -e "\t4. Configure timezone & mirrors"
   echo -e "\t5. Set locale & language"
@@ -1716,7 +1716,7 @@ check_trim
 welcome_screen
 
 run_step 1 "Partition Scheme"        umount_partitions create_partition_scheme format_partitions
-run_step 2 "Install ArchBang"        install_archbang configure_fstab configure_mkinitcpio configure_greeter
+run_step 2 "Install Omunchy"        install_omunchy configure_fstab configure_mkinitcpio configure_greeter
 run_step 3 "Hostname"                configure_hostname
 run_step 4 "Location"                select_location configure_timezone configure_hardwareclock configure_mirrors
 run_step 5 "Locale"                  select_language configure_locale

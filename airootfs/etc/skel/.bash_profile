@@ -1,5 +1,5 @@
 #!/bin/bash
-# ArchBang login shell configuration
+# Omunchy login shell configuration
 # Starts sway (Wayland compositor, i3-compatible)
 
 . $HOME/.bashrc
