@@ -138,7 +138,7 @@
     "on-click": "networkmanager_dmenu"
   },
 
-  // omarchy.audio — pamixer toggle/scroll; pavucontrol as the mixer panel
+  // omarchy.audio — pamixer toggle/scroll
   "pulseaudio": {
     "format": "{icon}",
     "format-muted": "󰝟",
@@ -146,7 +146,6 @@
       "default": ["󰕿", "󰖀", "󰕾"]
     },
     "on-click": "pamixer -t",
-    "on-click-middle": "pavucontrol",
     "on-scroll-up": "pamixer -i 5",
     "on-scroll-down": "pamixer -d 5",
     "tooltip-format": "{desc}"
