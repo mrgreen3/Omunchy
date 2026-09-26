@@ -20,7 +20,7 @@ This stack was chosen specifically to avoid the RAM overhead of a full shell dae
 
 Pattern-for-pattern with Omarchy (see `docs/omarchy-parity.md` for the full 42-row analysis):
 
-- **Kept:** the metadata-header CLI dispatcher, webapp/TUI installers, `sync`, the bar/launcher/notification apps as plain configs, grim+slurp screenshots, the keybind-cheatsheet doc, thunar, btop/fastfetch, adw-gtk theming.
+- **Kept:** the metadata-header CLI dispatcher, webapp/TUI installers, `sync`, the bar/launcher/notification apps as plain configs, grim+slurp screenshots, the keybind-cheatsheet doc, thunar, fastfetch, adw-gtk theming.
 - **Lean replacements:** a two-file theme system + wallpaper switcher instead of Omarchy's 34 theme commands, a rofi menu instead of the quickshell menu daemon, a one-script update (reflector → pacman → yay → orphan prune) instead of the 22-cmd update system with snapper/migrations/channels.
 - **Stripped:** Omarchy's branded extras, per-app theming, protocol handlers, first-boot provisioning, plymouth/limine/snapper, plugin ecosystem, release channels — the CLI verb shape is inherited, the bloat is not.
 

@@ -2,11 +2,6 @@
 pipewire
 pipewire-pulse
 wireplumber
-cmus
-xmms2
-libmad
-flac
-faad2
 
 ## === ARCHIVE TOOLS ===
 zip
@@ -19,7 +14,6 @@ pamixer
 pavucontrol
 polkit-gnome
 xdg-desktop-portal-gtk
-btop
 noto-fonts
 noto-fonts-emoji
 ttf-jetbrains-mono-nerd
@@ -31,7 +25,6 @@ xdg-terminal-exec
 ## === WAYLAND DESKTOP ENVIRONMENT (sway stack, all from official repos) ===
 sway
 swayidle
-sway-contrib
 wlsunset
 xdg-desktop-portal-wlr
 swaybg
@@ -83,20 +76,16 @@ ttf-dejavu
 ## === SYSTEM MONITORING ===
 dgop
 fastfetch
-laptop-detect
 
 ## === DISK & PARTITION TOOLS ===
 gparted
 parted
 gptfdisk
-ddrescue
-testdisk
 ntfs-3g
 
 ## === NETWORK MANAGEMENT ===
 networkmanager
 networkmanager-dmenu
-usb_modeswitch
 
 ## === DESKTOP UTILITIES ===
 polkit
@@ -104,7 +93,6 @@ libsecret
 xdg-user-dirs
 
 ## === SYSTEM TOOLS ===
-dialog
 sudo
 fontconfig
 kbd
@@ -119,7 +107,6 @@ eza
 
 ## === MEDIA APPLICATIONS ===
 chromium
-imv
 
 ## === BUILD & DEVELOPMENT TOOLS ===
 squashfs-tools
