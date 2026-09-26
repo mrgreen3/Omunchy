@@ -6,8 +6,8 @@
 # -----------------------------------------------------------------------------
 # LOOK & FEEL (translated from Omarchy's Hyprland-era looknfeel.lua)
 # -----------------------------------------------------------------------------
-gaps inner  5
-gaps outer  5
+gaps inner  3
+gaps outer  3
 default_border pixel 2
 floating_modifier Mod4 normal
 

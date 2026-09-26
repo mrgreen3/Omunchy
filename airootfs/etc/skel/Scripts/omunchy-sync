@@ -74,56 +74,16 @@ sync_tuis() {
     done <"$TUIS_CONF"
 }
 
-# Bundled launcher menu entries: "Add Web App" / "Add TUI" run the interactive
-# installers from the app launcher (emulates Omarchy's install.webapp/tui menu
-# items). The installer wraps itself in the best available terminal, with an
-# absolute path since the session PATH cannot resolve ~/.local/bin.
-detect_terminal() {
-    # foot first: xdg-terminal-exec drops --app-id, so the omunchy.Installer
-    # float rule would not match.
-    if command -v foot >/dev/null 2>&1; then
-        printf 'foot --app-id=omunchy.Installer -e'
-    elif command -v xdg-terminal-exec >/dev/null 2>&1; then
-        printf 'xdg-terminal-exec --app-id=omunchy.Installer -e'
-    elif command -v alacritty >/dev/null 2>&1; then
-        printf 'alacritty -e'
-    elif command -v kitty >/dev/null 2>&1; then
-        printf 'kitty -e'
-    else
-        return 1
-    fi
-}
-
-install_menu_entries() {
-    local APPS_DIR="$HOME/.local/share/applications"
-    mkdir -p "$APPS_DIR"
-    local term
-    if ! term=$(detect_terminal); then
-        echo "[omunchy] No terminal emulator found, skipping Add Web App / Add TUI menu entries"
-        return 0
-    fi
-    local spec label icon
-    for spec in "webapp:omunchy-webapp-install:Add Web App:list-add" "tui:omunchy-tui-install:Add TUI:utilities-terminal"; do
-        local kind script label icon out
-        IFS=: read -r kind script label icon <<<"$spec"
-        local out="$APPS_DIR/omunchy-add-$kind.desktop"
-        cat >"$out" <<EOF
-[Desktop Entry]
-Version=1.0
-Name=$label
-Exec=$term $HOME/.local/bin/$script
-Terminal=false
-Type=Application
-Icon=$icon
-StartupNotify=false
-Categories=Utility;
-EOF
-        echo "[omunchy] Menu entry: $out"
-    done
+# Earlier versions generated "Add Web App" / "Add TUI" launcher entries that
+# cluttered the app menu; remove any left over. Use `omunchy webapp install` /
+# `omunchy tui install` from a terminal to add new ones.
+remove_old_menu_entries() {
+    rm -f "$HOME/.local/share/applications/omunchy-add-webapp.desktop" \
+        "$HOME/.local/share/applications/omunchy-add-tui.desktop"
 }
 
 link_bin
-install_menu_entries
+remove_old_menu_entries
 sync_webapps
 sync_tuis
 

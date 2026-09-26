@@ -51,10 +51,9 @@ omunchy help                                                 # everything, with 
   It also links `bin/omunchy-*` into `~/.local/bin` so `Exec=` references resolve.
   Missing icons are fetched from the site's favicon (apple-touch-icon → well-known
   path → Google favicon service) with a generic icon as last resort.
-- `omunchy sync` also installs two launcher menu entries — **Add Web App** and
-  **Add TUI** — that run the interactive installers in a terminal (emulating
-  Omarchy's install.webapp/install.tui menu items), using the best available
-  terminal emulator (xdg-terminal-exec, foot, alacritty, or kitty).
+- New web apps and TUIs are added from a terminal with `omunchy webapp install`
+  and `omunchy tui install` (no app-menu entries for these; `omunchy sync`
+  removes the old "Add Web App" / "Add TUI" launchers if present).
 - `omunchy webapp remove` / `omunchy tui remove` mirror Omarchy's remove flow:
   they index the installed `omunchy-*` launchers, pick one (fzf, or a numbered
   list when fzf is absent), delete the `.desktop` and its omunchy-fetched icon,
@@ -94,7 +93,7 @@ XF86 audio/brightness via pamixer/brightnessctl. The full list lives in
 
 ```
 bin/omunchy                    dispatcher (emulates Omarchy's bin/omarchy)
-bin/omunchy-sync               batch-generate entries from config/ + link bins + menu entries
+bin/omunchy-sync               batch-generate entries from config/ + link bins
 bin/omunchy-webapp-install     create a web app launcher (interactive when run bare)
 bin/omunchy-tui-install        create a TUI launcher (interactive when run bare)
 bin/omunchy-webapp-remove      remove a web app launcher (fzf or numbered picker)
