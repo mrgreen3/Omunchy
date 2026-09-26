@@ -1186,8 +1186,10 @@ install_archbang(){
 
   # Copy the current wallpaper to a fixed path for greetd's login theme, before
   # /etc/skel is deleted later in this function. The WALLPAPER_MARKER line in
-  # looknfeel reads: … swaybg -i '<dir>/<file>' -m fill
-  WALLPAPER_NAME=$(sed -n "s#.*swaybg -i '[^ ]*/\([^']*\)'.*#\1#p" "${MNT}/etc/skel/.config/sway/looknfeel" 2>/dev/null | head -1)
+  # looknfeel reads: … swaybg -i "$HOME/<dir>/<file>" -m fill as shipped, or
+  # … swaybg -i '<abs>/<dir>/<file>' -m fill after omunchy bg set — accept
+  # either quote style and any $HOME/ or absolute dir prefix.
+  WALLPAPER_NAME=$(sed -n "s#.*swaybg -i [\"'][^\"']*/\([^\"']*\)[\"'].*#\1#p" "${MNT}/etc/skel/.config/sway/looknfeel" 2>/dev/null | head -1)
   if [[ -n "$WALLPAPER_NAME" && -f "${MNT}/etc/skel/Backgrounds/${WALLPAPER_NAME}" ]]; then
     mkdir -p "${MNT}/usr/share/backgrounds/archbang"
     cp -a "${MNT}/etc/skel/Backgrounds/${WALLPAPER_NAME}" "${MNT}/usr/share/backgrounds/archbang/current"
