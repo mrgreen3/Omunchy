@@ -4,8 +4,8 @@
 # Omarchy-parity bindings on the waybar/foot/mako/rofi stack. Reload:
 #   omunchy sway reload   (swaymsg reload)
 #
-# Split into modules via `include`; each file is an isolated scope, so a
-# typo in one file will not kill the whole config.
+# Split into modules via `include`. A bad line in an included file makes
+# `swaymsg reload` fail loudly with the file and line number.
 # =============================================================================
 
 # ---------------------------------------------------------------------------
