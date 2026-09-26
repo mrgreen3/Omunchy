@@ -19,7 +19,7 @@ window {
     background-color:   @bg;
     border:             2px;
     border-color:       @accent;
-    border-radius:      3px;
+    border-radius:      0px;
     width:              30%;
     padding:            12px;
 }
@@ -32,7 +32,7 @@ mainbox {
 
 inputbar {
     background-color:   @bg-alt;
-    border-radius:      4px;
+    border-radius:      0px;
     padding:            8px 10px;
     children:           [ prompt, entry ];
     spacing:            6px;
@@ -57,7 +57,7 @@ listview {
 
 element {
     background-color:   transparent;
-    border-radius:      4px;
+    border-radius:      0px;
     padding:            6px 10px;
     spacing:            8px;
     children:           [ element-icon, element-text ];

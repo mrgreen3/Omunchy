@@ -139,4 +139,6 @@ sleep 0.3
 swaymsg reload &>/dev/null || true
 
 echo "Theme set: $THEME (foot, waybar, rofi, mako, sway borders)"
-echo "Run 'omunchy bg set <image>' to match the wallpaper."
+if [[ $THEME != wallpaper ]]; then
+    echo "Note: 'omunchy bg set <image>' recolours from the wallpaper (add --no-theme to keep this theme)."
+fi

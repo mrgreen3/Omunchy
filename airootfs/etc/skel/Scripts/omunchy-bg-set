@@ -1,24 +1,29 @@
 #!/bin/bash
 
-# omunchy:summary=Set the desktop wallpaper image (rewrites the swaybg exec line)
-# omunchy:args=<image-path>
+# omunchy:summary=Set the desktop wallpaper image and recolour the desktop from it
+# omunchy:args=[--no-theme] <image-path>
 # omunchy:examples=omunchy bg set ~/Backgrounds/sunset-lake.jpg
 
 set -euo pipefail
 
 usage() {
-    printf 'Usage: omunchy bg set <image-path>\n'
-    printf 'Rewrites the swaybg exec line in ~/.config/sway/looknfeel\n'
-    printf 'and applies it to the running session via swaymsg.\n'
+    printf 'Usage: omunchy bg set [--no-theme] <image-path>\n'
+    printf 'Rewrites the swaybg exec line in ~/.config/sway/looknfeel and applies it\n'
+    printf 'to the running session, then recolours the desktop from the image\n'
+    printf '(omunchy theme wallpaper). --no-theme keeps the current colours.\n'
 }
 
-if [[ ${1:-} == -h || ${1:-} == --help || $# -ne 1 ]]; then
-    usage
-    [[ ${1:-} == -h || ${1:-} == --help ]] && exit 0
-    exit 1
-fi
+NO_THEME=0
+IMG=""
+for arg in "$@"; do
+    case $arg in
+        -h | --help) usage; exit 0 ;;
+        --no-theme) NO_THEME=1 ;;
+        *) [[ -z $IMG ]] || { usage; exit 1; }; IMG=$arg ;;
+    esac
+done
+[[ -n $IMG ]] || { usage; exit 1; }
 
-IMG=$1
 [[ -f $IMG ]] || {
     echo "Not a file: $IMG" >&2
     exit 1
@@ -55,3 +60,13 @@ if [[ -n ${WAYLAND_DISPLAY:-} ]] && command -v swaybg >/dev/null 2>&1; then
 fi
 
 echo "Wallpaper set: $INSTALLED"
+
+# Recolour from the image; skipped with --no-theme, or when matugen is missing.
+if ((NO_THEME == 0)); then
+    BIN_DIR=$(cd -P "$(dirname -- "$(readlink -f -- "${BASH_SOURCE[0]}")")" && pwd)
+    if command -v matugen >/dev/null 2>&1; then
+        "$BIN_DIR/omunchy-theme-wallpaper" "$INSTALLED" || echo "Theme generation failed; colours unchanged." >&2
+    else
+        echo "matugen not installed; wallpaper set, colours unchanged."
+    fi
+fi

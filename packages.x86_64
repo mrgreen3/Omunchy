@@ -49,6 +49,7 @@ reflector
 rofi
 blueman
 playerctl
+matugen
 
 ## === BLUETOOTH & POWER (daemons: live ISO enables them via
 ## multi-user.target.wants, abinstall enables them on installed systems) ===

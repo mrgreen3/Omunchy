@@ -38,7 +38,9 @@ omunchy webapp remove all                                    # bulk removal
 omunchy tui remove all                                       # bulk removal
 omunchy sync                                                 # batch from config/
 omunchy theme set omunchy-light                              # switch colour theme
-omunchy bg set ~/Backgrounds/sunset-lake.jpg                    # switch wallpaper
+omunchy bg set ~/Backgrounds/sunset-lake.jpg                    # switch wallpaper + recolour from it
+omunchy bg set --no-theme <image>                            # wallpaper only, keep colours
+omunchy theme wallpaper <image>                              # recolour from an image (matugen)
 omunchy menu                                                 # rofi launcher menu
 omunchy sway reload                                         # swaymsg reload
 omunchy update                                               # reflector + pacman -Syu + orphans
@@ -73,7 +75,12 @@ omunchy help                                                 # everything, with 
   border colours, then restarting the bar and reloading sway. Two ship:
   `omunchy-dark` (default, warm dark like ArchBang) and `omunchy-light`.
 - `omunchy bg set <image>` rewrites the swaybg exec line (WALLPAPER_MARKER)
-  in `~/.config/sway/looknfeel` and applies it to the running session.
+  in `~/.config/sway/looknfeel`, applies it to the running session, then
+  recolours the desktop from the image: `omunchy theme wallpaper` runs matugen
+  (dark scheme), writes `~/.config/omunchy/themes/wallpaper.conf` and applies it
+  like any other theme. `--no-theme` skips the recolour; without matugen the
+  wallpaper still changes. `omunchy theme set omunchy-dark|omunchy-light` goes
+  back to a fixed palette.
 - `omunchy update` refreshes mirrors with reflector (best-rated 5, skipped when
   offline), runs `pacman -Syu`, updates AUR packages via yay only when any are
   installed, and prompts to prune orphans — guarded by a lock so two updates
