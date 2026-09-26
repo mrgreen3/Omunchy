@@ -51,12 +51,8 @@
 
   // omarchy.workspaces — one pill per workspace; scroll cycles workspaces
   "sway/workspaces": {
-    "format": "{icon}",
+    "format": "{name}",
     "on-click": "activate",
-    "format-icons": {
-      "active": "󱓻",
-      "default": "{id}"
-    },
     "on-scroll-up": "swaymsg workspace next_on_output",
     "on-scroll-down": "swaymsg workspace prev_on_output"
   },
@@ -64,11 +60,11 @@
   // omarchy.indicators — DnD / NightLight / Recording / StayAwake pills
   "custom/indicators": {
     "format": "{}",
-    "exec": "~/.config/omunchy/bar/indicators.sh",
+    "exec": "~/Scripts/indicators.sh",
     "return-type": "json",
     "interval": 5,
-    "on-click": "~/.config/omunchy/bar/indicators.sh toggle",
-    "on-click-right": "~/.config/omunchy/bar/indicators.sh toggle-night",
+    "on-click": "~/Scripts/indicators.sh toggle",
+    "on-click-right": "~/Scripts/indicators.sh toggle-night",
     "tooltip": false
   },
 
@@ -95,7 +91,7 @@
   // omarchy.system-update — badge only when updates are pending; 6 h poll
   "custom/updates": {
     "format": "{}",
-    "exec": "~/.config/omunchy/bar/updates.sh",
+    "exec": "~/Scripts/updates.sh",
     "return-type": "json",
     "interval": 21600,
     "on-click": "foot -e omunchy-update",

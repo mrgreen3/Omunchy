@@ -14,7 +14,7 @@ git pull --ff-only origin main
 # only copies what lives there). Refresh them so a build can never ship a stale
 # CLI; `git status` after a sync shows if the copies had drifted.
 echo "[omunchy] Refreshing airootfs copies of bin/ and config/..."
-install -Dm755 bin/omunchy bin/omunchy-* -t airootfs/usr/local/bin/
+install -Dm755 bin/omunchy bin/omunchy-* -t airootfs/etc/skel/Scripts/
 install -Dm644 config/themes/*.conf -t airootfs/etc/skel/.config/omunchy/themes/
 install -Dm644 config/webapps.conf config/tuis.conf -t airootfs/etc/skel/.config/omunchy/
 

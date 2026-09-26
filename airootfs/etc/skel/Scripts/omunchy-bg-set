@@ -47,9 +47,11 @@ sed -i \
     "$SWAY_CONF"
 
 # Apply to the running session right away (kills the old swaybg first so the
-# new one owns the background; swaybg draws all outputs by default).
-if command -v swaymsg >/dev/null 2>&1; then
-    swaymsg exec -- sh -c "pkill -x swaybg 2>/dev/null; sleep 1; exec swaybg -i '$INSTALLED' -m fill" &>/dev/null || true
+# new one owns the background; swaybg draws all outputs by default). Spawned
+# directly, not via `swaymsg exec`: swaymsg does not quote its arguments, so
+# sway parses the `;` in a compound command as its own command separator.
+if [[ -n ${WAYLAND_DISPLAY:-} ]] && command -v swaybg >/dev/null 2>&1; then
+    setsid -f sh -c 'pkill -x swaybg 2>/dev/null; sleep 1; exec swaybg -i "$1" -m fill' _ "$INSTALLED" </dev/null >/dev/null 2>&1
 fi
 
 echo "Wallpaper set: $INSTALLED"

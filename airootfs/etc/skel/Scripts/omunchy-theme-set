@@ -19,7 +19,7 @@ while [[ -L $SOURCE ]]; do
     SOURCE=$(readlink -- "$SOURCE")
     [[ $SOURCE == /* ]] || SOURCE="$DIR/$SOURCE"
 done
-# Repo checkout only; installed (/usr/local/bin) there is no ../config, and
+# Repo checkout only; installed (~/Scripts) there is no ../config, and
 # the $STATE_DIR/themes copy shipped in skel takes over below.
 THEMES_DIR="$(cd -P "$(dirname -- "$SOURCE")/../config/themes" 2>/dev/null && pwd)" || THEMES_DIR=""
 

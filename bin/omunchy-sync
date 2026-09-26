@@ -7,7 +7,7 @@
 set -euo pipefail
 
 BIN_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
-# Repo checkout: config/ sits next to bin/. Installed (/usr/local/bin on the
+# Repo checkout: config/ sits next to bin/. Installed (~/Scripts on the
 # ISO): there is no such dir, so fall back to the per-user copy from skel.
 DEFAULT_CONF_DIR="$(cd -- "$BIN_DIR/.." && pwd)/config"
 [[ -d $DEFAULT_CONF_DIR ]] || DEFAULT_CONF_DIR="$HOME/.config/omunchy"

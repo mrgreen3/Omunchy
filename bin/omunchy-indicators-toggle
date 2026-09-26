@@ -9,4 +9,4 @@
 
 set -euo pipefail
 
-exec ~/.config/omunchy/bar/indicators.sh "${1:-toggle}"
+exec ~/Scripts/indicators.sh "${1:-toggle}"

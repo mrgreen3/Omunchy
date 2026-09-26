@@ -67,7 +67,9 @@ nightlight_toggle() {
     fi
     # Night on: start wlsunset lazily at the night temperature.
     command -v wlsunset >/dev/null 2>&1 || return 0
-    setsid wlsunset -T "$NIGHT_TEMP" >/dev/null 2>&1 &
+    # -T (day) must exceed -t (night, default 4000) or wlsunset refuses to start;
+    # night_on() reads -T, so keep it just above -t and below IDENTITY_TEMP.
+    setsid wlsunset -T "$((NIGHT_TEMP + 1))" -t "$NIGHT_TEMP" >/dev/null 2>&1 &
     sleep 0.5
 }
 

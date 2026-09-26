@@ -74,11 +74,11 @@ window#waybar {
     background: transparent;
 }
 
-#workspaces button.occupied {
+#workspaces button:not(.empty) {
     color: alpha(@fg, 0.8);
 }
 
-#workspaces button.active {
+#workspaces button.focused {
     color: @on-accent;
     background: @accent;
 }
@@ -88,7 +88,7 @@ window#waybar {
     background: @red;
 }
 
-#workspaces button:hover:not(.active) {
+#workspaces button:hover:not(.focused) {
     color: @fg;
     background: alpha(@fg, 0.08);
 }
