@@ -36,8 +36,8 @@ echo "FONT=Lat2-Terminus16" >> /etc/vconsole.conf
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
 echo "LC_COLLATE=C" >> /etc/locale.conf
 
-# Set clock to UTC
-hwclock --systohc --utc
+# Set clock to UTC (skipped when the build chroot has no RTC access, e.g. rootless builds)
+hwclock --systohc --utc 2>/dev/null || echo "[customize_airootfs] no RTC access - skipping hwclock"
 
 # Timezone
 ln -sf /usr/share/zoneinfo/America/Montreal /etc/localtime
