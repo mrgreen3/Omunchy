@@ -13,11 +13,8 @@
   // by `omunchy theme-set <name>` — no hex values in this file.
   "layer": "top",
   "position": "top",
-  "height": 34,
+  "height": 24,
   "spacing": 4,
-  "margin-top": 6,
-  "margin-left": 10,
-  "margin-right": 10,
 
   "modules-left": [
     "custom/menu",
@@ -26,7 +23,6 @@
   "modules-center": [
     "custom/indicators",
     "clock",
-    "sway/language",
     "custom/updates"
   ],
   "modules-right": [
@@ -43,7 +39,7 @@
 
   // omarchy.menu — rofi launcher (omunchy-menu handles apps/webapps/TUIs/power)
   "custom/menu": {
-    "format": "󰣇",
+    "format": "󰍜",
     "on-click": "omunchy-menu",
     "on-click-right": "foot",
     "tooltip": false
@@ -79,13 +75,6 @@
       "on-scroll": 1
     },
     "interval": 60
-  },
-
-  // omarchy.keyboard-layout — hidden when only one layout is configured
-  "sway/language": {
-    "format": "{}",
-    "format-en": "US",
-    "on-click": "swaymsg input '*' xkb_switch_layout next"
   },
 
   // omarchy.system-update — badge only when updates are pending; 6 h poll

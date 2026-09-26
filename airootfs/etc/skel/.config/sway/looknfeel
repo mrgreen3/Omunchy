@@ -43,6 +43,11 @@ exec /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 exec waybar
 exec mako
 
+# First login: generate the web app / TUI launchers the rofi menu lists (they
+# live in ~/.local/share/applications, which the skel does not ship). Guarded so
+# later logins do not re-create launchers the user removed.
+exec sh -c 'ls ~/.local/share/applications/omunchy-*.desktop >/dev/null 2>&1 || omunchy sync'
+
 # Idle daemon (shipped in packages.x86_64): lock after 300s idle and before
 # sleep. Plain exec — `swaymsg reload` must not stack duplicates.
 exec swayidle -w timeout 300 'swaylock -f' before-sleep 'swaylock -f'

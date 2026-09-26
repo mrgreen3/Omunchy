@@ -119,7 +119,14 @@ DESKTOP_FILE="$DESKTOP_DIR/omunchy-tui-$(safe_icon_name "$APP_NAME").desktop"
 mkdir -p "$DESKTOP_DIR"
 
 name_field=$(desktop_string_escape "$APP_NAME")
-exec_field=$(desktop_string_escape "xdg-terminal-exec --app-id=$APP_CLASS -e $APP_EXEC")
+# foot directly: xdg-terminal-exec drops --app-id here, so the sway float rule
+# (app_id omunchy.TUI.float) would never match.
+if command -v foot >/dev/null 2>&1; then
+  TERM_CMD="foot --app-id=$APP_CLASS -e"
+else
+  TERM_CMD="xdg-terminal-exec --app-id=$APP_CLASS -e"
+fi
+exec_field=$(desktop_string_escape "$TERM_CMD $APP_EXEC")
 icon_field=$(desktop_string_escape "$ICON_VALUE")
 
 cat >"$DESKTOP_FILE" <<EOF

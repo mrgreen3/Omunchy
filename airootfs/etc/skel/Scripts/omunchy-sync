@@ -79,10 +79,12 @@ sync_tuis() {
 # items). The installer wraps itself in the best available terminal, with an
 # absolute path since the session PATH cannot resolve ~/.local/bin.
 detect_terminal() {
-    if command -v xdg-terminal-exec >/dev/null 2>&1; then
+    # foot first: xdg-terminal-exec drops --app-id, so the omunchy.Installer
+    # float rule would not match.
+    if command -v foot >/dev/null 2>&1; then
+        printf 'foot --app-id=omunchy.Installer -e'
+    elif command -v xdg-terminal-exec >/dev/null 2>&1; then
         printf 'xdg-terminal-exec --app-id=omunchy.Installer -e'
-    elif command -v foot >/dev/null 2>&1; then
-        printf 'foot -e'
     elif command -v alacritty >/dev/null 2>&1; then
         printf 'alacritty -e'
     elif command -v kitty >/dev/null 2>&1; then

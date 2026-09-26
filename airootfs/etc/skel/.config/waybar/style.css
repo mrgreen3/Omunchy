@@ -25,36 +25,25 @@
     min-height: 0;
     font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", monospace;
     font-size: 13px;
+    font-weight: normal;
 }
 
 window#waybar {
-    background: alpha(@bg, 0.38);
+    background: alpha(@bg, 0.9);
     color: @fg;
 }
 
-/* Rounded pill sections: one background pill per widget group, Omarchy-style */
-.modules-left > widget > box,
-.modules-center > widget > box,
-.modules-right > widget > box {
-    background: alpha(@fg, 0.06);
-    border: 1px solid alpha(@fg, 0.1);
-    border-radius: 17px;
-    padding: 2px 8px;
-    margin-top: 2px;
-    margin-bottom: 2px;
-}
-
-.modules-left > widget > box,
-.modules-right > widget > box {
-    margin-left: 0;
-    margin-right: 0;
+/* Flat, full-width bar: no group backgrounds, no rounded shapes, no bold */
+.modules-left,
+.modules-center,
+.modules-right {
+    padding: 0 6px;
 }
 
 /* ---------- Menu ---------- */
 #custom-menu {
     color: @fg;
     padding: 0 12px 0 8px;
-    border-radius: 17px;
 }
 
 #custom-menu:hover {
@@ -68,8 +57,7 @@ window#waybar {
 
 #workspaces button {
     padding: 0 6px;
-    margin: 3px 2px;
-    border-radius: 10px;
+    margin: 0 1px;
     color: alpha(@fg, 0.5);
     background: transparent;
 }
@@ -120,14 +108,7 @@ window#waybar {
 /* ---------- Clock ---------- */
 #clock {
     color: @fg;
-    font-weight: bold;
     padding: 0 10px;
-}
-
-/* ---------- Keyboard layout ---------- */
-#sway-language {
-    color: @fg-dim;
-    padding: 0 6px;
 }
 
 /* ---------- Updates (attention colour, as in Omarchy) ---------- */
@@ -200,9 +181,8 @@ window#waybar {
 
 /* ---------- Tooltips (Omarchy: near-opaque bg, hairline border) ---------- */
 tooltip {
-    background: alpha(@bg, 0.38);
+    background: alpha(@bg, 0.9);
     border: 1px solid alpha(@fg, 0.25);
-    border-radius: 8px;
     padding: 6px 10px;
 }
 
