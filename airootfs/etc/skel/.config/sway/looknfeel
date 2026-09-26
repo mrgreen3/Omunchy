@@ -43,6 +43,10 @@ exec /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 exec waybar
 exec mako
 
+# Idle daemon (shipped in packages.x86_64): lock after 300s idle and before
+# sleep. Plain exec — `swaymsg reload` must not stack duplicates.
+exec swayidle -w timeout 300 'swaylock -f' before-sleep 'swaylock -f'
+
 # Dwindle-style tiling (Omarchy/Hyprland dwindle parity): autotiling flips the
 # split orientation to match the focused window's shape. start is a
 # pkill-then-start wrapper, so `swaymsg reload` cannot stack duplicates and a

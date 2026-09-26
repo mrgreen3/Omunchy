@@ -115,8 +115,11 @@ era and are left as written (each carries a dated header note).
    get_tree`).
 8. greeter: cage + gtkgreet with session list entry "sway".
 9. Screenshot, swaylock (Super+L), power menu logout (`swaymsg exit`).
-10. swayidle: shipped in packages but no config is installed — decide
-    whether to add a lock-on-idle config or drop the package (lean rule).
+10. swayidle: now configured (2026-09-26) — looknfeel autostart runs
+    `exec swayidle -w timeout 300 'swaylock -f' before-sleep 'swaylock -f'`
+    (300s lock; plain exec so `swaymsg reload` does not stack duplicates).
+    Needs live testing: 300s timer fires, before-sleep path locks, and
+    `swaymsg reload` leaves exactly one swayidle running.
 11. autotiling: `exec_always omunchy-autotile start` opens a tall window,
     then narrow ones (split flips h/v with the window shape); `swaymsg
     reload` twice → still exactly one `autotiling` process (check
