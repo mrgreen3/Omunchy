@@ -87,7 +87,9 @@ fi
     exit 1
 }
 
-desktop_file=$(path_for_name "$APP_NAME")
+# `|| true`: path_for_name returns 1 on no match, and an assignment's exit
+# status would otherwise trip set -e and skip the error below.
+desktop_file=$(path_for_name "$APP_NAME") || true
 if [[ -z $desktop_file ]]; then
     echo "No webapp named '$APP_NAME' found." >&2
     exit 1
