@@ -45,6 +45,10 @@ else
     echo "[omunchy] No AUR packages (or yay missing) — skipping yay"
 fi
 
+# Refresh waybar's custom/updates badge ("signal": 8) right away; otherwise
+# it stays stale until the module's next 6 h poll (updates.sh comment).
+pkill -RTMIN+8 waybar 2>/dev/null || true
+
 # --- Orphans ---
 orphans=$(pacman -Qtdq 2>/dev/null || true)
 if [[ -z $orphans ]]; then

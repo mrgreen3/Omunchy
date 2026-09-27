@@ -56,12 +56,13 @@
   },
 
   // omarchy.indicators — DnD / NightLight / StayAwake: dim until on, click toggles
+  // signal 7 (8 belongs to custom/updates — omunchy-update sends RTMIN+8)
   "custom/dnd": {
     "format": "{}",
     "exec": "~/Scripts/indicators.sh state dnd",
     "return-type": "json",
     "interval": 5,
-    "signal": 8,
+    "signal": 7,
     "on-click": "~/Scripts/indicators.sh toggle-dnd"
   },
   "custom/night": {
