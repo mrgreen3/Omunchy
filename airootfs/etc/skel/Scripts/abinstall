@@ -539,10 +539,22 @@ select_xkeymap(){
 
 #UMOUNT PARTITIONS {{{
 umount_partitions(){
-  mounted_partitions=(`lsblk | grep ${MNT} | awk '{print $7}' | sort -r`)
+  # Match the MOUNTPOINT column (raw, tab-separated) instead of grepping
+  # free lsblk text for ${MNT}, so a device whose NAME merely contains the
+  # mount root as a substring cannot be mistaken for a mountpoint.
+  mounted_partitions=()
+  # shellcheck disable=SC2034  # NAME only keeps the column split unambiguous
+  while IFS=$'\t' read -r mp dev; do
+    if [[ $mp == "$MNT" || $mp == "$MNT"/* ]]; then
+      mounted_partitions+=("$mp")
+    fi
+  # LC_ALL=C on the sort: the default collation treats '\t' as ignorable,
+  # which can leave /mnt ordered after /mnt/boot/efi and umount the parent
+  # before its child.
+  done < <(LC_ALL=C lsblk -rno MOUNTPOINT,NAME | LC_ALL=C sort -r)
   swapoff -a
-  for i in ${mounted_partitions[@]}; do
-    umount $i
+  for i in "${mounted_partitions[@]}"; do
+    umount "$i"
   done
 }
 #}}}
@@ -1106,7 +1118,9 @@ set_efi_partition() {
               ;;
             another)
               read -p "Mountpoint [ex: /home]:" directory
-              [[ $directory == "/boot" ]] && BOOT_MNT=`echo ${partition} | sed 's/[0-9]//'`
+              # Strip the partition suffix from the device path: trailing
+              # digits (sda12) or p+digits (nvme0n1p3, mmcblk0p2).
+              [[ $directory == "/boot" ]] && BOOT_MNT=`echo ${partition} | sed -E 's/p?[0-9]+$//'`
               select_filesystem
               read_input_text "Format ${partition} partition"
               if [[ $OPTION == y ]]; then
@@ -1494,6 +1508,12 @@ configure_bootloader(){
   elif [[ $UEFI -eq 1 ]]; then
       print_info "Installing GRUB (UEFI mode) to /boot/EFI/GRUB/"
       arch_chroot "grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB --recheck"
+      if [[ $? -ne 0 ]]; then
+          print_error "GRUB installation failed for UEFI target!"
+          lsblk -f
+          return 1
+      fi
+      print_success "GRUB successfully installed to /boot/EFI/GRUB/"
 
   else
       print_info "Installing GRUB (BIOS mode)"
@@ -1583,15 +1603,18 @@ setup_user(){
     arch_chroot "passwd ${LIVE_USER}" && break
   done
 
-  # Rewrite occurrences of old username inside config files
+  # Rewrite occurrences of the old username inside the user's rc files and
+  # dot directories — not every text file in /home, where a substring like
+  # "live" also matches unrelated words (delivery, LiveUSB, ...).
   print_info "Updating config files..."
-  arch_chroot "grep -rlI \"${LIVE_USER}\" /home/${LIVE_USER} | xargs -r sed -i \"s/${LIVE_USER}/${new_username}/g\""
+  arch_chroot "grep -rlI -- \"${LIVE_USER}\" /home/${LIVE_USER}/.config /home/${LIVE_USER}/.local/share/applications /home/${LIVE_USER}/.bashrc /home/${LIVE_USER}/.bash_profile /home/${LIVE_USER}/.vimrc 2>/dev/null | xargs -r -d '\n' sed -i \"s/\\b${LIVE_USER}\\b/${new_username}/g\""
 
-  # Update system account files
-  arch_chroot "sed -i \"s/${LIVE_USER}/${new_username}/g\" /etc/group"
-  arch_chroot "sed -i \"s/${LIVE_USER}/${new_username}/g\" /etc/gshadow"
-  arch_chroot "sed -i \"s/${LIVE_USER}/${new_username}/g\" /etc/passwd"
-  arch_chroot "sed -i \"s/${LIVE_USER}/${new_username}/g\" /etc/shadow"
+  # Rename the account with usermod/groupmod instead of a blind
+  # s/live/new/g over /etc/* — the just-set password hash in /etc/shadow
+  # can contain "live" as a substring, and a global rewrite corrupts it.
+  arch_chroot "usermod -l \"${new_username}\" \"${LIVE_USER}\""
+  arch_chroot "groupmod -n \"${new_username}\" \"${LIVE_USER}\" || true"
+  arch_chroot "sed -i \"s|/home/${LIVE_USER}|/home/${new_username}|g\" /etc/passwd"
 
   # Rename home directory and fix ownership
   print_info "Renaming home directory..."
