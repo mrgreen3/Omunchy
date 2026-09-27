@@ -245,7 +245,9 @@ if [[ -n $CUSTOM_EXEC ]]; then
     EXEC_COMMAND=$CUSTOM_EXEC
   fi
 else
-  EXEC_COMMAND="$OMUNCHY_BIN_DIR/omunchy-launch-webapp $(desktop_exec_arg "$APP_URL")"
+  # Quote both halves: the URL for % and " ` $ \\ inside Exec, the launcher
+  # path so an install dir with spaces still tokenizes as one argument.
+  EXEC_COMMAND="$(desktop_exec_arg "$OMUNCHY_BIN_DIR/omunchy-launch-webapp") $(desktop_exec_arg "$APP_URL")"
 fi
 
 # Create application .desktop file
@@ -268,6 +270,12 @@ Icon=$icon_field
 StartupNotify=true
 Categories=Network;
 EOF
+
+# MimeType is optional; write the key only when types were provided
+# (semicolon-separated list, per the Desktop Entry Spec).
+if [[ -n $MIME_TYPES ]]; then
+  printf 'MimeType=%s\n' "$(desktop_string_escape "$MIME_TYPES")" >>"$DESKTOP_FILE"
+fi
 
 chmod +x "$DESKTOP_FILE"
 
