@@ -67,6 +67,12 @@ while IFS= read -r line || [[ -n $line ]]; do
 done <"$SRC"
 
 # --- foot -------------------------------------------------------------------
+# Optional alpha keys: themes that omit them get the shipped baseline (0.9,
+# matching foot.ini/style.css) so the seds below cannot emit an empty
+# "alpha=" (foot) or "alpha(@bg, )" (waybar css) line.
+FOOT_ALPHA=${FOOT_ALPHA:-0.9}
+WAYBAR_BG_ALPHA=${WAYBAR_BG_ALPHA:-0.9}
+
 FOOT="$HOME/.config/foot/foot.ini"
 if [[ -f $FOOT && -n ${FOOT_BG:-} ]]; then
     sed -i -e "s/^alpha=.*/alpha=$FOOT_ALPHA/" \
