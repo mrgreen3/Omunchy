@@ -13,7 +13,6 @@ xz
 pamixer
 polkit-gnome
 xdg-desktop-portal-gtk
-noto-fonts
 noto-fonts-emoji
 
 ## === TERMINAL ===
