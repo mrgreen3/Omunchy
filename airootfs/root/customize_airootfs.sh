@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Configure live iso
-set -e -u -x
+set -e -u
 shopt -s extglob
 
 # Set locales
@@ -13,6 +13,22 @@ locale-gen
 
 # Un-comment mirrorlist to allow pacman to work live
 [[ -f /etc/pacman.d/mirrorlist ]] && sed -i "s/#Server/Server/g" /etc/pacman.d/mirrorlist
+
+# Remove .pacnew strays for paths we overlay on purpose: the overlay is copied
+# before packages are installed (build: _make_custom_airootfs runs before
+# _make_packages), so pacman parks its versions of these files as .pacnew.
+pacnew_paths=(
+    /etc/hosts.pacnew
+    /etc/passwd.pacnew
+    /etc/shadow.pacnew
+    /etc/skel/.bashrc.pacnew
+    /etc/skel/.bash_profile.pacnew
+)
+for pacnew in "${pacnew_paths[@]}"; do
+    [[ -e $pacnew ]] || continue
+    rm -f -- "$pacnew"
+    echo "[customize_airootfs] removed overlay .pacnew stray: $pacnew"
+done
 
 # Sudo to allow no password
 sed -i 's/# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/g' /etc/sudoers
