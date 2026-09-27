@@ -56,10 +56,10 @@ greetd-gtkgreet
 cage
 
 ## === FILE MANAGER & UTILITIES ===
-thunar
-thunar-volman
+superfile
 gvfs
 udisks2
+udiskie
 
 ## === TEXT EDITORS ===
 vim
@@ -113,7 +113,6 @@ rsync
 pv
 dosfstools
 btrfs-progs
-opencode
 
 ## === BOOTLOADER & FIRMWARE ===
 grub

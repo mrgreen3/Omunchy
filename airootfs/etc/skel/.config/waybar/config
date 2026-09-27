@@ -39,10 +39,10 @@
     "custom/power"
   ],
 
-  // omarchy.menu — rofi launcher (omunchy-menu handles apps/webapps/TUIs/power)
+  // omarchy.menu — rofi applications launcher (same as Super+Space)
   "custom/menu": {
     "format": "󰍜",
-    "on-click": "omunchy-menu",
+    "on-click": "rofi -show drun",
     "on-click-right": "foot",
     "tooltip": false
   },

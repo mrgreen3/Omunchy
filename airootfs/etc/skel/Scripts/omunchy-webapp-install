@@ -231,7 +231,19 @@ fi
 # via this script's own real location keeps it correct through symlinks.
 OMUNCHY_BIN_DIR=$(dirname -- "$(readlink -f -- "${BASH_SOURCE[0]}")")
 if [[ -n $CUSTOM_EXEC ]]; then
-  EXEC_COMMAND=$CUSTOM_EXEC
+  # Custom exec stays a whole command line, but it can't stay raw when it
+  # carries $ or `: raw $ in an unquoted Exec argument makes glib silently
+  # fail to launch the entry. Wrap those in sh -c inside one double-quoted
+  # Exec argument (same escaping as desktop_exec_arg; desktop_string_escape
+  # then doubles the backslashes for the keyfile layer). Under the wrapper a
+  # % field code would become literal, so keep $-free custom execs raw when
+  # they rely on field codes.
+  if [[ $CUSTOM_EXEC == *[\$\`]* ]]; then
+    EXEC_COMMAND="sh -c \"exec $(printf '%s' "$CUSTOM_EXEC" \
+      | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/`/\\`/g' -e 's/\$/\\$/g')\""
+  else
+    EXEC_COMMAND=$CUSTOM_EXEC
+  fi
 else
   EXEC_COMMAND="$OMUNCHY_BIN_DIR/omunchy-launch-webapp $(desktop_exec_arg "$APP_URL")"
 fi

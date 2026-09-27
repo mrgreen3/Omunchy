@@ -9,7 +9,7 @@
 # Hyprland gave us natively. One instance per session:
 #   start   exec_always entry (sway looknfeel): pkill-then-start, so
 #           `swaymsg reload` re-runs it without stacking duplicates
-#   toggle  user-facing on/off (omunchy menu "Autotiling")
+#   toggle  user-facing on/off
 # Off-state is the ~/.config/omunchy/autotiling-off sentinel: without it
 # reload re-starts autotiling (fresh installs default on); with it, start
 # only pkills — a user-disabled autotiling survives reload/theme switches.

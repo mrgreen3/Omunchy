@@ -8,9 +8,8 @@ set $terminal foot
 # --- Apps ---
 bindsym Super+Return exec $terminal
 bindsym Super+Space  exec rofi -show drun
-bindsym Super+A      exec omunchy menu
 bindsym Super+B      exec chromium
-bindsym Super+E      exec thunar
+bindsym Super+E      exec foot -e spf
 bindsym Super+S      exec "foot -e dgop top"
 bindsym Super+K      exec "grep -E '(Super|Ctrl|Vol|Mute|Bright)' ~/Documents/Keybindings | rofi -dmenu -p Keybinds -theme-str 'listview { lines: 18; columns: 2; }'"
 

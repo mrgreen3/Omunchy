@@ -9,9 +9,8 @@ APPLICATIONS
 
 Super + Return          Terminal (foot)
 Super + Space           Launcher (rofi)
-Super + a               Omunchy Menu (omunchy menu)
 Super + b               Web Browser (chromium)
-Super + e               File Manager (thunar)
+Super + e               File Manager (superfile)
 Super + s               System Monitor (dgop)
 Super + k               Show Keybindings
 
@@ -24,8 +23,8 @@ Super + t               Toggle Float
 Super + f               Fullscreen
 Super + v               Toggle Split
 
-Tiling helper: windows auto-split dwindle-style (autotiling). Toggle via
-the Omunchy Menu (Super + a > Autotiling).
+Tiling helper: windows auto-split dwindle-style (autotiling). Toggle it with
+`omunchy autotile toggle` in a terminal.
 
 
 FOCUS & MOVEMENT

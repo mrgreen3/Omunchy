@@ -42,6 +42,7 @@ bindgesture swipe:3:right workspace next
 exec /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 exec waybar
 exec mako
+exec udiskie
 
 # First login: generate the web app / TUI launchers the rofi menu lists (they
 # live in ~/.local/share/applications, which the skel does not ship). Guarded so

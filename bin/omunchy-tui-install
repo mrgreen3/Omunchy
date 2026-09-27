@@ -126,7 +126,20 @@ if command -v foot >/dev/null 2>&1; then
 else
   TERM_CMD="xdg-terminal-exec --app-id=$APP_CLASS -e"
 fi
-exec_field=$(desktop_string_escape "$TERM_CMD $APP_EXEC")
+
+# The user's command is a shell line and must reach that shell verbatim. A raw
+# $ in an unquoted Exec argument makes glib silently fail to launch the entry,
+# and left raw the desktop tokenizer would also reinterpret the user's own
+# quotes. Hand the whole command to sh -c inside one double-quoted Exec
+# argument: escaped per the Exec spec here (\ " ` $ escaped, % doubled), then
+# desktop_string_escape doubles the backslashes again for the keyfile layer,
+# so the file ends up with e.g. \\$ for a literal $ (the form glib accepts).
+# The exec prefix folds sh away once the command starts.
+exec_sh_dq() {
+  sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/`/\\`/g' -e 's/\$/\\$/g' -e 's/%/%%/g'
+}
+TERM_CMD="$TERM_CMD sh -c \"$(printf '%s' "exec $APP_EXEC" | exec_sh_dq)\""
+exec_field=$(desktop_string_escape "$TERM_CMD")
 icon_field=$(desktop_string_escape "$ICON_VALUE")
 
 cat >"$DESKTOP_FILE" <<EOF

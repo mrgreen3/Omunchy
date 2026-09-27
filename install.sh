@@ -11,9 +11,8 @@
 #   2. copies the skel configs (foot/waybar/rofi/mako/sway), backing up any
 #      existing ones — the sway config is i3-style (config + binds + looknfeel
 #      + theme, see airootfs/etc/skel/.config/sway/)
-#   3. installs the omunchy CLI into ~/Scripts (on PATH via .bashrc, and
-#      the archbang-menu app entry lives there) so keybinds that call
-#      ~/Scripts/... and `omunchy <verb>` both resolve
+#   3. installs the omunchy CLI into ~/Scripts (on PATH via .bashrc) so
+#      keybinds that call ~/Scripts/... and `omunchy <verb>` both resolve
 #   4. hands off to bin/omunchy sync for the web app + TUI launchers
 
 set -euo pipefail
@@ -78,8 +77,7 @@ install_configs() {
         echo "[omunchy] Installed default wallpaper: ~/Backgrounds/aesthetic.jpg"
     fi
     # Install the omunchy CLI into ~/Scripts (already on PATH via .bashrc; the
-    # menu/launcher keybinds call ~/Scripts/... paths, and the archbang-menu
-    # "Applications" entry is what the dead arch-logo menu should have been).
+    # menu/launcher keybinds call ~/Scripts/... paths).
     # Symlinks rather than copies so `omunchy sync`'s repo-checkout link_bin and
     # this agree on one source of truth.
     mkdir -p "$HOME/Scripts"
