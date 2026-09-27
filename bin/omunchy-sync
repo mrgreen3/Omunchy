@@ -61,7 +61,10 @@ sync_tuis() {
         name=${name//$'\r'/}
         [[ -z ${name//[[:space:]]/} || $name == \#* ]] && continue
         # Legacy 3-field lines (Name|Command|Icon) land the icon in $style.
-        if [[ $style != float && $style != tile ]]; then
+        # A 4-field line with an empty style column (Name|Command||Icon) is
+        # NOT legacy: only treat it as such when the icon column is empty too,
+        # or the icon would be dropped and replaced by the style's emptiness.
+        if [[ -z $icon && $style != float && $style != tile ]]; then
             icon=$style
             style=float
         fi
