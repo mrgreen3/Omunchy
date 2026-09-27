@@ -1,16 +1,17 @@
 #!/bin/bash
-# Install opencode (the open source coding agent) via the official installer:
-#   curl -fsSL https://opencode.ai/install | bash
-# The installer is non-interactive, needs no node/npm, and installs one binary
-# to ~/.opencode/bin, adding it to PATH in your shell rc files.
+# Install opencode (the open source coding agent) from the official Arch
+# extra repository:
+#   sudo pacman -S --needed opencode
+# Signed package installed to /usr/bin — no piping a remote script to bash
+# and no ~/.opencode/bin PATH special-casing. Kept on demand (deliberately
+# not in packages.x86_64; the package is ~194 MiB installed).
 
 set -e
 
 ENTRY="$HOME/.local/share/applications/omunchy-tui-install-opencode.desktop"
-OC_BIN="$HOME/.opencode/bin/opencode"
 
-if command -v opencode >/dev/null 2>&1 || [ -x "$OC_BIN" ]; then
-    echo "opencode already installed: $(opencode --version 2>/dev/null || "$OC_BIN" --version)"
+if command -v opencode >/dev/null 2>&1; then
+    echo "opencode already installed: $(opencode --version 2>/dev/null)"
     rm -f "$ENTRY" && echo "Removed the 'Install OpenCode' launcher entry."
     read -n 1 -s -r -p "Press any key to close..."
     echo
@@ -18,27 +19,22 @@ if command -v opencode >/dev/null 2>&1 || [ -x "$OC_BIN" ]; then
 fi
 
 echo "Checking network..."
-if ! curl -s --connect-timeout 5 https://opencode.ai >/dev/null 2>&1; then
+if ! curl -s --connect-timeout 5 https://archlinux.org >/dev/null 2>&1; then
     echo "No network connection. Connect first and retry."
     read -n 1 -s -r -p "Press any key to close..."
     echo
     exit 1
 fi
 
-echo "Running the official opencode installer..."
-if curl -fsSL https://opencode.ai/install | bash; then
-    if [ -x "$OC_BIN" ]; then
-        echo "opencode installed: $("$OC_BIN" --version)"
-        echo "It lives in ~/.opencode/bin; new terminals find it automatically."
-        echo "Next step: run 'opencode auth login' to add your API key."
-        rm -f "$ENTRY" && echo "Removed the 'Install OpenCode' launcher entry."
-    else
-        echo "Installer finished, but $OC_BIN was not found."
-        echo "Check ~/.opencode/bin and your shell PATH."
-    fi
+echo "Installing opencode from the official repos (sudo pacman -Sy --needed opencode)..."
+if sudo pacman -Sy --needed opencode; then
+    echo "opencode installed: $(opencode --version)"
+    echo "Installed to /usr/bin/opencode — on PATH in every shell, nothing to add to your shell rc files."
+    echo "Next step: run 'opencode auth login' to add your API key."
+    rm -f "$ENTRY" && echo "Removed the 'Install OpenCode' launcher entry."
 else
-    echo "The opencode installer failed. Try again later or run it manually:"
-    echo "    curl -fsSL https://opencode.ai/install | bash"
+    echo "pacman could not install opencode. Try again later or install it manually:"
+    echo "    sudo pacman -Sy opencode"
 fi
 
 read -n 1 -s -r -p "Press any key to close..."
