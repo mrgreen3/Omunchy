@@ -147,7 +147,22 @@ iputils
 less
 licenses
 linux
-linux-firmware
+# firmware: explicit split list = full linux-firmware meta MINUS
+# linux-firmware-nvidia (nouveau runs without GSP firmware — no
+# acceleration on Turing+ NVIDIA GPUs, fbdev-level fallback only; the
+# accepted tradeoff for ~104 MiB). All splits depend on -whence.
+linux-firmware-amd
+linux-firmware-amdgpu
+linux-firmware-atheros
+linux-firmware-broadcom
+linux-firmware-cirrus
+linux-firmware-intel
+linux-firmware-mediatek
+linux-firmware-other
+linux-firmware-radeon
+linux-firmware-realtek
+linux-firmware-ti
+linux-firmware-whence
 logrotate
 lvm2
 man-db
