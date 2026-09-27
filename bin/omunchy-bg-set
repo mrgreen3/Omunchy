@@ -37,18 +37,40 @@ SWAY_CONF="$HOME/.config/sway/looknfeel"
 }
 
 # Copy into ~/Backgrounds so the wallpaper survives the source file moving
-# (matches how the ISO ships Backgrounds/).
+# (matches how the ISO ships Backgrounds/). A same-named but different file
+# must not silently win: give the copy a unique name instead.
 BG_DIR="$HOME/Backgrounds"
 mkdir -p "$BG_DIR"
-cp -n "$IMG" "$BG_DIR/" 2>/dev/null || true
-INSTALLED="$BG_DIR/$(basename -- "$IMG")"
+DEST="$BG_DIR/$(basename -- "$IMG")"
+if [[ -e $DEST ]] && ! cmp -s -- "$IMG" "$DEST"; then
+    base=${DEST%.*}
+    ext=""
+    [[ $base != "$DEST" ]] && ext=".${DEST##*.}"
+    n=1
+    while [[ -e "$base-$n$ext" ]]; do
+        n=$((n + 1))
+    done
+    DEST="$base-$n$ext"
+fi
+cp -n -- "$IMG" "$DEST" 2>/dev/null || true
+INSTALLED=$DEST
 [[ -f $INSTALLED ]] || INSTALLED=$IMG
 
 # Replace ONLY the WALLPAPER_MARKER exec line (swaybg has no preload/unload —
 # each invocation is a full background set; the sleep guards sway's startup).
+# The path is escaped for the single-quoted sway exec line (' -> '\'') and for
+# the sed replacement (\, &, and the | delimiter), so an odd filename cannot
+# corrupt looknfeel.
+# Escape the path for the single-quoted sway exec line (' -> '\''). The
+# sed-replacement escaping (\, &, |) happens on the whole line right
+# before it is interpolated into the s||| command below.
+sed_escape() {
+    printf '%s' "$1" | sed "s/'/'\\\\''/g"
+}
+SWAY_LINE="exec sleep 1 && swaybg -i '$(sed_escape "$INSTALLED")' -m fill  # WALLPAPER_MARKER"
 sed -i \
-    -e "s|^exec sleep 1 && swaybg.*WALLPAPER_MARKER.*|exec sleep 1 \&\& swaybg -i '$INSTALLED' -m fill  # WALLPAPER_MARKER|" \
-    -e "s|^exec .*swaybg.*WALLPAPER_MARKER.*|exec sleep 1 \&\& swaybg -i '$INSTALLED' -m fill  # WALLPAPER_MARKER|" \
+    -e "s|^exec sleep 1 && swaybg.*WALLPAPER_MARKER.*|$(printf '%s' "$SWAY_LINE" | sed 's/[\\&|]/\\&/g')|" \
+    -e "s|^exec .*swaybg.*WALLPAPER_MARKER.*|$(printf '%s' "$SWAY_LINE" | sed 's/[\\&|]/\\&/g')|" \
     "$SWAY_CONF"
 
 # Apply to the running session right away (kills the old swaybg first so the
