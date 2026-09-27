@@ -1,21 +1,23 @@
 #!/bin/bash
 
-# omunchy:summary=Install the pi coding agent (pi.dev) via the official installer
+# omunchy:summary=Launch pi (installs it first if missing)
 # omunchy:args=[]
 # omunchy:examples=omunchy pi install
 
-# One-shot installer for the pi coding agent (https://pi.dev). Runs the official
-# installer (downloaded, then `sh`) unattended: the upstream script has no
+# Persistent launcher for the pi coding agent (https://pi.dev) — the "Pi"
+# desktop entry and the `omunchy pi install` verb both come here. If pi is
+# installed, exec straight into the pi TUI (closing pi closes the terminal).
+# If not, run the official installer unattended: the upstream script has no
 # non-interactive flag or env var (as of 2026-09-27) — every prompt is a read
 # from /dev/tty (action menu, node/npm bootstrap, PATH add) that accepts its
-# default on Enter. We run it under script(1) so it gets a pty and feed Enter
-# keystrokes, equivalent to pressing Enter at every prompt. Bootstraps node/npm
-# itself if missing (user-local standalone node; no root needed). The shipped
-# "Install Pi" desktop entry removes itself on success.
+# default on Enter, and without a tty the node prompt aborts instead of
+# bootstrapping. So we download the installer to a temp file (piping source
+# and answers through one stdin would make sh eat the answers) and run it
+# under script(1) with fed Enter keystrokes, equivalent to pressing Enter at
+# every prompt. Bootstraps node/npm itself if missing (user-local standalone
+# node; no root needed).
 
 set -euo pipefail
-
-DESKTOP_FILE="$HOME/.local/share/applications/omunchy-pi-install.desktop"
 
 # Find pi even when the launcher's PATH skips the npm user prefix (rofi/foot
 # sessions don't always source ~/.profile).
@@ -36,10 +38,14 @@ wait_key() {
 }
 
 # Standalone-Node installs (the bootstrap for node-less machines) live outside
-# the launcher shell's PATH; export them so 'pi --version' works below.
+# the launcher shell's PATH; export them so the pi exec below works.
 NODE_BIN="$HOME/.local/share/pi-node/current/bin"
 if [ -x "$NODE_BIN/node" ]; then
     export PATH="$NODE_BIN:$PATH"
+fi
+
+if PI_BIN=$(find_pi); then
+    exec "$PI_BIN"
 fi
 
 echo "Checking network..."
@@ -47,14 +53,6 @@ if ! curl -fsSL --connect-timeout 5 https://pi.dev >/dev/null 2>&1; then
     echo "No network connection. Connect first and retry."
     wait_key
     exit 1
-fi
-
-if PI_BIN=$(find_pi); then
-    echo "pi already installed: $("$PI_BIN" --version 2>/dev/null || echo 'unknown version')"
-    echo "Nothing to do. Removing the one-shot launcher entry."
-    rm -f "$DESKTOP_FILE"
-    wait_key
-    exit 0
 fi
 
 echo "Running the official pi installer (https://pi.dev/install.sh)..."
@@ -72,28 +70,32 @@ if curl -fsSL https://pi.dev/install.sh -o "$tmp" &&
     # persisted to the shell profile — only the pi bin dir is — so pi's
     # env-node launcher would fail in new shells. Persist it like upstream
     # persists the pi bin dir (its PATH is already exported above).
-    NODE_BIN="$HOME/.local/share/pi-node/current/bin"
-    if [ -x "$NODE_BIN/node" ] &&
-       ! grep -qs "pi-node" "$HOME/.bashrc" "$HOME/.profile" "$HOME/.bash_profile" "$HOME/.zshrc"; then
+    if ! grep -qs "pi-node" "$HOME/.bashrc" "$HOME/.profile" "$HOME/.bash_profile" "$HOME/.zshrc"; then
         config="$HOME/.bashrc"
         [ -f "$config" ] || config="$HOME/.profile"
         # shellcheck disable=SC2016  # $PATH must be written literally
         printf '\n# Pi (standalone Node.js)\nexport PATH="%s:$PATH"\n' "$NODE_BIN" >> "$config"
         echo "Added $NODE_BIN to PATH in $config."
     fi
+    # The top-of-script export ran before node existed; re-export now so the
+    # version check and the exec below find node.
+    if [ -x "$NODE_BIN/node" ]; then
+        export PATH="$NODE_BIN:$PATH"
+    fi
     if PI_BIN=$(find_pi); then
         echo "pi installed: $("$PI_BIN" --version)"
+        echo "Launching pi..."
+        echo
+        exec "$PI_BIN"
     else
         echo "Install finished, but 'pi' is not on PATH in this shell yet."
-        echo "Open a new terminal and run: pi --version"
+        echo "Open a new terminal and run: pi"
+        wait_key
+        exit 1
     fi
-    rm -f "$DESKTOP_FILE"
-    echo "Removed the 'Install Pi' launcher entry."
 else
     echo
-    echo "Install failed (see output above). The launcher entry was kept."
+    echo "Install failed (see output above)."
     wait_key
     exit 1
 fi
-
-wait_key

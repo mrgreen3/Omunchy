@@ -1,11 +1,11 @@
 [Desktop Entry]
 Version=1.0
-Name=Install Pi
-GenericName=Install the pi coding agent
-Comment=Checks the network and runs the official pi.dev installer
-Exec=foot --app-id=omunchy.Installer -e sh -c "exec ~/Scripts/omunchy-pi-install"
+Name=Pi
+GenericName=Launch the pi coding agent
+Comment=Launches pi; installs it first if missing
+Exec=foot --app-id=omunchy.TUI.float -e sh -c "exec ~/Scripts/omunchy-pi-install"
 Terminal=false
 Type=Application
-Icon=system-software-install
+Icon=utilities-terminal
 StartupNotify=true
 Categories=Utility;
