@@ -116,11 +116,19 @@ fi
 
 # --- sway borders (theme, included by the sway config) -----------------------
 if [[ -d $SWAY_DIR && -n ${SWAY_ACTIVE_BORDER:-} ]]; then
+    # Strip the alpha pair only from 8-digit RRGGBBAA values — %%?? would
+    # otherwise eat two colour digits from a 6-digit RRGGBB theme.
+    if (( ${#SWAY_ACTIVE_BORDER} == 8 )); then
+        SWAY_ACTIVE_BORDER=${SWAY_ACTIVE_BORDER%??}
+    fi
+    if (( ${#SWAY_INACTIVE_BORDER} == 8 )); then
+        SWAY_INACTIVE_BORDER=${SWAY_INACTIVE_BORDER%??}
+    fi
     cat >"$SWAY_DIR/theme" <<EOF
 # Written by omunchy-theme-set (theme: $THEME)
-client.focused          #${SWAY_ACTIVE_BORDER%%??} #${SWAY_ACTIVE_BORDER%%??} #111318 #${SWAY_ACTIVE_BORDER%%??} #${SWAY_ACTIVE_BORDER%%??}
-client.focused_inactive #${SWAY_INACTIVE_BORDER%%??} #${SWAY_INACTIVE_BORDER%%??} #111318 #${SWAY_INACTIVE_BORDER%%??} #${SWAY_INACTIVE_BORDER%%??}
-client.unfocused        #${SWAY_INACTIVE_BORDER%%??} #${SWAY_INACTIVE_BORDER%%??} #111318 #${SWAY_INACTIVE_BORDER%%??} #${SWAY_INACTIVE_BORDER%%??}
+client.focused          #${SWAY_ACTIVE_BORDER} #${SWAY_ACTIVE_BORDER} #111318 #${SWAY_ACTIVE_BORDER} #${SWAY_ACTIVE_BORDER}
+client.focused_inactive #${SWAY_INACTIVE_BORDER} #${SWAY_INACTIVE_BORDER} #111318 #${SWAY_INACTIVE_BORDER} #${SWAY_INACTIVE_BORDER}
+client.unfocused        #${SWAY_INACTIVE_BORDER} #${SWAY_INACTIVE_BORDER} #111318 #${SWAY_INACTIVE_BORDER} #${SWAY_INACTIVE_BORDER}
 EOF
 fi
 
