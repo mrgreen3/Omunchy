@@ -31,6 +31,10 @@ fi
 mapfile -t PACKAGES < <(sed -e 's/#.*//' -e '/^[[:space:]]*$/d' "$PACKAGES_FILE" | awk '!seen[$0]++')
 
 # Split by repo: whatever pacman -Si resolves is official, the rest is AUR.
+# Sync the databases first: with a stale db, pacman -Si fails for official
+# packages and they get misclassified as AUR.
+echo "[omunchy] Syncing pacman database (pacman -Sy)..."
+sudo pacman -Sy
 OFFICIAL=()
 AUR=()
 for pkg in "${PACKAGES[@]}"; do
@@ -57,7 +61,7 @@ install_base_stack() {
 }
 
 install_configs() {
-    local app src dest backup
+    local app src dest backup f
     for app in foot waybar rofi mako sway omunchy; do
         src="$SKEL_DIR/.config/$app"
         [[ -d $src ]] || continue
@@ -69,6 +73,20 @@ install_configs() {
         fi
         cp -r "$src" "$dest"
         echo "[omunchy] Installed configs: ~/.config/$app"
+    done
+    # Shell rc files: .bashrc puts ~/Scripts on PATH (the CLI and the
+    # keybinds depend on it), .bash_profile sources it and execs sway.
+    # Back up and replace, same as the .config dirs above.
+    for f in .bashrc .bash_profile; do
+        src="$SKEL_DIR/$f"
+        [[ -f $src ]] || continue
+        if [[ -e $HOME/$f ]]; then
+            backup="$HOME/$f.bak.$(date +%Y%m%d-%H%M%S)"
+            echo "[omunchy] Backing up ~/$f -> $backup"
+            mv "$HOME/$f" "$backup"
+        fi
+        cp "$src" "$HOME/$f"
+        echo "[omunchy] Installed ~/$f"
     done
     # The shipped looknfeel sets this wallpaper on sway start.
     if [[ ! -e $HOME/Backgrounds/aesthetic.jpg && -f $SKEL_DIR/Backgrounds/aesthetic.jpg ]]; then
