@@ -152,4 +152,7 @@ SWAY_ACTIVE_BORDER=${P[ACCENT]}ff
 SWAY_INACTIVE_BORDER=${P[SURFACE]}aa
 EOF
 
+# Run the cleanup explicitly: the EXIT trap never fires across `exec`,
+# which replaces the process below.
+rm -rf -- "$WORK"
 exec "$BIN_DIR/omunchy-theme-set" wallpaper
