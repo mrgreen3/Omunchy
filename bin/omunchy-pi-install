@@ -5,10 +5,13 @@
 # omunchy:examples=omunchy pi install
 
 # One-shot installer for the pi coding agent (https://pi.dev). Runs the official
-# `curl -fsSL https://pi.dev/install.sh | sh` in this terminal; the upstream
-# script reads its prompts from /dev/tty (so piping works) and bootstraps
-# node/npm itself if missing. The shipped "Install Pi" desktop entry removes
-# itself on success.
+# installer (downloaded, then `sh`) unattended: the upstream script has no
+# non-interactive flag or env var (as of 2026-09-27) — every prompt is a read
+# from /dev/tty (action menu, node/npm bootstrap, PATH add) that accepts its
+# default on Enter. We run it under script(1) so it gets a pty and feed Enter
+# keystrokes, equivalent to pressing Enter at every prompt. Bootstraps node/npm
+# itself if missing (user-local standalone node; no root needed). The shipped
+# "Install Pi" desktop entry removes itself on success.
 
 set -euo pipefail
 
@@ -32,6 +35,13 @@ wait_key() {
     echo
 }
 
+# Standalone-Node installs (the bootstrap for node-less machines) live outside
+# the launcher shell's PATH; export them so 'pi --version' works below.
+NODE_BIN="$HOME/.local/share/pi-node/current/bin"
+if [ -x "$NODE_BIN/node" ]; then
+    export PATH="$NODE_BIN:$PATH"
+fi
+
 echo "Checking network..."
 if ! curl -fsSL --connect-timeout 5 https://pi.dev >/dev/null 2>&1; then
     echo "No network connection. Connect first and retry."
@@ -49,8 +59,28 @@ fi
 
 echo "Running the official pi installer (https://pi.dev/install.sh)..."
 echo
-if curl -fsSL https://pi.dev/install.sh | sh; then
+# Feed Enter keystrokes so every /dev/tty prompt takes its default (install,
+# bootstrap node/npm if missing, add PATH) — no human input needed. A temp file
+# is required: piping the script source and the answers through one stdin
+# would make sh eat the answers as part of the script.
+tmp=$(mktemp)
+trap 'rm -f "$tmp"' EXIT
+if curl -fsSL https://pi.dev/install.sh -o "$tmp" &&
+   printf 'y\n\n\n\n' | script -qec "sh $tmp" /dev/null; then
     echo
+    # Upstream's standalone Node bootstrap (~/.local/share/pi-node) is not
+    # persisted to the shell profile — only the pi bin dir is — so pi's
+    # env-node launcher would fail in new shells. Persist it like upstream
+    # persists the pi bin dir (its PATH is already exported above).
+    NODE_BIN="$HOME/.local/share/pi-node/current/bin"
+    if [ -x "$NODE_BIN/node" ] &&
+       ! grep -qs "pi-node" "$HOME/.bashrc" "$HOME/.profile" "$HOME/.bash_profile" "$HOME/.zshrc"; then
+        config="$HOME/.bashrc"
+        [ -f "$config" ] || config="$HOME/.profile"
+        # shellcheck disable=SC2016  # $PATH must be written literally
+        printf '\n# Pi (standalone Node.js)\nexport PATH="%s:$PATH"\n' "$NODE_BIN" >> "$config"
+        echo "Added $NODE_BIN to PATH in $config."
+    fi
     if PI_BIN=$(find_pi); then
         echo "pi installed: $("$PI_BIN" --version)"
     else
