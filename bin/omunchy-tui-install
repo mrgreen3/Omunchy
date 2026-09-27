@@ -100,7 +100,11 @@ esac
 if [[ -n $ICON_REF && $ICON_REF =~ ^https?:// ]]; then
   ICON_VALUE=$(safe_icon_name "$APP_NAME")
   mkdir -p "$ICON_DIR"
-  if ! curl -fsSL --max-time 10 -o "$ICON_DIR/$ICON_VALUE.png" "$ICON_REF"; then
+  # Verify the payload is really an image (same check as the web app
+  # installer) so a non-image URL cannot ship as a .png icon.
+  if ! { curl -fsSL --max-time 10 -o "$ICON_DIR/$ICON_VALUE.png" "$ICON_REF" 2>/dev/null &&
+         [[ -s $ICON_DIR/$ICON_VALUE.png && $(file -b --mime-type "$ICON_DIR/$ICON_VALUE.png") == image/* ]]; }; then
+    rm -f "$ICON_DIR/$ICON_VALUE.png"
     echo "Error: Failed to download icon."
     exit 1
   fi
@@ -119,8 +123,11 @@ DESKTOP_FILE="$DESKTOP_DIR/omunchy-tui-$(safe_icon_name "$APP_NAME").desktop"
 mkdir -p "$DESKTOP_DIR"
 
 name_field=$(desktop_string_escape "$APP_NAME")
-# foot directly: xdg-terminal-exec drops --app-id here, so the sway float rule
-# (app_id omunchy.TUI.float) would never match.
+# foot directly: foot applies --app-id natively. In the generic path,
+# xdg-terminal-exec forwards --app-id to the default terminal (it is a
+# documented option of xdg-terminal-exec 0.14, honored when the selected
+# terminal's entry supports it), so the sway float rule (app_id
+# omunchy.TUI.float) can still match.
 if command -v foot >/dev/null 2>&1; then
   TERM_CMD="foot --app-id=$APP_CLASS -e"
 else
