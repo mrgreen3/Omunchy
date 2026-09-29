@@ -12,7 +12,7 @@ Omunchy is an all-in installer script — not a standalone distro — that layer
 - **Launcher:** Rofi
 - **Notifications:** Mako
 - **Terminal:** foot
-- **Web apps:** Chromium, locked down, using the `--app=` / PWA install mechanism for per-app windows rather than a full browser
+- **Browser / web apps:** Firefox; `omunchy-webapp <name> <url>` opens a URL in its own app-style window (private profile, tab strip and toolbars hidden via userChrome.css)
 
 This stack was chosen specifically to avoid the RAM overhead of a full shell daemon (e.g. quickshell) on constrained hardware such as Chromebooks. sway is among the leanest full Wayland compositors (idle desktop within ~tens of MB of a bare compositor); everything else stays file-configured with no daemons. The Omarchy-exact animation set was dropped — see `SWAY_PORT.md`.
 

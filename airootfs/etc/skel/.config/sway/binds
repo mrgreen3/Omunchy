@@ -8,7 +8,7 @@ set $terminal foot
 # --- Apps ---
 bindsym Super+Return exec $terminal
 bindsym Super+Space  exec rofi -show drun
-bindsym Super+B      exec chromium
+bindsym Super+B      exec firefox
 bindsym Super+E      exec foot -e spf
 bindsym Super+S      exec "foot -e dgop top"
 bindsym Super+A      exec "foot -e opencode --standalone --prompt 'Use the setup-menu skill to show me what you can set up.'"

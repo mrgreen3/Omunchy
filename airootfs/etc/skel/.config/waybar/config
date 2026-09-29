@@ -201,7 +201,7 @@
     "tooltip-format-paused": "Paused: {dynamic}",
     "player-icons": {
       "default": "󰏥",
-      "chromium": "󰈹",
+      "firefox": "󰈹",
       "mpv": "󰦖",
       "spotify": "󰓇"
     },

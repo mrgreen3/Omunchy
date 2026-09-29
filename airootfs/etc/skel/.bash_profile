@@ -5,7 +5,7 @@
 . $HOME/.bashrc
 
 # Environment for the Wayland session: sway does not export session vars
-# itself, and `exec`-ed children (foot, chromium, waybar) inherit this env.
+# itself, and `exec`-ed children (foot, firefox, waybar) inherit this env.
 WindowManager=sway
 
 # Start sway on TTY1
