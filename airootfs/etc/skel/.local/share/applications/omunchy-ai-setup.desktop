@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Name=AI Setup Assistant
+GenericName=Set up your system with OpenCode
+Comment=Opens OpenCode with a menu of setup tasks (needs a network)
+Exec=foot --app-id=omunchy.TUI.float -e sh -c "exec ~/Scripts/omunchy-opencode-setup"
+Terminal=false
+Type=Application
+Icon=utilities-terminal
+StartupNotify=true
+Categories=Utility;

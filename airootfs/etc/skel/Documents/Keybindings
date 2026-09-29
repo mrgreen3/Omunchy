@@ -12,6 +12,7 @@ Super + Space           Launcher (rofi)
 Super + b               Web Browser (chromium)
 Super + e               File Manager (superfile)
 Super + s               System Monitor (dgop)
+Super + a               AI Setup Assistant (OpenCode)
 Super + k               Show Keybindings
 
 

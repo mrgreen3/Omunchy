@@ -8,6 +8,12 @@ if [[ ":$PATH:" != *":$HOME/Scripts:"* ]]; then
     export PATH="$PATH:$HOME/Scripts"
 fi
 
+# User-local tools (claude, tuios, herdr, pi and its bundled node)
+for d in "$HOME/.local/bin" "$HOME/.pi/agent/bin" "$HOME/.local/share/pi-node/current/bin"; do
+    [[ ":$PATH:" != *":$d:"* ]] && export PATH="$PATH:$d"
+done
+unset d
+
 alias ls='ls --color=auto'
 
 # Package sizes

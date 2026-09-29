@@ -44,6 +44,10 @@ exec waybar
 exec mako
 exec udiskie
 
+# Live ISO only (the script exits elsewhere): report network state, warn if
+# offline. Plain exec — it holds its own lock, so reloads do not stack it.
+exec ~/Scripts/omunchy-welcome
+
 # First login: generate the web app / TUI launchers the rofi menu lists (they
 # live in ~/.local/share/applications, which the skel does not ship). Guarded so
 # later logins do not re-create launchers the user removed.

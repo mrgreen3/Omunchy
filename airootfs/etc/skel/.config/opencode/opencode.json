@@ -1,0 +1,23 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "autoupdate": false,
+  "share": "disabled",
+  "permission": {
+    "skill": {
+      "*": "allow"
+    },
+    "bash": {
+      "*": "ask",
+      "pacman -Q": "allow",
+      "rm -rf *": "deny",
+      "dd *": "deny",
+      "mkfs*": "deny",
+      "wipefs*": "deny",
+      "parted*": "deny",
+      "sudo pacman -R*": "ask",
+      "sudo pacman -Sy*": "deny",
+      "sudo pacman -Syu*": "ask",
+      "sudo pacman -Syyu*": "ask"
+    }
+  }
+}

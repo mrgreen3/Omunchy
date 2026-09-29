@@ -84,6 +84,8 @@ ntfs-3g
 ## === NETWORK MANAGEMENT ===
 networkmanager
 networkmanager-dmenu
+## AI setup assistant (welcome -> omunchy-opencode-setup -> skills in ~/.config/opencode)
+opencode
 nm-connection-editor
 
 ## === DESKTOP UTILITIES ===

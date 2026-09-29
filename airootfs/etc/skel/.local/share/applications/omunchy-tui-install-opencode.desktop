@@ -1,9 +1,0 @@
-[Desktop Entry]
-Version=1.0
-Name=Install OpenCode
-Exec=foot --app-id=omunchy.TUI.float -e sh -c "exec ~/Scripts/install-opencode"
-Terminal=false
-Type=Application
-Icon=system-software-install
-StartupNotify=true
-Categories=Utility;
