@@ -20,10 +20,14 @@ not install `nodejs` or `npm`.
 ## 2. Install
 
     curl -fsSL https://pi.dev/install.sh -o /tmp/pi-install.sh
-    sh /tmp/pi-install.sh
 
-The installer reads its prompts from `/dev/tty`, so run it in the user's
-terminal (not a captured subprocess) and let the user answer. It installs to
+The installer reads its prompts from `/dev/tty`, and your bash tool has no
+terminal, so do not run it directly. Open a foot window for it (detached, so
+the tool call returns) and tell the user to answer the prompts there:
+
+    setsid -f foot -e sh -c 'sh /tmp/pi-install.sh; printf "\nPress Enter to close... "; read -r _'
+
+Wait for the user to say it has finished, then verify. It installs to
 `~/.pi/agent/bin` and its own Node under `~/.local/share/pi-node`. Remove by
 deleting `~/.pi/agent/bin` and `~/.local/share/pi-node`.
 
