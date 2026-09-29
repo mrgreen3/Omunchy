@@ -56,7 +56,7 @@
   },
 
   // omarchy.indicators — DnD / NightLight / StayAwake: dim until on, click toggles
-  // signal 7 (8 belongs to custom/updates — omunchy-update sends RTMIN+8)
+  // signal 7 (8 belongs to custom/updates)
   "custom/dnd": {
     "format": "{}",
     "exec": "~/Scripts/indicators.sh state dnd",
@@ -101,7 +101,7 @@
     "exec": "~/Scripts/updates.sh",
     "return-type": "json",
     "interval": 21600,
-    "on-click": "foot -e omunchy-update",
+    "on-click": "foot -e sudo pacman -Syu",
     "signal": 8
   },
 

@@ -29,7 +29,6 @@ Pattern-for-pattern with Omarchy (see `docs/omarchy-parity.md` for the full 42-r
 Helper scripts live in `~/Scripts` (on PATH):
 
 ```
-omunchy-update [-y]        # reflector + pacman -Syu + orphans
 omunchy-welcome            # live-boot network report (started by sway)
 omunchy-opencode-setup     # AI setup assistant (Super+A)
 ```
@@ -46,10 +45,6 @@ omunchy-opencode-setup     # AI setup assistant (Super+A)
   nodejs/npm packages and nothing global. Opt in to opening the assistant
   automatically once online by starting the welcome with `AUTORUN=1`
   (e.g. `exec env AUTORUN=1 ~/Scripts/omunchy-welcome` in `looknfeel`).
-- `omunchy-update` refreshes mirrors with reflector (best-rated 5, skipped when
-  offline), runs `pacman -Syu`, updates AUR packages via yay only when any are
-  installed, and prompts to prune orphans — guarded by a lock so two updates
-  cannot interleave.
 
 ## Keybindings
 
@@ -64,7 +59,6 @@ XF86 audio/brightness via pamixer/brightnessctl. The full list lives in
 ## Layout
 
 ```
-airootfs/etc/skel/Scripts/omunchy-update    mirrors -> pacman -> yay -> orphan prune, lock-guarded
 airootfs/etc/skel/Scripts/omunchy-welcome   live-boot network report via mako
 airootfs/etc/skel/Scripts/omunchy-opencode-setup  AI setup assistant (Super+A)
 airootfs/                      archbang-derived archiso skeleton (sway skel config included)

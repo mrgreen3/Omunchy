@@ -4,7 +4,7 @@
 #
 # Prints a badge + count when updates are pending, nothing otherwise
 # (waybar hides an empty module). Refreshed every 6 h by waybar, or on
-# demand: pkill -RTMIN+8 waybar  (e.g. after `omunchy update`).
+# demand: pkill -RTMIN+8 waybar .
 
 set -uo pipefail
 

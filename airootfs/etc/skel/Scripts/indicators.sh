@@ -85,7 +85,7 @@ stayawake_toggle() {
 
 # waybar re-runs a module's exec on SIGRTMIN+N ("signal": N in the config), so a
 # click updates the icon immediately instead of waiting for the poll interval.
-# 8 belongs to waybar's custom/updates module (omunchy-update sends RTMIN+8),
+# 8 belongs to waybar's custom/updates module (refreshed on demand with RTMIN+8),
 # so DnD uses 7 to avoid re-running updates.sh on every DnD toggle.
 SIG_DND=7
 SIG_NIGHT=9
