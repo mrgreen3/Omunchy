@@ -2,7 +2,7 @@
 
 # omunchy:summary=Waybar indicators: DnD / night light / stay awake (one JSON state per mode; click toggles it)
 # omunchy:args=[state <mode>|toggle|toggle-dnd|toggle-night|toggle-awake|--help]
-# omunchy:examples=omunchy indicators-toggle toggle-night
+# omunchy:examples=indicators.sh toggle-night
 
 # Omarchy quattro omarchy.indicators widget, waybar edition
 # (docs/bar-research.md §5). Emits one JSON object for waybar's
