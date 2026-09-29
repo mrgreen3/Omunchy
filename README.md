@@ -30,14 +30,12 @@ Helper scripts live in `~/Scripts` (on PATH):
 
 ```
 omunchy-welcome            # live-boot network report (started by sway)
-omunchy-opencode-setup     # AI setup assistant (Super+A)
 ```
 
 - **AI setup assistant.** `opencode` ships in `packages.x86_64`. On the live ISO
   `omunchy-welcome` (started from sway's `looknfeel`) reports the network state
   through mako, warns with connection hints when offline, and keeps watching for
-  30 minutes. `Super+A` (or the "AI Setup Assistant" entry in the launcher, or
-  `omunchy-opencode-setup`) runs `omunchy-opencode-setup`: a network check, then
+  30 minutes. `Super+A` (or the "AI Setup Assistant" entry in the launcher) runs
   `opencode --standalone` (cloud-only, but free models work with no login) on the `setup-menu` skill. Skills live in
   `~/.config/opencode/skills` (`setup-menu`, `pacman-helper`, `claude-code-setup`,
   `pi-setup`, `tuios-setup`, `herdr-setup`, `dev-env-setup`); the Claude Code, pi, tuios and herdr
@@ -60,7 +58,6 @@ XF86 audio/brightness via pamixer/brightnessctl. The full list lives in
 
 ```
 airootfs/etc/skel/Scripts/omunchy-welcome   live-boot network report via mako
-airootfs/etc/skel/Scripts/omunchy-opencode-setup  AI setup assistant (Super+A)
 airootfs/                      archbang-derived archiso skeleton (sway skel config included)
 ```
 

@@ -34,7 +34,7 @@ active_conn() {
 online() {
   notify -u normal "Network connected" "$(active_conn)
 Super+A opens the AI setup assistant."
-  [[ $AUTORUN == 1 ]] && setsid -f "$HOME/Scripts/omunchy-opencode-setup" >/dev/null 2>&1
+  [[ $AUTORUN == 1 ]] && setsid -f foot -e opencode --standalone --prompt "Use the setup-menu skill to show me what you can set up." >/dev/null 2>&1
 }
 
 # Wait for mako to claim the notification bus.
