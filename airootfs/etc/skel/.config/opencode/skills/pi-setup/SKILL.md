@@ -24,7 +24,7 @@ call returns). It downloads the official installer, answers its prompts with
 the defaults, bootstraps Node into the user's home if missing, and adds the PATH
 lines. The user only watches; no input needed.
 
-    setsid -f foot -e ~/Scripts/install-pi
+    setsid -f foot -e ~/Scripts/pi.dev
 
 Wait for the user to say the window has finished (it waits for a keypress at the
 end), then verify. Installs to `~/.pi/agent/bin` and its own Node under
@@ -33,7 +33,7 @@ end), then verify. Installs to `~/.pi/agent/bin` and its own Node under
 
 ## PATH
 
-`install-pi` persists the PATH changes to `~/.bashrc`. They apply to new
+`pi.dev` persists the PATH changes to `~/.bashrc`. They apply to new
 terminals; until then call `~/.pi/agent/bin/pi` directly.
 
 ## Verify
@@ -48,4 +48,4 @@ Never ask for keys in chat. Config lives in `~/.pi/agent`
 
 ## Update
 
-`install-pi` only reports the version when pi is already installed. To update, check `pi --help` for pi's own update command.
+`pi.dev` only reports the version when pi is already installed. To update, check `pi --help` for pi's own update command.
