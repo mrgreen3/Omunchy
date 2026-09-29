@@ -16,8 +16,9 @@ Say what you can help install or configure, as a numbered list:
 2. **Pi** — the Pi coding agent (`pi-setup`)
 3. **tuios** — terminal window manager (`tuios-setup`)
 4. **Herdr** — workspace manager for coding agents (`herdr-setup`)
-5. **Packages** — install, search, remove, update, clean, keyring (`pacman-helper`)
-6. **Something else** — let the user describe it
+5. **Dev environment** — git, compiler, node/python/go/rust via mise (`dev-env-setup`)
+6. **Packages** — install, search, remove, update, clean, keyring (`pacman-helper`)
+7. **Something else** — let the user describe it
 
 Then ask which one they want. Do not act until they answer.
 

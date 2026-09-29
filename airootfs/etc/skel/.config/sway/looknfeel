@@ -65,7 +65,7 @@ exec_always omunchy-autotile start
 
 # Sway wallpaper: swaybg is shipped in packages.x86_64.
 # MARKER: omunchy-bg-set rewrites ONLY the exec line below.
-exec sleep 1 && swaybg -i "$HOME/Backgrounds/aesthetic.jpg" -m fill  # WALLPAPER_MARKER
+exec sleep 1 && swaybg -i "$HOME/Backgrounds/mountain-moon.jpg" -m fill  # WALLPAPER_MARKER
 
 # NOTE: dbus-update-activation-environment is handled in the main config via
 # exec_always so systemd / dbus activation env gets WAYLAND_DISPLAY etc.

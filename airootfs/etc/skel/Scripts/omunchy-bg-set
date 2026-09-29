@@ -2,7 +2,7 @@
 
 # omunchy:summary=Set the desktop wallpaper image and recolour the desktop from it
 # omunchy:args=[--no-theme] <image-path>
-# omunchy:examples=omunchy bg set ~/Backgrounds/sunset-lake.jpg
+# omunchy:examples=omunchy bg set ~/Backgrounds/mountain-moon.jpg
 
 set -euo pipefail
 

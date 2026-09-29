@@ -36,22 +36,17 @@ chain inside omacom/omarchy or a recorded upstream URL below.
 
 | File | Origin (theme in omarchy @ quattro) | Upstream source | Licence / attribution |
 |---|---|---|---|
-| aesthetic.jpg | Pre-existing in Omunchy (ArchBang-based skel, added in the initial base commit 9c8efda) | Untraced | **UNKNOWN — grandfathered**, see exclusions note below |
 | mountain-moon.jpg | osaka-jade `3-mountain-moon` | "Add extra Osaka Jade background image" (commit af00a902, DHH) | MIT (omarchy) |
-| sunset-lake.jpg | tokyo-night `3-sunset-lake` | "Add third Tokyo Night background" (commit 49efa1c3, DHH); same image Omunchy already shipped as sunset-lake.png (pixel-identical, corr 0.9999) | MIT (omarchy) |
-| tree-tops.jpg | everforest `1-tree-tops` | imported from basecamp/omakub `themes/everforest/background.jpg` (commit e2c8e3cc) | MIT (omarchy + omakub) |
 
 ### Conversions
 
-All shipped files are JPEG (quality 80–88, progressive), capped at 3840 px
-wide, converted from Omarchy's originals (webp/png/jpg). Filenames are
-renamed to clean ASCII slugs without the theme/sequence prefix:
+Shipped as JPEG, capped at 3840 px wide, converted from Omarchy's original and
+renamed to a clean ASCII slug:
 
-- `themes/tokyo-night/backgrounds/3-sunset-lake.webp` -> `sunset-lake.jpg`
-  (and Omunchy's older `sunset-lake.png` copy, pixel-identical content, was
-  retired in favour of the 4K JPG re-encode)
-- `themes/everforest/backgrounds/1-tree-tops.webp` -> `tree-tops.jpg`
 - `themes/osaka-jade/backgrounds/3-mountain-moon.webp` -> `mountain-moon.jpg`
+
+Removed from the set: `aesthetic.jpg` (unverified origin), `sunset-lake.jpg`
+and `tree-tops.jpg` (both MIT-covered, dropped to ship a single wallpaper).
 
 ## Excluded (audit of omissions)
 
@@ -79,12 +74,6 @@ Excluded candidates and reasons:
   audited here.)
 - `0-black-moon` (nord) and `3-mountain-moon`-adjacent large scans — skipped
   in favour of smaller equivalents already audited.
-
-Note: `aesthetic.jpg` predates this parity work in Omunchy's own history and
-its origin was never recorded. It is grandfathered into the ISO for now (it
-is referenced by the sway `looknfeel` (WALLPAPER_MARKER line) and install.sh), but it fails the same
-verification standard applied to everything above and should be replaced or
-re-sourced when convenient.
 
 ## Omarchy licence text (MIT, quoted)
 

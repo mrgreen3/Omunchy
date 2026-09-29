@@ -26,8 +26,8 @@ Pattern-for-pattern with Omarchy (see `docs/omarchy-parity.md` for the full 42-r
 
 ## Usage
 
-The CLI follows Omarchy's pattern: `bin/omunchy` is a dispatcher that auto-discovers
-self-describing `bin/omunchy-*` scripts (each declares its own summary/args/examples
+The CLI follows Omarchy's pattern: `Scripts/omunchy` is a dispatcher that auto-discovers
+self-describing `Scripts/omunchy-*` scripts (each declares its own summary/args/examples
 via metadata comments), so every file is a subcommand:
 
 ```
@@ -37,8 +37,8 @@ omunchy webapp remove                                        # picker (fzf / num
 omunchy webapp remove all                                    # bulk removal
 omunchy tui remove all                                       # bulk removal
 omunchy sync                                                 # batch from config/
-omunchy theme set omunchy-light                              # switch colour theme
-omunchy bg set ~/Backgrounds/sunset-lake.jpg                    # switch wallpaper + recolour from it
+omunchy theme set omunchy-forest                             # switch colour theme
+omunchy bg set ~/Backgrounds/mountain-moon.jpg                    # switch wallpaper + recolour from it
 omunchy bg set --no-theme <image>                            # wallpaper only, keep colours
 omunchy theme wallpaper <image>                              # recolour from an image (matugen)
 omunchy menu                                                 # rofi launcher menu
@@ -51,7 +51,7 @@ omunchy help                                                 # everything, with 
 
 - `omunchy sync` reads `config/webapps.conf` (`Name|URL|Icon`) and `config/tuis.conf`
   (`Name|Command|Style|Icon`) and generates `.desktop` entries for every line.
-  It also links `bin/omunchy-*` into `~/.local/bin` so `Exec=` references resolve.
+  It also links `Scripts/omunchy-*` into `~/.local/bin` so `Exec=` references resolve.
   Missing icons are fetched from the site's favicon (apple-touch-icon → well-known
   path → Google favicon service) with a generic icon as last resort.
 - New web apps and TUIs are added from a terminal with `omunchy webapp install`
@@ -71,11 +71,10 @@ omunchy help                                                 # everything, with 
   `omunchy-welcome` (started from sway's `looknfeel`) reports the network state
   through mako, warns with connection hints when offline, and keeps watching for
   30 minutes. `Super+A` (or the "AI Setup Assistant" entry in the launcher, or
-  `omunchy opencode setup`) runs `omunchy-opencode-setup`: a network check, a
-  first-run `opencode auth login` (OpenCode is cloud-only and not keyless), then
-  `opencode --standalone` on the `setup-menu` skill. Skills live in
+  `omunchy opencode setup`) runs `omunchy-opencode-setup`: a network check, then
+  `opencode --standalone` (cloud-only, but free models work with no login) on the `setup-menu` skill. Skills live in
   `~/.config/opencode/skills` (`setup-menu`, `pacman-helper`, `claude-code-setup`,
-  `pi-setup`, `tuios-setup`, `herdr-setup`); the Claude Code, pi, tuios and herdr
+  `pi-setup`, `tuios-setup`, `herdr-setup`, `dev-env-setup`); the Claude Code, pi, tuios and herdr
   skills use each tool's own installer into `~/.local` / `~/.pi`, so no
   nodejs/npm packages and nothing global. Opt in to opening the assistant
   automatically once online by starting the welcome with `AUTORUN=1`
@@ -88,7 +87,7 @@ omunchy help                                                 # everything, with 
   launcher pattern (`Exec=…omunchy-launch-webapp`, TUI app-id `omunchy.TUI.*`)
   and bulk-remove exactly those — including one-off installer entries sync
   knows nothing about.
-- Web app entries launch through `bin/omunchy-launch-webapp` (Chromium `--app=` mode,
+- Web app entries launch through `Scripts/omunchy-launch-webapp` (Chromium `--app=` mode,
   Wayland), so there is one place to later add launch-or-focus behaviour.
 - TUI entries run via `xdg-terminal-exec` with app-id `omunchy.TUI.float` /
   `omunchy.TUI.tile`, so sway window rules can target floating/tiled TUIs
@@ -96,14 +95,15 @@ omunchy help                                                 # everything, with 
 - `omunchy theme set <name>` applies a theme from `config/themes/<name>.conf` —
   plain shell-sourceable `NAME=hex` fragments, no Lua, no per-app theming —
   rewriting the colour lines in foot/waybar/mako/rofi configs and the sway
-  border colours, then restarting the bar and reloading sway. Two ship:
-  `omunchy-dark` (default, warm dark like ArchBang) and `omunchy-light`.
+  border colours, then restarting the bar and reloading sway. One ships:
+  `omunchy-forest` (default, green from the shipped wallpaper); add your own
+  as `~/.config/omunchy/themes/<name>.conf`.
 - `omunchy bg set <image>` rewrites the swaybg exec line (WALLPAPER_MARKER)
   in `~/.config/sway/looknfeel`, applies it to the running session, then
   recolours the desktop from the image: `omunchy theme wallpaper` runs matugen
   (dark scheme), writes `~/.config/omunchy/themes/wallpaper.conf` and applies it
   like any other theme. `--no-theme` skips the recolour; without matugen the
-  wallpaper still changes. `omunchy theme set omunchy-dark|omunchy-light` goes
+  wallpaper still changes. `omunchy theme set omunchy-forest` goes
   back to a fixed palette.
 - `omunchy update` refreshes mirrors with reflector (best-rated 5, skipped when
   offline), runs `pacman -Syu`, updates AUR packages via yay only when any are
@@ -123,25 +123,25 @@ XF86 audio/brightness via pamixer/brightnessctl. The full list lives in
 ## Layout
 
 ```
-bin/omunchy                    dispatcher (emulates Omarchy's bin/omarchy)
-bin/omunchy-sync               batch-generate entries from config/ + link bins
-bin/omunchy-webapp-install     create a web app launcher (interactive when run bare)
-bin/omunchy-tui-install        create a TUI launcher (interactive when run bare)
-bin/omunchy-webapp-remove      remove a web app launcher (fzf or numbered picker)
-bin/omunchy-tui-remove         remove a TUI launcher (fzf or numbered picker)
-bin/omunchy-webapp-remove-all  remove every omunchy web app launcher
-bin/omunchy-tui-remove-all     remove every omunchy TUI launcher
-bin/omunchy-launch-webapp      Chromium --app= launcher used by web app entries
-bin/omunchy-sway-reload        reload the sway session config
-bin/omunchy-theme-set          switch the desktop colour theme
-bin/omunchy-bg-set             switch the wallpaper (rewrites the swaybg line)
-bin/omunchy-menu               rofi launcher menu (apps / web apps / TUIs / keybinds / autotiling / power)
-bin/omunchy-autotile           dwindle-style autotiling: start (exec_always) / toggle
-bin/omunchy-update             mirrors -> pacman -> yay -> orphan prune, lock-guarded
+airootfs/etc/skel/Scripts/omunchy                    dispatcher (emulates Omarchy's bin/omarchy)
+airootfs/etc/skel/Scripts/omunchy-sync               batch-generate entries from config/ + link bins
+airootfs/etc/skel/Scripts/omunchy-webapp-install     create a web app launcher (interactive when run bare)
+airootfs/etc/skel/Scripts/omunchy-tui-install        create a TUI launcher (interactive when run bare)
+airootfs/etc/skel/Scripts/omunchy-webapp-remove      remove a web app launcher (fzf or numbered picker)
+airootfs/etc/skel/Scripts/omunchy-tui-remove         remove a TUI launcher (fzf or numbered picker)
+airootfs/etc/skel/Scripts/omunchy-webapp-remove-all  remove every omunchy web app launcher
+airootfs/etc/skel/Scripts/omunchy-tui-remove-all     remove every omunchy TUI launcher
+airootfs/etc/skel/Scripts/omunchy-launch-webapp      Chromium --app= launcher used by web app entries
+airootfs/etc/skel/Scripts/omunchy-sway-reload        reload the sway session config
+airootfs/etc/skel/Scripts/omunchy-theme-set          switch the desktop colour theme
+airootfs/etc/skel/Scripts/omunchy-bg-set             switch the wallpaper (rewrites the swaybg line)
+airootfs/etc/skel/Scripts/omunchy-menu               rofi launcher menu (apps / web apps / TUIs / keybinds / autotiling / power)
+airootfs/etc/skel/Scripts/omunchy-autotile           dwindle-style autotiling: start (exec_always) / toggle
+airootfs/etc/skel/Scripts/omunchy-update             mirrors -> pacman -> yay -> orphan prune, lock-guarded
 config/webapps.conf            Name|URL|Icon per line
 config/tuis.conf               Name|Command|Style|Icon per line
-config/themes/*.conf           theme palettes (omunchy-dark, omunchy-light)
-install.sh                     bootstrap: base stack + configs + sync
+config/themes/*.conf           theme palettes (omunchy-forest)
+install.sh                     bootstrap: base stack + configs + sync (symlinks Scripts/omunchy* from the skel)
 airootfs/                      archbang-derived archiso skeleton (sway skel config included)
 docs/omarchy-parity.md         Omarchy feature parity analysis and decisions
 .reference/                    upstream Omarchy scripts kept for reference (not committed)

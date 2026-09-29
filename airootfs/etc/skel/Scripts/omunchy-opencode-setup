@@ -1,13 +1,14 @@
 #!/bin/bash
 
-# omunchy:summary=Open the OpenCode AI setup assistant (logs in on first run)
+# omunchy:summary=Open the OpenCode AI setup assistant
 # omunchy:args=
 # omunchy:examples=omunchy opencode setup
 
-# OpenCode is cloud-only: it needs a network and a login. --standalone keeps
-# it from leaving a background service running on the live ISO.
+# OpenCode is cloud-only (needs a network) but ships free models, so no login
+# is required. --standalone keeps it from leaving a background service running
+# on the live ISO.
 
-# Needs a terminal (login prompts); open one if started from a keybind/notification.
+# Needs a terminal; open one if started from a keybind/notification.
 [[ -t 0 ]] || exec foot -e "$0" "$@"
 
 have_net() {
@@ -23,18 +24,6 @@ if ! have_net; then
   printf '\n  No network connection.\n  Connect (click the bar network icon, or run nmtui), then try again.\n'
   pause
   exit 1
-fi
-
-# First run: a saved credential (stored in opencode's own DB) or an API key in
-# the environment. --standalone so the check leaves no service running.
-if [[ -z "${OPENCODE_API_KEY:-}" ]] \
-    && ! timeout 20 opencode auth list --standalone --format json 2>/dev/null | grep -q '"type": "credential"'; then
-  printf '\n  OpenCode needs a login before it can answer.\n'
-  printf '  Choose a provider next (OpenCode Zen has free models).\n\n'
-  read -r -p '  Log in now? [Y/n] ' ans
-  if [[ ${ans:-y} != [nN]* ]]; then
-    opencode auth login --standalone || { pause; exit 1; }
-  fi
 fi
 
 exec opencode --standalone --prompt "Use the setup-menu skill to show me what you can set up."

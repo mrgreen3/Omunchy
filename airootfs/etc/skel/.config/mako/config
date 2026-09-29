@@ -7,9 +7,9 @@ border-size=2
 border-radius=0
 default-timeout=4000
 font=JetBrains Mono 10.5
-background-color=#11131899
-text-color=#e2e2e9
-border-color=#adc6ff
+background-color=#0f151199
+text-color=#dfe4dd
+border-color=#93d5aa
 max-visible=3
 
 # DnD (bar indicator / `omunchy indicators toggle`): makoctl mode -t

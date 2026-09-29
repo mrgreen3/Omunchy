@@ -2,7 +2,7 @@
 
 # omunchy:summary=Switch the desktop colour theme (foot, waybar, rofi, mako, sway borders)
 # omunchy:args=<name>
-# omunchy:examples=omunchy theme set omunchy-light
+# omunchy:examples=omunchy theme set omunchy-forest
 
 # Lean theme system: themes are plain shell fragments (NAME=hex) in
 # config/themes/<name>.conf. theme-set rewrites the colour lines in the

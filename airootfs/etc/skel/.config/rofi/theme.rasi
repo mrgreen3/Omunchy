@@ -1,13 +1,13 @@
-/* FruitBang — palette from sunset-lake.png */
+/* Omunchy — palette from mountain-moon.jpg */
 
 * {
-    bg:         #111318b3;
-    bg-alt:     #44474fc8;
-    fg:         #e2e2e9ff;
-    fg-dim:     #c4c6d0ff;
-    accent:     #adc6ffff;
+    bg:         #0f1511b3;
+    bg-alt:     #414942c8;
+    fg:         #dfe4ddff;
+    fg-dim:     #c0c9c0ff;
+    accent:     #93d5aaff;
     urgent:     #ffb4abff;
-    selected-fg:#0f2f60ff;
+    selected-fg:#00391fff;
 
     font:               "JetBrains Mono 10.5";
     background-color:   transparent;
