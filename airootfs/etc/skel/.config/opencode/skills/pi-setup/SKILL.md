@@ -19,26 +19,22 @@ not install `nodejs` or `npm`.
 
 ## 2. Install
 
-    curl -fsSL https://pi.dev/install.sh -o /tmp/pi-install.sh
+Run the shipped installer script in its own foot window (detached, so the tool
+call returns). It downloads the official installer, answers its prompts with
+the defaults, bootstraps Node into the user's home if missing, and adds the PATH
+lines. The user only watches; no input needed.
 
-The installer reads its prompts from `/dev/tty`, and your bash tool has no
-terminal, so do not run it directly. Open a foot window for it (detached, so
-the tool call returns) and tell the user to answer the prompts there:
+    setsid -f foot -e ~/Scripts/install-pi
 
-    setsid -f foot -e sh -c 'sh /tmp/pi-install.sh; printf "\nPress Enter to close... "; read -r _'
-
-Wait for the user to say it has finished, then verify. It installs to
-`~/.pi/agent/bin` and its own Node under `~/.local/share/pi-node`. Remove by
-deleting `~/.pi/agent/bin` and `~/.local/share/pi-node`.
+Wait for the user to say the window has finished (it waits for a keypress at the
+end), then verify. Installs to `~/.pi/agent/bin` and its own Node under
+`~/.local/share/pi-node`. Remove by deleting `~/.pi/agent/bin` and
+`~/.local/share/pi-node`.
 
 ## PATH
 
-The install is not on the current shell's PATH until a new login. Add after a
-yes, to `~/.bashrc`:
-
-    export PATH="$HOME/.pi/agent/bin:$HOME/.local/share/pi-node/current/bin:$PATH"
-
-Until then call `~/.pi/agent/bin/pi` directly.
+`install-pi` persists the PATH changes to `~/.bashrc`. They apply to new
+terminals; until then call `~/.pi/agent/bin/pi` directly.
 
 ## Verify
 
@@ -52,4 +48,4 @@ Never ask for keys in chat. Config lives in `~/.pi/agent`
 
 ## Update
 
-Re-run the installer, then `pi --version`.
+`install-pi` only reports the version when pi is already installed. To update, check `pi --help` for pi's own update command.
