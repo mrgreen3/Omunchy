@@ -30,7 +30,6 @@ Helper scripts live in `~/Scripts` (on PATH):
 
 ```
 omunchy-update [-y]        # reflector + pacman -Syu + orphans
-omunchy-autotile toggle    # dwindle-style autotiling on/off
 omunchy-welcome            # live-boot network report (started by sway)
 omunchy-opencode-setup     # AI setup assistant (Super+A)
 ```
@@ -65,28 +64,10 @@ XF86 audio/brightness via pamixer/brightnessctl. The full list lives in
 ## Layout
 
 ```
-airootfs/etc/skel/Scripts/omunchy                    dispatcher (emulates Omarchy's bin/omarchy)
-airootfs/etc/skel/Scripts/omunchy-sync               batch-generate entries from config/ + link bins
-airootfs/etc/skel/Scripts/omunchy-webapp-install     create a web app launcher (interactive when run bare)
-airootfs/etc/skel/Scripts/omunchy-tui-install        create a TUI launcher (interactive when run bare)
-airootfs/etc/skel/Scripts/omunchy-webapp-remove      remove a web app launcher (fzf or numbered picker)
-airootfs/etc/skel/Scripts/omunchy-tui-remove         remove a TUI launcher (fzf or numbered picker)
-airootfs/etc/skel/Scripts/omunchy-webapp-remove-all  remove every omunchy web app launcher
-airootfs/etc/skel/Scripts/omunchy-tui-remove-all     remove every omunchy TUI launcher
-airootfs/etc/skel/Scripts/omunchy-launch-webapp      Chromium --app= launcher used by web app entries
-airootfs/etc/skel/Scripts/omunchy-sway-reload        reload the sway session config
-airootfs/etc/skel/Scripts/omunchy-theme-set          switch the desktop colour theme
-airootfs/etc/skel/Scripts/omunchy-bg-set             switch the wallpaper (rewrites the swaybg line)
-airootfs/etc/skel/Scripts/omunchy-menu               rofi launcher menu (apps / web apps / TUIs / keybinds / autotiling / power)
-airootfs/etc/skel/Scripts/omunchy-autotile           dwindle-style autotiling: start (exec_always) / toggle
-airootfs/etc/skel/Scripts/omunchy-update             mirrors -> pacman -> yay -> orphan prune, lock-guarded
-config/webapps.conf            Name|URL|Icon per line
-config/tuis.conf               Name|Command|Style|Icon per line
-config/themes/*.conf           theme palettes (omunchy-forest)
-install.sh                     bootstrap: base stack + configs + sync (symlinks Scripts/omunchy* from the skel)
+airootfs/etc/skel/Scripts/omunchy-update    mirrors -> pacman -> yay -> orphan prune, lock-guarded
+airootfs/etc/skel/Scripts/omunchy-welcome   live-boot network report via mako
+airootfs/etc/skel/Scripts/omunchy-opencode-setup  AI setup assistant (Super+A)
 airootfs/                      archbang-derived archiso skeleton (sway skel config included)
-docs/omarchy-parity.md         Omarchy feature parity analysis and decisions
-.reference/                    upstream Omarchy scripts kept for reference (not committed)
 ```
 
 ## Known issues
