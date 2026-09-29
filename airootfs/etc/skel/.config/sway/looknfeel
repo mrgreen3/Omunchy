@@ -53,10 +53,9 @@ exec ~/Scripts/omunchy-welcome
 exec swayidle -w timeout 300 'swaylock -f' before-sleep 'swaylock -f'
 
 # Dwindle-style tiling (Omarchy/Hyprland dwindle parity): autotiling flips the
-# split orientation to match the focused window's shape. start is a
-# pkill-then-start wrapper, so `swaymsg reload` cannot stack duplicates and a
-# user-toggled off state survives reload.
-exec_always omunchy-autotile start
+# split orientation to match the focused window's shape. Plain exec (not
+# exec_always) so `swaymsg reload` does not start a second instance.
+exec autotiling
 
 # Sway wallpaper: swaybg is shipped in packages.x86_64.
 exec sleep 1 && swaybg -i "$HOME/Backgrounds/mountain-moon.jpg" -m fill
