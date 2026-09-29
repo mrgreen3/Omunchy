@@ -20,58 +20,26 @@ This stack was chosen specifically to avoid the RAM overhead of a full shell dae
 
 Pattern-for-pattern with Omarchy (see `docs/omarchy-parity.md` for the full 42-row analysis):
 
-- **Kept:** the metadata-header CLI dispatcher, webapp/TUI installers, `sync`, the bar/launcher/notification apps as plain configs, grim+slurp screenshots, the keybind-cheatsheet doc, thunar, fastfetch, adw-gtk theming.
-- **Lean replacements:** a two-file theme system + wallpaper switcher instead of Omarchy's 34 theme commands, a rofi menu instead of the quickshell menu daemon, a one-script update (reflector → pacman → yay → orphan prune) instead of the 22-cmd update system with snapper/migrations/channels.
-- **Stripped:** Omarchy's branded extras, per-app theming, protocol handlers, first-boot provisioning, plymouth/limine/snapper, plugin ecosystem, release channels — the CLI verb shape is inherited, the bloat is not.
+- **Kept:** the bar/launcher/notification apps as plain configs, grim+slurp screenshots, the keybind-cheatsheet doc, thunar, fastfetch, adw-gtk theming.
+- **Lean replacements:** one fixed theme and wallpaper, a one-script update (reflector → pacman → yay → orphan prune) instead of the 22-cmd update system with snapper/migrations/channels.
+- **Stripped:** Omarchy's branded extras, per-app theming, protocol handlers, first-boot provisioning, plymouth/limine/snapper, plugin ecosystem, release channels, the CLI dispatcher and web app/TUI installers.
 
 ## Usage
 
-The CLI follows Omarchy's pattern: `Scripts/omunchy` is a dispatcher that auto-discovers
-self-describing `Scripts/omunchy-*` scripts (each declares its own summary/args/examples
-via metadata comments), so every file is a subcommand:
+Helper scripts live in `~/Scripts` (on PATH):
 
 ```
-omunchy webapp install Gmail https://mail.google.com gmail   # one-off web app
-omunchy tui install htop htop float utilities-system-monitor # one-off TUI launcher
-omunchy webapp remove                                        # picker (fzf / numbered list)
-omunchy webapp remove all                                    # bulk removal
-omunchy tui remove all                                       # bulk removal
-omunchy sync                                                 # batch from config/
-omunchy theme set omunchy-forest                             # switch colour theme
-omunchy bg set ~/Backgrounds/mountain-moon.jpg                    # switch wallpaper + recolour from it
-omunchy bg set --no-theme <image>                            # wallpaper only, keep colours
-omunchy theme wallpaper <image>                              # recolour from an image (matugen)
-omunchy menu                                                 # rofi launcher menu
-omunchy sway reload                                         # swaymsg reload
-omunchy pi install                                           # launch pi (installs it first if missing)
-omunchy update                                               # reflector + pacman -Syu + orphans
-omunchy autotile toggle                                      # dwindle-style autotiling on/off
-omunchy help                                                 # everything, with examples
+omunchy-update [-y]        # reflector + pacman -Syu + orphans
+omunchy-autotile toggle    # dwindle-style autotiling on/off
+omunchy-welcome            # live-boot network report (started by sway)
+omunchy-opencode-setup     # AI setup assistant (Super+A)
 ```
 
-- `omunchy sync` reads `config/webapps.conf` (`Name|URL|Icon`) and `config/tuis.conf`
-  (`Name|Command|Style|Icon`) and generates `.desktop` entries for every line.
-  It also links `Scripts/omunchy-*` into `~/.local/bin` so `Exec=` references resolve.
-  Missing icons are fetched from the site's favicon (apple-touch-icon → well-known
-  path → Google favicon service) with a generic icon as last resort.
-- New web apps and TUIs are added from a terminal with `omunchy webapp install`
-  and `omunchy tui install` (no app-menu entries for these; `omunchy sync`
-  removes the old "Add Web App" / "Add TUI" launchers if present).
-- All conf-derived launchers ship as static `.desktop` entries in the ISO skel
-  (Gmail/YouTube/GitHub web apps with favicon PNGs, the `dgop` TUI from the
-  official-repo package listed in `packages.x86_64`). The Exec lines resolve
-  `omunchy-launch-webapp` / the command via `~/Scripts` on PATH, so they work
-  for any user without a login-time sync. `omunchy sync` regenerates identical
-  entries from `config/*.conf` when run manually.
-- `omunchy pi install` launches the pi coding agent in a floating foot
-  window, installing it first if missing (the official installer runs
-  unattended and bootstraps node/npm itself). The shipped "Pi" desktop entry
-  execs into the same script, so it keeps working as a launcher forever.
 - **AI setup assistant.** `opencode` ships in `packages.x86_64`. On the live ISO
   `omunchy-welcome` (started from sway's `looknfeel`) reports the network state
   through mako, warns with connection hints when offline, and keeps watching for
   30 minutes. `Super+A` (or the "AI Setup Assistant" entry in the launcher, or
-  `omunchy opencode setup`) runs `omunchy-opencode-setup`: a network check, then
+  `omunchy-opencode-setup`) runs `omunchy-opencode-setup`: a network check, then
   `opencode --standalone` (cloud-only, but free models work with no login) on the `setup-menu` skill. Skills live in
   `~/.config/opencode/skills` (`setup-menu`, `pacman-helper`, `claude-code-setup`,
   `pi-setup`, `tuios-setup`, `herdr-setup`, `dev-env-setup`); the Claude Code, pi, tuios and herdr
@@ -79,33 +47,7 @@ omunchy help                                                 # everything, with 
   nodejs/npm packages and nothing global. Opt in to opening the assistant
   automatically once online by starting the welcome with `AUTORUN=1`
   (e.g. `exec env AUTORUN=1 ~/Scripts/omunchy-welcome` in `looknfeel`).
-- `omunchy webapp remove` / `omunchy tui remove` mirror Omarchy's remove flow:
-  they index the installed `omunchy-*` launchers, pick one (fzf, or a numbered
-  list when fzf is absent), delete the `.desktop` and its omunchy-fetched icon,
-  and warn when the app is still defined in `config/*.conf` (or `sync` would
-  recreate it on the next run). The `remove all` variants grep for the omunchy
-  launcher pattern (`Exec=…omunchy-launch-webapp`, TUI app-id `omunchy.TUI.*`)
-  and bulk-remove exactly those — including one-off installer entries sync
-  knows nothing about.
-- Web app entries launch through `Scripts/omunchy-launch-webapp` (Chromium `--app=` mode,
-  Wayland), so there is one place to later add launch-or-focus behaviour.
-- TUI entries run via `xdg-terminal-exec` with app-id `omunchy.TUI.float` /
-  `omunchy.TUI.tile`, so sway window rules can target floating/tiled TUIs
-  (the shipped `looknfeel` floats `omunchy.TUI.float`).
-- `omunchy theme set <name>` applies a theme from `config/themes/<name>.conf` —
-  plain shell-sourceable `NAME=hex` fragments, no Lua, no per-app theming —
-  rewriting the colour lines in foot/waybar/mako/rofi configs and the sway
-  border colours, then restarting the bar and reloading sway. One ships:
-  `omunchy-forest` (default, green from the shipped wallpaper); add your own
-  as `~/.config/omunchy/themes/<name>.conf`.
-- `omunchy bg set <image>` rewrites the swaybg exec line (WALLPAPER_MARKER)
-  in `~/.config/sway/looknfeel`, applies it to the running session, then
-  recolours the desktop from the image: `omunchy theme wallpaper` runs matugen
-  (dark scheme), writes `~/.config/omunchy/themes/wallpaper.conf` and applies it
-  like any other theme. `--no-theme` skips the recolour; without matugen the
-  wallpaper still changes. `omunchy theme set omunchy-forest` goes
-  back to a fixed palette.
-- `omunchy update` refreshes mirrors with reflector (best-rated 5, skipped when
+- `omunchy-update` refreshes mirrors with reflector (best-rated 5, skipped when
   offline), runs `pacman -Syu`, updates AUR packages via yay only when any are
   installed, and prompts to prune orphans — guarded by a lock so two updates
   cannot interleave.

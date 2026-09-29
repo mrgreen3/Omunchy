@@ -1,9 +1,0 @@
-[Desktop Entry]
-Version=1.0
-Name=dgop
-Exec=foot --app-id=omunchy.TUI.float -e sh -c "exec dgop top"
-Terminal=false
-Type=Application
-Icon=utilities-system-monitor
-StartupNotify=true
-Categories=Utility;

@@ -1,13 +1,11 @@
-/* Omunchy bar — Omarchy quattro look, themed via omunchy-theme-set.
+/* Omunchy bar — Omarchy quattro look.
  *
- * The @define-color lines below are the ONLY place hex colours appear:
- * `omunchy theme-set <name>` rewrites them (plus every alpha(@bg, x) —
- * keep the alpha value on its own so the sed rule can update it).
+ * The @define-color lines below are the ONLY place hex colours appear.
  * Layout/spacing follow Omarchy's shell.toml tokens: fg-on-bg pills at
  * 4-8% fill, 1px borders at 40%, fully opaque bar background.
  */
 
-/* ---------- Palette (rewritten by bin/omunchy-theme-set) ---------- */
+/* ---------- Palette (fixed forest palette) ---------- */
 @define-color bg        #111318;
 @define-color surface   #44474f;
 @define-color fg        #e2e2e9;

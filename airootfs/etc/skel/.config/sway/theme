@@ -1,6 +1,6 @@
 # =============================================================================
 # Omunchy — sway border / focus colours (default: omunchy-forest palette).
-# Written by `omunchy theme-set <name>` (which rewrites this whole file).
+# Static: single fixed theme.
 # Palette: green from Backgrounds/mountain-moon.jpg (matches rofi/mako, waybar accent)
 # =============================================================================
 

@@ -1,8 +1,7 @@
 # =============================================================================
 # Omunchy — sway configuration (sway 1.12+, i3-compatible).
 #
-# Omarchy-parity bindings on the waybar/foot/mako/rofi stack. Reload:
-#   omunchy sway reload   (swaymsg reload)
+# Omarchy-parity bindings on the waybar/foot/mako/rofi stack. Reload: swaymsg reload
 #
 # Split into modules via `include`. A bad line in an included file makes
 # `swaymsg reload` fail loudly with the file and line number.

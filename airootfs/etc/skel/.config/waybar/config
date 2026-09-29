@@ -10,7 +10,7 @@
   // Omarchy/Omunchy-specific and omitted.
   //
   // Colour: all colours live in style.css as @define-color lines, rewritten
-  // by `omunchy theme-set <name>` — no hex values in this file.
+  // — no hex values in this file.
   "layer": "top",
   "position": "top",
   "height": 24,
