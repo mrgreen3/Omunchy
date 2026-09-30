@@ -33,9 +33,9 @@ omunchy-welcome            # live-boot network report (started by sway)
 ```
 
 - **AI setup assistant.** `opencode` ships in `packages.x86_64`. On the live ISO
-  `omunchy-welcome` (started from sway's `looknfeel`) reports the network state
-  through mako, warns with connection hints when offline, and keeps watching for
-  30 minutes. `Super+A` (or the "AI Setup Assistant" entry in the launcher) runs
+  `omunchy-welcome` (started from sway's `looknfeel`) shows a Super+K keybinds
+  hint at login, and a persistent warning with connection hints when offline,
+  which closes itself once a connection appears (watched for 30 minutes). `Super+A` (or the "AI Setup Assistant" entry in the launcher) runs
   `opencode --standalone` (cloud-only, but free models work with no login) on the `setup-menu` skill. Skills live in
   `~/.config/opencode/skills` (`setup-menu`, `pacman-helper`, `claude-code-setup`,
   `pi-setup`, `tuios-setup`, `herdr-setup`, `dev-env-setup`); the Claude Code, pi, tuios and herdr

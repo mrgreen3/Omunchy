@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omunchy:summary=Live-session network check, notifies if online or warns and watches if offline
+# omunchy:summary=Live-session login: keybinds hint, warns and watches if offline
 # omunchy:args=
 # omunchy:examples=omunchy welcome
 
@@ -25,15 +25,8 @@ have_net() {
     || curl -fsS --max-time 6 -o /dev/null https://archlinux.org 2>/dev/null
 }
 
-# Active connection as "name (type)".
-active_conn() {
-  nmcli -t -f NAME,TYPE connection show --active 2>/dev/null \
-    | grep -v -E '^(lo|docker|virbr)' | head -1 | sed 's/^\(.*\):\(.*\)$/\1 (\2)/'
-}
-
+# Connection up: AUTORUN=1 opens the assistant (warn-only, no toast).
 online() {
-  notify -u normal "Network connected" "$(active_conn)
-Super+A opens the AI setup assistant."
   [[ $AUTORUN == 1 ]] && setsid -f foot -e opencode --standalone --prompt "Use the setup-menu skill to show me what you can set up." >/dev/null 2>&1
 }
 
@@ -43,6 +36,9 @@ for _ in $(seq 30); do
   sleep 1
 done
 
+# Keybinds hint: once per login, whatever the network state.
+notify -t 15000 "Keybinds" "Press Super+K to see all keybinds."
+
 # Give NetworkManager a moment before calling it offline.
 for _ in $(seq 10); do have_net && break; sleep 2; done
 
@@ -51,19 +47,18 @@ if have_net; then
   exit 0
 fi
 
-notify -u critical "No network connection" \
+# Persistent (-t 0) until dismissed; -p prints its id for the watcher to close.
+warn_id=$(notify -p -u critical -t 0 "No network connection" \
 "Wi-Fi: click the network icon in the bar, or run nmtui.
 Wired: plug in a cable.
-Software installs and the AI assistant need a connection."
+Software installs and the AI assistant need a connection.")
 
 # Watch for a connection for 30 minutes.
 while (( SECONDS < 1800 )); do
   sleep 5
   if have_net; then
+    [[ -n $warn_id ]] && makoctl dismiss -n "$warn_id" 2>/dev/null
     online
     exit 0
   fi
 done
-
-notify -u normal "Still no network" \
-"Stopped watching for a connection. Connect, then press Super+A for the AI setup assistant."
