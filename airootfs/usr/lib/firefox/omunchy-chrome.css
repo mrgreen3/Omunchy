@@ -1,0 +1,31 @@
+/* Omunchy: green accent on the dark Firefox UI (palette from sway/rofi/waybar) */
+:root {
+    --omunchy-green: #93d5aa;
+    --omunchy-bg: #0f1511;
+    --omunchy-bg-alt: #1b241e;
+}
+
+#navigator-toolbox,
+#TabsToolbar,
+#nav-bar,
+#PersonalToolbar,
+#titlebar {
+    background-color: var(--omunchy-bg) !important;
+    border-color: color-mix(in srgb, var(--omunchy-green) 25%, transparent) !important;
+}
+
+.tab-background[selected] {
+    background-color: var(--omunchy-bg-alt) !important;
+    box-shadow: inset 0 2px 0 var(--omunchy-green) !important;
+}
+
+#urlbar-background,
+#searchbar {
+    background-color: var(--omunchy-bg-alt) !important;
+}
+
+#urlbar[focused] > #urlbar-background,
+#searchbar:focus-within {
+    outline: 2px solid var(--omunchy-green) !important;
+    outline-offset: -2px !important;
+}
