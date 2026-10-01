@@ -13,12 +13,11 @@ load the matching skill. Ask one question at a time.
 Say what you can help install or configure, as a numbered list:
 
 1. **Claude Code** — Anthropic's coding CLI (`claude-code-setup`)
-2. **Pi** — the Pi coding agent (`pi-setup`)
-3. **tuios** — terminal window manager (`tuios-setup`)
-4. **Herdr** — workspace manager for coding agents (`herdr-setup`)
-5. **Dev environment** — git, compiler, node/python/go/rust via mise (`dev-env-setup`)
-6. **Packages** — install, search, remove, update, clean, keyring (`pacman-helper`)
-7. **Something else** — let the user describe it
+2. **tuios** — terminal window manager (`tuios-setup`)
+3. **Herdr** — workspace manager for coding agents (`herdr-setup`)
+4. **Dev environment** — git, compiler, node/python/go/rust via mise (`dev-env-setup`)
+5. **Packages** — install, search, remove, update, clean, keyring (`pacman-helper`)
+6. **Something else** — let the user describe it
 
 Then ask which one they want. Do not act until they answer.
 
@@ -36,7 +35,7 @@ Then ask which one they want. Do not act until they answer.
 
 - Load the chosen skill and follow its steps. Never improvise root commands
   when a skill covers the task.
-- If the user already named a tool ("install pi"), skip the menu and go
+- If the user already named a tool ("install tuios"), skip the menu and go
   straight to that skill.
 - "Something else": ask one question to learn the goal. Do what official repos
   and safe user-space installs allow; say clearly what you cannot do.
@@ -46,7 +45,7 @@ Then ask which one they want. Do not act until they answer.
 - Never ask for API keys, passwords, or tokens in chat. Point the user at the
   tool's own login step.
 - Never pipe `curl` into a shell: download the installer to /tmp, then run it.
-- User-local tools (claude-code, pi, tuios, herdr) install into the home
+- User-local tools (claude-code, tuios, herdr) install into the home
   directory with their own installers: no sudo, no nodejs/npm.
 - pacman: official repos only unless the user explicitly asks for AUR.
 - Never `pacman -Sy` alone.

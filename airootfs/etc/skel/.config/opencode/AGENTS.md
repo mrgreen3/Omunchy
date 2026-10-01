@@ -8,9 +8,9 @@ so every sudo command needs a clear explanation and an explicit yes first.
   specific request.
 - Use the skills in `~/.config/opencode/skills` for installs and setup; do not
   improvise root commands when a skill covers the task.
-- opencode is the only AI tool installed via pacman. Tools like Claude Code, pi,
+- opencode is the only AI tool installed via pacman. Tools like Claude Code,
   tuios and herdr use their own official installers into the user's home
-  (`~/.local`, `~/.pi`) — no sudo, no npm/nodejs packages, nothing global.
+  (`~/.local`) — no sudo, no npm/nodejs packages, nothing global.
 - pacman: official repos only unless the user explicitly asks for AUR.
 - Never `pacman -Sy` alone (partial upgrade). Never pipe `curl` into a shell:
   download the installer to /tmp, then run it.

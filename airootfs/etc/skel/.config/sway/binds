@@ -8,15 +8,14 @@ set $terminal foot
 # --- Apps ---
 bindsym Super+Return exec $terminal
 bindsym Super+Space  exec rofi -show drun
-bindsym Super+B      exec firefox
-bindsym Super+E      exec foot -e spf
+bindsym Super+W      exec firefox
+bindsym Super+F      exec foot -e spf
 bindsym Super+S      exec "foot -e dgop top"
-bindsym Super+A      exec "foot -e opencode --standalone --prompt 'Use the setup-menu skill to show me what you can set up.'"
 bindsym Super+K      exec "grep -E '(Super|Ctrl|Vol|Mute|Bright)' ~/Documents/Keybindings | rofi -dmenu -p Keybinds -theme-str 'window { width: 90%; } listview { lines: 18; columns: 3; }'"
 
 # --- Windows ---
 bindsym Super+Q kill
-bindsym Super+F fullscreen toggle
+bindsym Super+Shift+F fullscreen toggle
 bindsym Super+T floating toggle
 bindsym Super+V split toggle
 

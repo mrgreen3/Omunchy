@@ -9,10 +9,9 @@ APPLICATIONS
 
 Super + Return          Terminal (foot)
 Super + Space           Launcher (rofi)
-Super + b               Web Browser (firefox)
-Super + e               File Manager (superfile)
+Super + w               Web Browser (firefox)
+Super + f               File Manager (superfile)
 Super + s               System Monitor (dgop)
-Super + a               AI Setup Assistant (OpenCode)
 Super + k               Show Keybindings
 
 
@@ -21,7 +20,7 @@ WINDOW CONTROLS
 
 Super + q               Close Window
 Super + t               Toggle Float
-Super + f               Fullscreen
+Super + shift + f       Fullscreen
 Super + v               Toggle Split
 
 Tiling helper: windows auto-split dwindle-style (autotiling).
