@@ -64,6 +64,6 @@ bindsym --locked XF86MonBrightnessDown exec brightnessctl s 5%-
 # --- Session ---
 bindsym Super+P       exec ~/Scripts/screenshot
 bindsym Super+Shift+S exec "~/Scripts/screenshot -r"
-bindsym Super+L       exec swaylock
+bindsym Super+L       exec ~/Scripts/omunchy-lock
 bindsym Super+R       exec swaymsg reload
 bindsym Super+Shift+E exec ~/Scripts/powermenu

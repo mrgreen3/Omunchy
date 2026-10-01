@@ -1,0 +1,12 @@
+#!/bin/sh
+# omunchy-lock — screen lock for Omunchy. Used by swayidle (looknfeel) and
+# the Super+L bind (binds). Look: blurred mountain-moon wallpaper, fill-scaled,
+# over a neutral dark base colour used when the blur image is missing.
+BLUR="$HOME/Backgrounds/mountain-moon-blur.jpg"
+NEUTRAL='#2e2e2e'
+
+if [ -f "$BLUR" ]; then
+	exec swaylock -f -i "$BLUR" -s fill -c "$NEUTRAL"
+else
+	exec swaylock -f -c "$NEUTRAL"
+fi
