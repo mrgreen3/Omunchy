@@ -3,6 +3,15 @@
     --omunchy-green: #93d5aa;
     --omunchy-bg: #0f1511;
     --omunchy-bg-alt: #1b241e;
+
+    --focus-outline-color: var(--omunchy-green) !important;
+    --toolbar-field-focus-border-color: var(--omunchy-green) !important;
+    --toolbar-bgcolor: var(--omunchy-bg) !important;
+    --toolbar-field-background-color: var(--omunchy-bg-alt) !important;
+    --toolbar-field-focus-background-color: var(--omunchy-bg-alt) !important;
+    --tab-selected-bgcolor: var(--omunchy-bg-alt) !important;
+    --lwt-accent-color: var(--omunchy-bg) !important;
+    --tab-selected-outline-color: transparent !important;
 }
 
 #navigator-toolbox,
@@ -17,6 +26,7 @@
 .tab-background[selected] {
     background-color: var(--omunchy-bg-alt) !important;
     box-shadow: inset 0 2px 0 var(--omunchy-green) !important;
+    outline: none !important;
 }
 
 #urlbar-background,
@@ -25,7 +35,16 @@
 }
 
 #urlbar[focused] > #urlbar-background,
+#urlbar[breakout-extend] > #urlbar-background,
 #searchbar:focus-within {
     outline: 2px solid var(--omunchy-green) !important;
     outline-offset: -2px !important;
+    border-color: var(--omunchy-green) !important;
+    background-color: var(--omunchy-bg-alt) !important;
+}
+
+.tab-background[selected]::before,
+.tab-background[selected]::after {
+    background-image: none !important;
+    border-image: none !important;
 }

@@ -41,6 +41,9 @@ chmod -c 0440 /etc/sudoers
 # Hide gparted from application menu
 sed -i '/^Categories=/a Hidden=true' /usr/share/applications/gparted.desktop
 
+# dgop hardcodes its fallback logo colour (purple); same-length swap to green
+[[ -f /usr/bin/dgop ]] && LC_ALL=C sed -i 's/#7D56F4/#93D5AA/g' /usr/bin/dgop
+
 # Hostname (hardcoded for live ISO; users can change after installation)
 echo "omunchy" > /etc/hostname
 
