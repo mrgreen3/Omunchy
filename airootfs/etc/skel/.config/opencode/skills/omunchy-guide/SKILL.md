@@ -13,5 +13,6 @@ description: Omunchy context and setup. Use at session start, when the user asks
    template and official sources only.
 3. Anything the Guide marks TODO: verify has no verified source. Say so and
    stop at that field instead of guessing; do not fill it from memory.
-4. Confirm the network is up before installs; warn that live-session
+4. Confirm the network is up before installs by running `netcheck` (never curl
+   a single website); warn that live-session
    installs are lost on reboot unless the system is installed.

@@ -26,7 +26,13 @@
       "SUDO_ASKPASS=* sudo -A pacman -R*": "ask",
       "SUDO_ASKPASS=* sudo -A pacman -Sy*": "deny",
       "SUDO_ASKPASS=* sudo -A pacman -Syu*": "ask",
-      "SUDO_ASKPASS=* sudo -A pacman -Syyu*": "ask"
+      "SUDO_ASKPASS=* sudo -A pacman -Syyu*": "ask",
+      "netcheck": "allow",
+      "netcheck *": "allow",
+      "~/Scripts/netcheck": "allow",
+      "~/Scripts/netcheck *": "allow",
+      "$HOME/Scripts/netcheck": "allow",
+      "$HOME/Scripts/netcheck *": "allow"
     }
   }
 }

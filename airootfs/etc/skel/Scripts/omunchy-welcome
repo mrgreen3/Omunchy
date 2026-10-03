@@ -20,9 +20,9 @@ flock -n 9 || exit 0
 notify() { notify-send -a Omunchy "$@" 2>/dev/null || true; }
 
 have_net() {
-  ping -c1 -W2 1.1.1.1 >/dev/null 2>&1 \
-    || ping -c1 -W2 8.8.8.8 >/dev/null 2>&1 \
-    || curl -fsS --max-time 6 -o /dev/null https://archlinux.org 2>/dev/null
+  "$HOME/Scripts/netcheck" -q \
+    || ping -c1 -W2 1.1.1.1 >/dev/null 2>&1 \
+    || ping -c1 -W2 8.8.8.8 >/dev/null 2>&1
 }
 
 # Connection up: AUTORUN=1 opens the assistant (warn-only, no toast).

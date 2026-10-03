@@ -27,7 +27,7 @@ persistent changes require the installer, obinstall.
   theme-switch command in the shipped scripts.
 
 - Scripts: ~/Scripts is on PATH. obinstall (installer), fix-keys (pacman
-  keyring), omunchy-welcome (live-session network report), screenshot,
+  keyring), omunchy-welcome (live-session network report), netcheck (is the network up?), screenshot,
   powermenu, omunchy-lock, updates.sh.
 
 - Keybindings: full list in ~/Documents/Keybindings; Super+K opens it in rofi
@@ -93,7 +93,10 @@ opencode auth login
 - With no specific request, or when asked what can be set up, list the APPS
   subsections plus PACKAGES (BASIC PACKAGE USAGE), ask which one the user
   wants, one question at a time, and do nothing until they answer.
-- Before any install: confirm the network is up, say what will be installed,
+- Before any install: run `netcheck` to confirm the network is up (exit 0 and
+  "Network OK"; otherwise it says what is wrong: no route, DNS failing, no
+  internet, or a login page to sign in to). Never test with curl against one
+  site such as archlinux.org. Then say what will be installed,
   roughly how big it is and whether it needs sudo, and warn that on the live
   ISO installs run from RAM and are lost on reboot.
 - Per-app setup steps are in the APPS section below; the assistant reaches

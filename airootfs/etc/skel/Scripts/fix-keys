@@ -2,10 +2,8 @@
 # Set up pacman keyring post install
 
 echo "Checking network connectivity..."
-if curl -s --connect-timeout 2 https://www.archlinux.org >/dev/null 2>&1; then
-    echo "Network is up."
-else
-    echo "No network connection detected, exiting."
+if ! "$HOME/Scripts/netcheck"; then
+    echo "Exiting: no usable network."
     exit 1
 fi
 

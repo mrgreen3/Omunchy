@@ -1,0 +1,34 @@
+#!/bin/sh
+# netcheck: is the network usable? Prints one line and sets the exit code.
+#   netcheck       say what is wrong (or "Network OK")
+#   netcheck -q    silent, exit code only
+# Exit: 0 online | 2 no default route | 3 DNS/web failing but reachable by IP |
+#       4 connected, no internet | 5 login page (captive portal) in the way
+# Uses 204-response check endpoints from two different providers, not a single
+# website: one site being down or rate-limiting must not look like "no network".
+URLS=${NETCHECK_URLS:-"http://connectivitycheck.gstatic.com/generate_204 http://cp.cloudflare.com/generate_204"}
+quiet=0; [ "$1" = "-q" ] && quiet=1
+say() { [ "$quiet" -eq 1 ] || echo "$*"; }
+
+if ! ip route show default 2>/dev/null | grep -q .; then
+  say "No network: no default route. Connect to Wi-Fi or plug in Ethernet."
+  exit 2
+fi
+
+portal=0
+for u in $URLS; do
+  code=$(curl -s -m 5 -o /dev/null -w '%{http_code}' "$u" 2>/dev/null)
+  if [ "$code" = 204 ]; then say "Network OK"; exit 0; fi
+  case $code in 200 | 30?) portal=1 ;; esac
+done
+
+if [ "$portal" -eq 1 ]; then
+  say "Connected, but a login page (captive portal) is blocking the internet. Open a browser and sign in to the network."
+  exit 5
+fi
+if ping -c1 -W2 1.1.1.1 >/dev/null 2>&1 || ping -c1 -W2 8.8.8.8 >/dev/null 2>&1; then
+  say "Connected, but web/DNS lookups are failing (the internet is reachable by IP). Check the DNS settings."
+  exit 3
+fi
+say "Connected to a network, but there is no internet access."
+exit 4

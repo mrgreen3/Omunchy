@@ -4,8 +4,8 @@
 set -e
 
 echo "Checking network..."
-if ! curl -s --connect-timeout 5 https://archlinux.org >/dev/null 2>&1; then
-    echo "No network connection. Connect first and retry."
+if ! "$HOME/Scripts/netcheck"; then
+    echo "Connect first and retry."
     exit 1
 fi
 

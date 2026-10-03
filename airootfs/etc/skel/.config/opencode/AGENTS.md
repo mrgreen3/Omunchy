@@ -18,4 +18,7 @@ in the Guide).
   download the installer to /tmp, then run it.
 - The live system runs from RAM/overlay: warn before large installs, and say
   that changes are lost on reboot unless the system is installed.
+- To test the network run `netcheck` (it says what is wrong). Never use curl or
+  ping against one website such as archlinux.org: one site being down or
+  rate-limiting looks like "no network".
 - Never ask the user to paste API keys or passwords into the chat.
