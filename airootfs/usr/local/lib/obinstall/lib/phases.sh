@@ -1,6 +1,6 @@
 # shellcheck shell=bash disable=SC2034
 # Install phases. The base system is a copy of the running live system
-# (same method as abinstall): no pacstrap, no network, no package repo.
+# no pacstrap, no network, no package repo.
 
 LIVE_USER=live
 LIVE_ROOT=/run/archiso/airootfs
@@ -157,7 +157,7 @@ fallback_options="-S autodetect"
 EOT
 
   # live-only bits
-  run rm -f "$MNT/home/$LIVE_USER/Scripts/abinstall" "$MNT/home/$LIVE_USER/Scripts/obinstall"
+  run rm -f "$MNT/home/$LIVE_USER/Scripts/obinstall"
   run rm -rf "$MNT/usr/local/lib/obinstall"
   run rm -rf "$MNT/etc/systemd/system/getty@tty1.service.d"
   run rm -f "$MNT/etc/systemd/system/default.target"

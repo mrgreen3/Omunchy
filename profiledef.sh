@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Omunchy profile — ArchBang base, Omarchy-style lean stack (waybar/foot/mako/rofi)
 
-iso_name="omunchy-rc"
+iso_name="omunchy-beta"
 iso_label="OMUNCHY_$(date +%d%m%y)"
 iso_publisher="Omunchy <https://github.com/mrgreen3/Omunchy>"
 iso_application="Omunchy Live ISO"

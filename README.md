@@ -36,7 +36,7 @@ obinstall --dry-run --config FILE   # print every step, touch nothing
 
 `obinstall` is a gum wizard (keyboard, account, hostname, timezone, disk, optional LUKS2) with a
 summary screen before anything is touched. It partitions the disk (GPT, 1 GiB ESP, btrfs with
-`@ @home @log @pkg`), copies the running live system to it the same way `abinstall` does
+`@ @home @log @pkg`), copies the running live system to it
 (tar | pv | tar, kernel from the ISO media, live-session changes synced), then converts the copy
 into an installed system: user rename, mkinitcpio (systemd hooks, `sd-encrypt` for LUKS), greetd,
 GRUB. It re-runs itself through sudo, so no need to prefix it. Source: `airootfs/usr/local/lib/obinstall/`.

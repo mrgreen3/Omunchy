@@ -42,13 +42,13 @@ playerctl
 matugen
 
 ## === BLUETOOTH & POWER (daemons: live ISO enables them via
-## multi-user.target.wants, abinstall enables them on installed systems) ===
+## multi-user.target.wants, obinstall enables them on installed systems) ===
 bluez
 bluez-utils
 power-profiles-daemon
 
 ## === GREETER (installed-system login only, configured/enabled by
-## abinstall — not used or started on the live ISO itself) ===
+## obinstall — not used or started on the live ISO itself) ===
 greetd
 greetd-gtkgreet
 cage

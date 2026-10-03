@@ -53,9 +53,9 @@ Desktop
   - swaybg wallpaper
 
 Installation
-  - Menu-driven installer (abinstall)
+  - Guided installer (obinstall) with a review screen before install
   - UEFI and BIOS boot support
-  - Optional LVM and full-disk encryption (LUKS)
+  - btrfs root with optional full-disk encryption (LUKS2)
   - Automatic CPU microcode detection
 
 

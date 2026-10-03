@@ -25,7 +25,7 @@ era and are left as written (each carries a dated header note).
 | `env =` exports + Hyprland's own systemd/dbus export | `.bash_profile` exports before `exec sway`; `exec_always systemctl --user set-environment` + `dbus-update-activation-environment` in the sway config |
 | Super+Tab `workspace e+1/e-1` | `workspace next` / `workspace prev` |
 | `hyprctl dispatch exit` (Lua `hl.dsp.exit()`) | `swaymsg exit` |
-| kb_layout `us` (abinstall sed target) | `xkb_layout us` (same sed-able own-line position) |
+| kb_layout `us` (obinstall sed target) | `xkb_layout us` (same sed-able own-line position) |
 | `hyprctl switchxkblayout current next` (bar click) | `swaymsg input '*' xkb_switch_layout next` |
 | greetd `environments`: "Hyprland" | "sway" |
 
@@ -89,7 +89,7 @@ era and are left as written (each carries a dated header note).
   scroll/layout actions, `#sway-language` CSS), bin/ + airootfs mirrors
   (theme-set, bg-set, menu, tui-install), bar `indicators.sh` (wlsunset),
   theme palettes (`SWAY_ACTIVE_BORDER`/`SWAY_INACTIVE_BORDER`),
-  `packages.x86_64` (sway stack), `install.sh`, `abinstall` (keyboard
+  `packages.x86_64` (sway stack), `install.sh`, `obinstall` (keyboard
   layout sed, wallpaper extraction, greeter, welcome text),
   `.bash_profile` (session env + `exec sway`), skel theme copies,
   `powermenu`, `tuis.conf`, `gtkgreet.css`, README, docs header notes.

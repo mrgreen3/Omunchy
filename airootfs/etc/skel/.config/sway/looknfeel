@@ -16,7 +16,7 @@ floating_modifier Mod4 normal
 # preserved as comments for reference only.
 
 # -----------------------------------------------------------------------------
-# INPUT (kb_layout kept on its own line — abinstall rewrites it with sed)
+# INPUT (kb_layout kept on its own line — obinstall rewrites it with sed)
 # -----------------------------------------------------------------------------
 input type:keyboard {
     xkb_layout   us

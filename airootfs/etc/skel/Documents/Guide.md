@@ -11,7 +11,7 @@ ABOUT OMUNCHY
 Omunchy is Arch-based. The desktop is sway + waybar (bar) + mako
 (notifications) + rofi (launcher) + foot (terminal), all from the official
 Arch repos. It is delivered as a live ISO that runs from RAM/overlay;
-persistent changes require the menu-driven installer abinstall.
+persistent changes require the installer, obinstall.
 
 - Live or installed: test for /run/archiso/airootfs.
   Present  = live: user "live", hostname "omunchy", passwordless sudo,
@@ -26,7 +26,7 @@ persistent changes require the menu-driven installer abinstall.
   wallpaper set by swaybg in ~/.config/sway/looknfeel. There is no
   theme-switch command in the shipped scripts.
 
-- Scripts: ~/Scripts is on PATH. abinstall (installer), fix-keys (pacman
+- Scripts: ~/Scripts is on PATH. obinstall (installer), fix-keys (pacman
   keyring), omunchy-welcome (live-session network report), screenshot,
   powermenu, omunchy-lock, updates.sh.
 
@@ -275,13 +275,13 @@ Fields without a verified official source stay marked TODO: verify.
 
 INSTALLATION
 
-The installer (abinstall) is menu-driven and must run as root. Open a
-terminal (foot) and run:
+The installer (obinstall) is a step-by-step wizard and shows a summary before
+it touches anything. Open a terminal (foot) and run:
 
-sudo abinstall
+obinstall
 
-abinstall is interactive and will erase the disk you select. Run it yourself,
-and back up first.
+It asks for root itself (sudo). obinstall is interactive and will erase the
+disk you select. Run it yourself, and back up first.
 
 Note: the older right-click / rofi-menu "Install" route is not currently
 available — no installer .desktop file ships with the system.

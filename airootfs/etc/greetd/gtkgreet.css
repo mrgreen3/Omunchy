@@ -1,7 +1,7 @@
 /* gtkgreet theme — matches the Omunchy desktop palette (sway/waybar/rofi/mako).
    background-color is a fallback for if the image below fails to load; the
    image itself is copied to this fixed, extension-less path at install time
-   (abinstall's install_omunchy) since greetd's "greeter" user has no home
+   (obinstall) since greetd's "greeter" user has no home
    dir to read a per-user ~/Backgrounds file from. gtkgreet's session dropdown
    is a separate GtkWindow and will show a cropped corner of the same image —
    a known, accepted cosmetic quirk rather than a bug.
