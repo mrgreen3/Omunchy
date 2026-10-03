@@ -36,10 +36,9 @@ omunchy-welcome            # live-boot network report (started by sway)
   `omunchy-welcome` (started from sway's `looknfeel`) shows a Super+K keybinds
   hint at login, and a persistent warning with connection hints when offline,
   which closes itself once a connection appears (watched for 30 minutes). OpenCode runs as
-  `opencode --standalone` (cloud-only, but free models work with no login) on the `setup-menu` skill. Skills live in
-  `~/.config/opencode/skills` (`setup-menu`, `pacman-helper`, `claude-code-setup`,
-  `tuios-setup`, `herdr-setup`, `dev-env-setup`); the Claude Code, tuios and herdr
-  skills use each tool's own installer into `~/.local`, so no
+  `opencode --standalone` (cloud-only, but free models work with no login) on the single `omunchy-guide` skill, which reads
+  `~/Documents/Guide.md` (the human Guide doubles as the assistant's reference: ABOUT, AI SETUP, APPS, packages). The skill lives in
+  `~/.config/opencode/skills`; the user-local tools in the Guide use each tool's own installer into `~/.local`, so no
   nodejs/npm packages and nothing global. Opt in to opening the assistant
   automatically once online by starting the welcome with `AUTORUN=1`
   (e.g. `exec env AUTORUN=1 ~/Scripts/omunchy-welcome` in `looknfeel`).

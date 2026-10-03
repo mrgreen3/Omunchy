@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # ~/Pictures may not exist yet (xdg-user-dirs runs at first login); grim will
 # not create it, so make it here.
 mkdir -p ~/Pictures

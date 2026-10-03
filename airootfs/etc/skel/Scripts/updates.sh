@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Waybar custom/updates: pending pacman update count (Omarchy's
 # omarchy.system-update widget, waybar edition).
 #

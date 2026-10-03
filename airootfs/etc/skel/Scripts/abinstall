@@ -515,9 +515,9 @@ configure_vconsole(){
   # console (rescue/recovery, before a desktop is running), and almost
   # every user is on sway/Wayland day to day, whose own keyboard layout
   # is set separately in select_xkeymap below (derived from location).
-  # Documents/Guide covers editing /etc/vconsole.conf post-install for
+  # Documents/Guide.md covers editing /etc/vconsole.conf post-install for
   # anyone who actually needs a different console layout.
-  print_info "Using 'us' for the console (tty) layout — see Documents/Guide to change it later."
+  print_info "Using 'us' for the console (tty) layout — see Documents/Guide.md to change it later."
   echo "KEYMAP=us" > ${MNT}/etc/vconsole.conf
 }
 #}}}

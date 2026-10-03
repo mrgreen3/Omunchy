@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 choice=$(printf "󰍃  Logout\n󰑓  Reboot\n󰐥  Poweroff" | rofi -dmenu -p "Power" \
     -theme ~/.config/rofi/theme.rasi \
     -lines 3 \

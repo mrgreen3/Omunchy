@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # omunchy:summary=Live-session login: keybinds hint, warns and watches if offline
 # omunchy:args=
@@ -27,7 +27,7 @@ have_net() {
 
 # Connection up: AUTORUN=1 opens the assistant (warn-only, no toast).
 online() {
-  [[ $AUTORUN == 1 ]] && setsid -f foot -e opencode --standalone --prompt "Use the setup-menu skill to show me what you can set up." >/dev/null 2>&1
+  [[ $AUTORUN == 1 ]] && setsid -f foot -e opencode --standalone --prompt "Use the omunchy-guide skill to show me what you can set up." >/dev/null 2>&1
 }
 
 # Wait for mako to claim the notification bus.

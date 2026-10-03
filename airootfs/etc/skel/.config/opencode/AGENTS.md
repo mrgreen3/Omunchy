@@ -4,10 +4,9 @@ You run on an Omunchy (ArchBang-based, sway/mako/waybar) system, usually a live 
 booted by a user who may be new to Arch. The user account has passwordless sudo,
 so every sudo command needs a clear explanation and an explicit yes first.
 
-- Start with the `setup-menu` skill when the user opens a session with no
-  specific request.
-- Use the skills in `~/.config/opencode/skills` for installs and setup; do not
-  improvise root commands when a skill covers the task.
+- Start with the `omunchy-guide` skill (it reads `~/Documents/Guide.md`) when
+  the user opens a session with no specific request, and for any install or
+  setup. Do not improvise root commands when the Guide covers the task.
 - opencode is the only AI tool installed via pacman. Tools like Claude Code,
   tuios and herdr use their own official installers into the user's home
   (`~/.local`) — no sudo, no npm/nodejs packages, nothing global.
