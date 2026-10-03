@@ -82,6 +82,8 @@ opencode auth login
   - no global npm/nodejs; user-local tools install under ~/.local or ~/.pi
     with their own installers (no sudo for those)
   - never pipes curl into a shell: downloads to /tmp, then runs
+  - installs each app the way its APPS entry says, even when yay is
+    installed (yay/AUR only when the user explicitly asks for the AUR)
   - never runs chained destructive commands; never asks for API keys or
     passwords in chat
   - installers that need a real terminal (they read /dev/tty or ask
@@ -225,7 +227,8 @@ Remove:
   rm -f ~/.local/bin/cliamp ~/.local/share/applications/cliamp.desktop \
         ~/.local/share/applications/cliamp-url-handler.desktop
   update-desktop-database ~/.local/share/applications
-AUR alternative (only if the user asks for it): yay -S cliamp-bin
+AUR alternative: ONLY if the user explicitly asks for the AUR version (yay -S cliamp-bin),
+never just because yay is installed.
 If the installer URL fails, check https://cliamp.stream; do not improvise.
 
 DEV ENVIRONMENT
@@ -235,7 +238,8 @@ official repos. Ask which languages are wanted (node, python, go, rust, ruby,
 or just git and a compiler); install nothing nobody asked for. Runtimes are
 large: say so, especially on the live ISO.
 
-Install:  sudo pacman -S --needed git base-devel     (base-devel only for builds)
+Install:  sudo pacman -S --needed base-devel     (git is already installed; base-devel
+          is only for real source builds)
   then the runtime, e.g. sudo pacman -S nodejs npm | python | go | rust
 Needs:    network
 Verify:   <tool> --version
@@ -248,20 +252,32 @@ Git identity (optional; name and email are not secrets):
 YAY / AUR
 
 Only when the user explicitly asks for AUR support. Nothing in Omunchy needs
-it. AUR packages are community-built and unreviewed by Arch: review the
-PKGBUILD, never answer prompts blindly. On the live ISO, building needs
-base-devel + git (hundreds of MB in RAM) and is lost on reboot.
+it. Having yay installed does NOT change that: it is not a request to install
+other apps from the AUR. Use each app's own Install line in this Guide (its
+official installer, or pacman) even when yay is present; reach for yay only
+when the user asks for a specific package from the AUR. If the Guide's method
+fails, report it and ask, do not fall back to the AUR.
 
-Install:  ~/Scripts/install-yay   (use the full path; the user can run it, or
-          the assistant can on the live ISO). It checks the network, installs base-devel and git with
-          pacman, builds yay from the AUR, then removes the go package it
-          needed for the build (so a go installed earlier is removed too).
-Needs:    network; sudo for the pacman and makepkg steps
-On an installed system sudo asks for a password, which the assistant cannot
-type: the user runs ~/Scripts/install-yay themselves in a terminal.
+AUR packages are community-built and unreviewed by Arch: review the PKGBUILD,
+never answer prompts blindly. On the live ISO, installs are lost on reboot.
+
+Install:  ~/Scripts/install-yay   (use the full path). It installs yay-bin, the
+          prebuilt upstream release of yay (its checksum is pinned in the AUR
+          PKGBUILD). It only needs git, fakeroot and binutils, which ship with
+          Omunchy: nothing is compiled, no go, no base-devel, about 12 MiB.
+          ~/Scripts/install-yay --source builds yay from source instead: it
+          needs base-devel and go (about 0.75 GiB of RAM at peak on the live
+          ISO) and removes go afterwards only if the script itself added it.
+Needs:    network; sudo. Run without a terminal (as the assistant does), the
+          script uses `sudo -A` itself, so the password goes into the askpass
+          box (see SUDO FROM OPENCODE): say first which pacman commands will
+          run as root; the password is remembered for about five minutes, so
+          usually the box appears once. Run in a terminal, it just asks in
+          that terminal. This is mostly needed on an installed system, where
+          sudo asks for a password.
 Verify:   yay --version
 Remove:
-  sudo pacman -Rns yay        (then base-devel/git if nothing else needs them)
+  sudo pacman -Rns yay-bin      (yay, if it was built with --source)
 
 GEMINI CLI
 

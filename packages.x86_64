@@ -120,6 +120,12 @@ rsync
 pv
 dosfstools
 btrfs-progs
+## minimal makepkg set: lets install-yay build the prebuilt yay-bin with no
+## compiler (git: clone + runtime dependency, fakeroot: packaging, binutils: strip).
+## Full base-devel (gcc, make, ...) stays an on-demand install.
+git
+fakeroot
+binutils
 
 ## === BOOTLOADER & FIRMWARE ===
 grub

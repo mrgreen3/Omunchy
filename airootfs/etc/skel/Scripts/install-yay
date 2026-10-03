@@ -1,7 +1,18 @@
 #!/usr/bin/env bash
-# Install yay AUR helper from source
+# Install the yay AUR helper.
+#   install-yay            install yay-bin (prebuilt upstream release; needs only
+#                          git, fakeroot and binutils, no compiler, no go)
+#   install-yay --source   build yay from source (needs base-devel and go)
 
 set -e
+
+mode=bin
+case "${1:-}" in
+    "") ;;
+    --source) mode=source ;;
+    -h | --help) sed -n '2,5p' "$0"; exit 0 ;;
+    *) echo "unknown option: $1 (use --source or no option)" >&2; exit 2 ;;
+esac
 
 echo "Checking network..."
 if ! "$HOME/Scripts/netcheck"; then
@@ -14,20 +25,71 @@ if command -v yay >/dev/null 2>&1; then
     exit 0
 fi
 
-# pull in dependencies for build
-sudo pacman -Sy --noconfirm --needed base-devel git
+# No terminal (run by an assistant): take the sudo password through the askpass box.
+SUDO=(sudo)
+if [[ ! -t 0 && -n ${SUDO_ASKPASS:-} ]]; then
+    SUDO=(sudo -A)
+fi
 
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 
+if [[ $mode == bin ]]; then
+    # only pacman -S what is missing (all three ship on the Omunchy image)
+    missing=()
+    for p in git fakeroot binutils; do
+        pacman -Qq "$p" >/dev/null 2>&1 || missing+=("$p")
+    done
+    if ((${#missing[@]})); then
+        echo "Installing build prerequisites: ${missing[*]}"
+        "${SUDO[@]}" pacman -S --noconfirm --needed "${missing[@]}" || {
+            echo "Could not install ${missing[*]}. If the package database is empty, run fix-keys or 'sudo pacman -Syu' first." >&2
+            exit 1
+        }
+    fi
+
+    echo "Cloning yay-bin..."
+    git clone https://aur.archlinux.org/yay-bin.git "$TMP/yay-bin"
+
+    # makepkg's default 'debug' option needs debugedit (which needs gdb); nothing is
+    # compiled here, so switch it off for this build only (the last OPTIONS entry wins)
+    printf 'source /etc/makepkg.conf\nOPTIONS+=(!debug)\n' >"$TMP/makepkg.conf"
+
+    echo "Packaging yay-bin (downloads the upstream release, checksum-verified)..."
+    cd "$TMP/yay-bin"
+    makepkg --config "$TMP/makepkg.conf" -f --noconfirm
+
+    echo "Installing yay-bin..."
+    "${SUDO[@]}" pacman -U --noconfirm ./yay-bin-[0-9]*.pkg.tar.zst
+
+    echo "yay installed: $(yay --version)"
+    exit 0
+fi
+
+# ---- --source: build from source (needs base-devel and go) ----
+"${SUDO[@]}" pacman -Sy --noconfirm --needed base-devel git
+
+# yay builds with go: remember whether it was already installed so it is only
+# removed afterwards if this script added it
+had_go=0
+pacman -Qq go >/dev/null 2>&1 && had_go=1
+"${SUDO[@]}" pacman -S --noconfirm --needed go
+
 echo "Cloning yay..."
 git clone https://aur.archlinux.org/yay.git "$TMP/yay"
 
-echo "Building and installing yay..."
+# build as the user, then install the package with sudo (makepkg -i would call
+# plain sudo itself, which cannot ask for a password without a terminal)
+echo "Building yay..."
 cd "$TMP/yay"
-makepkg -si --noconfirm
+makepkg -f --noconfirm
+
+echo "Installing yay..."
+"${SUDO[@]}" pacman -U --noconfirm ./yay-[0-9]*.pkg.tar.zst
 
 echo "yay installed: $(yay --version)"
 
-echo "Removing go package..."
-sudo pacman -Rns --noconfirm go 2>/dev/null || true
+if [[ $had_go -eq 0 ]]; then
+    echo "Removing go (only needed for the build)..."
+    "${SUDO[@]}" pacman -Rns --noconfirm go 2>/dev/null || true
+fi

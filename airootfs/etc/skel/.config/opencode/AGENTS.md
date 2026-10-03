@@ -13,7 +13,11 @@ in the Guide).
 - opencode is the only AI tool installed via pacman. Tools like Claude Code,
   tuios and herdr use their own official installers into the user's home
   (`~/.local`) — no sudo, no npm/nodejs packages, nothing global.
-- pacman: official repos only unless the user explicitly asks for AUR.
+- pacman: official repos only unless the user explicitly asks for AUR. Having yay
+  installed is NOT a request for AUR: install every app the way its Guide entry
+  says (its own official installer, or pacman). Use yay only when the user asks
+  for that package from the AUR. If the Guide's method fails, say so and ask;
+  do not fall back to the AUR.
 - Never `pacman -Sy` alone (partial upgrade). Never pipe `curl` into a shell:
   download the installer to /tmp, then run it.
 - The live system runs from RAM/overlay: warn before large installs, and say
