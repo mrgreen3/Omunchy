@@ -30,7 +30,17 @@ Helper scripts live in `~/Scripts` (on PATH):
 
 ```
 omunchy-welcome            # live-boot network report (started by sway)
+obinstall                  # install Omunchy to disk (copies this live system; no network needed)
+obinstall --dry-run --config FILE   # print every step, touch nothing
 ```
+
+`obinstall` is a gum wizard (keyboard, account, hostname, timezone, disk, optional LUKS2) with a
+summary screen before anything is touched. It partitions the disk (GPT, 1 GiB ESP, btrfs with
+`@ @home @log @pkg`), copies the running live system to it the same way `abinstall` does
+(tar | pv | tar, kernel from the ISO media, live-session changes synced), then converts the copy
+into an installed system: user rename, mkinitcpio (systemd hooks, `sd-encrypt` for LUKS), greetd,
+GRUB. It re-runs itself through sudo, so no need to prefix it. Source: `airootfs/usr/local/lib/obinstall/`.
+Untested on real hardware: try it in a VM first.
 
 - **AI setup assistant.** `opencode` ships in `packages.x86_64`. On the live ISO
   `omunchy-welcome` (started from sway's `looknfeel`) shows a Super+K keybinds

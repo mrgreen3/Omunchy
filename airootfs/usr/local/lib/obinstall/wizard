@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# gum wizard: collects answers and writes a sourceable install.conf (0600).
+# Usage: wizard OUTFILE
+set -Eeuo pipefail
+INSTALLER_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+# shellcheck source=lib/common.sh
+. "$INSTALLER_DIR/lib/common.sh"
+OUT=${1:?usage: wizard OUTFILE}
+command -v gum >/dev/null || { echo "gum is required" >&2; exit 1; }
+umask 077
+dir=$(dirname "$OUT"); mkdir -p "$dir"
+
+list_keymaps() { localectl list-keymaps 2>/dev/null || find /usr/share/kbd/keymaps -name '*.map.gz' -printf '%f\n' | sed 's/\.map\.gz$//' | sort -u; }
+list_zones() { timedatectl list-timezones 2>/dev/null || (cd /usr/share/zoneinfo && find . -type f -path './*/*' ! -path './posix/*' ! -path './right/*' | sed 's|^\./||' | sort); }
+ask() { gum input --prompt "$1 " --placeholder "${2:-}" --value "${3:-}"; }
+
+screen "Keyboard layout"
+KEYMAP=$(list_keymaps | gum filter --placeholder "type to search" --height 12 --value us || echo us)
+KEYMAP=${KEYMAP:-us}
+
+screen "Your account"
+while :; do
+  USERNAME=$(ask "Username:")
+  [[ $USERNAME =~ ^[a-z_][a-z0-9_-]{0,31}$ ]] && break
+  gum style --foreground 9 "Invalid username (lowercase letters, digits, - and _)"
+done
+while :; do
+  PW=$(gum input --password --prompt "Password: ")
+  PW2=$(gum input --password --prompt "Confirm:  ")
+  [[ -n $PW && $PW == "$PW2" ]] && break
+  gum style --foreground 9 "Passwords empty or do not match"
+done
+
+screen "Computer name"
+HOSTNAME=$(ask "Hostname:" omunchy omunchy)
+HOSTNAME=${HOSTNAME:-omunchy}
+
+screen "Timezone"
+TZ_DEFAULT=$(timedatectl show -p Timezone --value 2>/dev/null || readlink /etc/localtime 2>/dev/null | sed 's|.*/zoneinfo/||' || true)
+TIMEZONE=$(list_zones | gum filter --placeholder "type to search" --height 12 --value "${TZ_DEFAULT:-UTC}" || echo "${TZ_DEFAULT:-UTC}")
+TIMEZONE=${TIMEZONE:-UTC}
+
+screen "Install disk"
+mapfile -t disks < <(lsblk -dpno NAME,SIZE,MODEL,TRAN -e 7,11 | sed 's/  */ /g')
+((${#disks[@]})) || { echo "no disks found" >&2; exit 1; }
+DISK=$(printf '%s\n' "${disks[@]}" | gum choose --header "Choose the disk to install to (it will be erased)")
+DISK=${DISK%% *}
+[[ -b $DISK ]] || { echo "no disk chosen" >&2; exit 1; }
+if gum confirm --default=yes "Encrypt the disk with LUKS (uses your password)?"; then ENCRYPT=1; else ENCRYPT=0; fi
+
+USER_HASH=$(printf '%s' "$PW" | openssl passwd -6 -stdin)
+LUKS_PASS_FILE=''
+if ((ENCRYPT)); then LUKS_PASS_FILE=$dir/luks.pass; printf '%s' "$PW" >"$LUKS_PASS_FILE"; fi
+
+{
+  printf 'DISK=%q\nENCRYPT=%q\nLUKS_PASS_FILE=%q\nUSERNAME=%q\nUSER_HASH=%q\n' "$DISK" "$ENCRYPT" "$LUKS_PASS_FILE" "$USERNAME" "$USER_HASH"
+  printf 'HOSTNAME=%q\nTIMEZONE=%q\nKEYMAP=%q\nLOCALE=en_US.UTF-8\n' "$HOSTNAME" "$TIMEZONE" "$KEYMAP"
+} >"$OUT"
+chmod 600 "$OUT"

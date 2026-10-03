@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# obinstall: install Omunchy to disk from this live session.
+# Copies this running system to the disk you pick (no network needed).
+# Wipes the whole disk you choose. Use --dry-run to preview without touching anything.
+exec /usr/local/lib/obinstall/install "$@"

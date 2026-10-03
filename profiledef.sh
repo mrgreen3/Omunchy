@@ -20,5 +20,7 @@ file_permissions=(
   ["/etc/shadow"]="0:0:400"
   ["/root"]="0:0:750"
   ["/etc/skel/Scripts/"]="0:0:755"
+  ["/usr/local/lib/obinstall/install"]="0:0:755"
+  ["/usr/local/lib/obinstall/wizard"]="0:0:755"
 )
 #bootstrap_tarball_compression=(gzip -cn9)

@@ -109,6 +109,11 @@ eza
 ## === MEDIA APPLICATIONS ===
 firefox
 
+## === OBINSTALL (gum wizard, jq state file, openssl password hash) ===
+gum
+jq
+openssl
+
 ## === BUILD & DEVELOPMENT TOOLS ===
 squashfs-tools
 rsync
