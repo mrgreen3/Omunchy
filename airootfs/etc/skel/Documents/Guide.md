@@ -350,7 +350,10 @@ If SUDO_ASKPASS is empty in the current shell, give it explicitly:
 
 Rules:
 - State the exact command and why, and get a yes, BEFORE running it. The
-  password box does not show the command.
+  password box also shows the command sudo is about to run (read from sudo
+  itself, so it cannot differ from what really runs); ask the user to check it
+  matches what was agreed. The box only appears when sudo needs a password:
+  inside the five-minute window below there is no box and no check.
 - Tell the user a password box is about to appear. They type the password into
   it; it never goes through chat, and the assistant never sees it.
 - sudo remembers a successful password for about five minutes: further
