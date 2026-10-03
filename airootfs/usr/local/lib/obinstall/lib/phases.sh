@@ -123,6 +123,10 @@ xkb_for_keymap() {
   fi
 }
 
+# xkb layout for this install (sway and the greeter), computed once
+XKB_LAYOUT=''
+install_xkb() { [[ -n $XKB_LAYOUT ]] || XKB_LAYOUT=$(xkb_for_keymap "$KEYMAP"); }
+
 # ---------------------------------------------------------------------------
 phase_copy_system() {
   info "copying the live system to $MNT"
@@ -204,9 +208,14 @@ EOT
   chroot_run locale-gen
   printf 'LANG=%s\nLC_COLLATE=C\n' "$LOCALE" | write_file "$MNT/etc/locale.conf"
   printf 'KEYMAP=%s\nFONT=Lat2-Terminus16\n' "$KEYMAP" | write_file "$MNT/etc/vconsole.conf"
-  local xkb; xkb=$(xkb_for_keymap "$KEYMAP")
-  info "sway keyboard layout: $xkb (from console keymap $KEYMAP)"
-  ((DRY_RUN)) || sed -i "s/^\([[:space:]]*xkb_layout\).*/\1   $xkb/" "$MNT/home/$LIVE_USER/.config/sway/looknfeel" 2>/dev/null || true
+  install_xkb
+  info "keyboard layout for sway and the login screen: $XKB_LAYOUT (from console keymap $KEYMAP)"
+  if ((!DRY_RUN)); then
+    local lk=$MNT/home/$LIVE_USER/.config/sway/looknfeel
+    sed -i "s/^\([[:space:]]*xkb_layout\).*/\1   $XKB_LAYOUT/" "$lk" 2>>"$LOG_FILE" || true
+    grep -qE "^[[:space:]]*xkb_layout[[:space:]]+$XKB_LAYOUT\$" "$lk" 2>/dev/null \
+      || warn "could not set xkb_layout in sway's looknfeel; set it in ~/.config/sway/looknfeel after install"
+  fi
 }
 
 # ---------------------------------------------------------------------------
@@ -242,12 +251,15 @@ phase_mkinitcpio() {
 
 phase_greeter() {
   info "login screen (greetd + gtkgreet)"
-  cat <<'EOT' | write_file "$MNT/etc/greetd/config.toml"
+  install_xkb
+  # cage (the greeter's compositor) reads the layout from XKB_DEFAULT_LAYOUT; without it
+  # the login password would be typed on a US layout
+  cat <<EOT | write_file "$MNT/etc/greetd/config.toml"
 [terminal]
 vt = 1
 
 [default_session]
-command = "cage -s -- gtkgreet -s /etc/greetd/gtkgreet.css"
+command = "env XKB_DEFAULT_LAYOUT=$XKB_LAYOUT cage -s -- gtkgreet -s /etc/greetd/gtkgreet.css"
 user = "greeter"
 # greetd-greeter has no matching /etc/pam.d file; reuse the "greetd" PAM service instead
 service = "greetd"
@@ -290,6 +302,9 @@ phase_validate() {
   grep -q 'root=' "$MNT/boot/grub/grub.cfg" || die "grub.cfg has no root="
   ! is_uefi || [[ -s $MNT/boot/EFI/BOOT/BOOTX64.EFI ]] || die "missing EFI fallback loader /EFI/BOOT/BOOTX64.EFI"
   [[ -d $MNT/home/$USERNAME ]] || die "home for $USERNAME missing"
+  install_xkb
+  grep -q "XKB_DEFAULT_LAYOUT=$XKB_LAYOUT " "$MNT/etc/greetd/config.toml" || die "greeter keyboard layout not set in greetd config"
+  grep -qE "^[[:space:]]*xkb_layout[[:space:]]+$XKB_LAYOUT\$" "$MNT/home/$USERNAME/.config/sway/looknfeel" || warn "sway xkb_layout in /home/$USERNAME is not $XKB_LAYOUT"
   ! ((ENCRYPT)) || grep -q 'rd.luks.name' "$MNT/boot/grub/grub.cfg" || die "grub.cfg lost rd.luks.name"
 }
 
