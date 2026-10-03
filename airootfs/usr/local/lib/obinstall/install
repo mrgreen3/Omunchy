@@ -4,6 +4,7 @@
 set -Eeuo pipefail
 INSTALLER_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 CONFIG='' ; ONLY='' ; ASSUME_YES=0 ; DRY_RUN=0
+ORIG_ARGS=("$@")
 while (($#)); do
   case $1 in
     --config) CONFIG=$2; shift 2 ;;
@@ -17,7 +18,7 @@ done
 export DRY_RUN
 
 # the live user has passwordless sudo: re-run as root instead of failing
-if ((!DRY_RUN && EUID != 0)); then exec sudo -E "$0" "$@"; fi
+if ((!DRY_RUN && EUID != 0)); then exec sudo -E "$0" "${ORIG_ARGS[@]}"; fi
 
 if ((DRY_RUN)); then LOG_FILE=${LOG_FILE:-/tmp/obinstall-dryrun.log}; STATE_DIR=/tmp/obinstall-dryrun; fi
 . "$INSTALLER_DIR/lib/common.sh"
@@ -36,6 +37,9 @@ for v in DISK ENCRYPT USERNAME USER_HASH HOSTNAME TIMEZONE KEYMAP LOCALE; do
   [[ -n ${!v:-} ]] || die "config missing $v"
 done
 [[ $ENCRYPT == 0 || -s ${LUKS_PASS_FILE:-} ]] || die "encryption on but LUKS_PASS_FILE empty"
+# reject bad names now, before anything touches the disk
+msg=$(validate_username "$USERNAME") || die "username: $msg"
+msg=$(validate_hostname "$HOSTNAME") || die "hostname: $msg"
 
 show_summary
 if ((!ASSUME_YES && !DRY_RUN)); then
@@ -45,14 +49,21 @@ screen "Installing Omunchy"
 
 cleanup() {
   local rc=$?
-  if [[ -n ${LUKS_PASS_FILE:-} && $LUKS_PASS_FILE == "$STATE_DIR"/* ]]; then shred -u "$LUKS_PASS_FILE" 2>/dev/null || true; fi
+  # shred wizard-generated secrets; leave user-supplied --config files alone but say so
+  local f
+  for f in "${LUKS_PASS_FILE:-}" "$CONFIG"; do
+    [[ -n $f && -e $f ]] || continue
+    if [[ $f == "$STATE_DIR"/* ]]; then shred -u "$f" 2>/dev/null || true
+    else warn "left in place (contains secrets, shred it when done): $f"; fi
+  done
   ((rc)) && warn "install failed (exit $rc) — see $LOG_FILE"
   return $rc
 }
 trap cleanup EXIT
 
 phases=("${PHASES[@]}")
-[[ -n $ONLY ]] && phases=("$ONLY")
+# --only still runs preflight: it is the check that refuses to wipe the live media
+if [[ -n $ONLY ]]; then phases=(preflight); [[ $ONLY == preflight ]] || phases+=("$ONLY"); fi
 state_init "${#phases[@]}"
 i=0
 for p in "${phases[@]}"; do

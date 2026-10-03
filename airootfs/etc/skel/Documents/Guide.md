@@ -81,6 +81,11 @@ opencode auth login
   - never pipes curl into a shell: downloads to /tmp, then runs
   - never runs chained destructive commands; never asks for API keys or
     passwords in chat
+  - installers that need a real terminal (they read /dev/tty or ask
+    questions: Pi, Hermes) are NEVER run in OpenCode's own shell, which has
+    no terminal and makes them fail. Download to /tmp first, then open a
+    foot window that runs the installer, and tell the user to answer its
+    prompts there (see RUNNING AN INTERACTIVE INSTALLER in APPS)
 
 - With no specific request, or when asked what can be set up, list the APPS
   subsections plus PACKAGES (BASIC PACKAGE USAGE), ask which one the user
@@ -98,6 +103,26 @@ APPS
 One subsection per tool. Install methods come only from each tool's own
 official sources. Fields marked TODO: verify have no verified source yet —
 they are not guesses; do not fill them from memory.
+
+RUNNING AN INTERACTIVE INSTALLER
+
+Some installers need a real terminal: they read /dev/tty, ask questions or
+show a menu. OpenCode's own shell has no terminal, so running them there
+fails. For any app whose entry below says "Terminal: own foot window":
+
+1. Download the installer to /tmp in OpenCode's shell (no terminal needed).
+2. Open a new foot window that runs it, detached so OpenCode is not blocked:
+
+  setsid -f foot -T "Install <APP>" sh -c 'sh /tmp/<installer>.sh; echo; echo "Finished. Press Enter to close this window."; read _'
+
+   (use bash instead of sh where the entry says bash)
+3. Tell the user a terminal window has opened, that they answer its prompts
+   there, and to say when it has finished. Do not type into it for them and
+   do not ask for keys or passwords in chat.
+4. When the user confirms, run the entry's Verify command in OpenCode's shell.
+
+If the foot window closes immediately or shows an error, ask the user to read
+the message to you; do not retry blindly.
 
 CLAUDE CODE
 
@@ -122,9 +147,11 @@ Pi, the coding agent from pi.dev. Not in the Arch repos.
 
 What:   a second/multi-provider AI coding agent run from the terminal.
 Install:  official installer — it bootstraps its own Node; do NOT install
-          nodejs/npm, and run it in the user's terminal (it reads /dev/tty):
+          nodejs/npm:
   curl -fsSL https://pi.dev/install.sh -o /tmp/pi-install.sh
-  sh /tmp/pi-install.sh
+Terminal: own foot window — it reads /dev/tty, so running it directly in
+          OpenCode fails. Run it as in RUNNING AN INTERACTIVE INSTALLER:
+  setsid -f foot -T "Install Pi" sh -c 'sh /tmp/pi-install.sh; echo; echo "Finished. Press Enter to close this window."; read _'
 Location: launcher on PATH (on Omunchy: ~/.local/bin/pi); package under
           ~/.pi/agent/install; bundled Node under ~/.local/share/pi-node
 Needs:    network; provider login inside pi (/login)
@@ -246,10 +273,11 @@ system only. Do not set it up in the live session: everything is lost on
 reboot and the services have nothing persistent to run on.
 
 What:   long-running personal agent with tools, memory and a gateway.
-Install:  official installer, user-local, interactive (run in your own
-          terminal; it asks questions and sets up a gateway service):
+Install:  official installer, user-local, interactive (it asks questions
+          and sets up a gateway service):
   curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh -o /tmp/hermes-install.sh
-  bash /tmp/hermes-install.sh
+Terminal: own foot window — run it as in RUNNING AN INTERACTIVE INSTALLER:
+  setsid -f foot -T "Install Hermes" sh -c 'bash /tmp/hermes-install.sh; echo; echo "Finished. Press Enter to close this window."; read _'
 Location: ~/.hermes (checkout in ~/.hermes/hermes-agent, config in
           ~/.hermes/config.yaml, keys in ~/.hermes/.env); command in
           ~/.local/bin
@@ -264,6 +292,8 @@ ADD A NEW APP — use this template; fill only from the tool's official docs:
 <APP NAME> (<one line: what it is, when a user wants it>)
 Install:  official installer URL or pacman package (never curl-into-shell:
           download to /tmp first, then run)
+Terminal: only if it reads /dev/tty or asks questions: "own foot window" and
+          the setsid -f foot command (see RUNNING AN INTERACTIVE INSTALLER)
 Location: exact install path (user-local, e.g. ~/.local/bin; ~/.pi for pi)
 Needs:    network, login/API key (entered only inside the tool), PATH edits
 Verify:   one command that proves it worked (usually --version)
@@ -341,9 +371,9 @@ AUR:      only on explicit request; see YAY / AUR.
 
 CONSOLE KEYBOARD LAYOUT
 
-The installer sets the raw tty console (rescue mode, before sway starts) to
-a "us" keymap regardless of your location — only the desktop keymap
-is set to match where you are. To change the console layout afterwards:
+obinstall sets the raw tty console (rescue mode, the disk-unlock prompt,
+before sway starts) to the keyboard layout chosen in its wizard, and sway's
+layout is derived from the same choice. To change the console layout afterwards:
 
 sudo nano /etc/vconsole.conf   # set KEYMAP=<layout>, e.g. KEYMAP=uk
 sudo mkinitcpio -P             # regenerate initramfs to pick it up

@@ -60,6 +60,17 @@ state_update() {
   jq "$1" "$STATE_DIR/state.json" >"$STATE_DIR/.s.tmp" && mv "$STATE_DIR/.s.tmp" "$STATE_DIR/state.json"
 }
 
+# validate_username NAME — must be a plain new account name (rejects root, live, any existing account)
+validate_username() {
+  [[ $1 =~ ^[a-z_][a-z0-9_-]{0,31}$ ]] || { echo "use lowercase letters, digits, - and _ (max 32, not starting with a digit)"; return 1; }
+  if getent passwd "$1" >/dev/null 2>&1 || getent group "$1" >/dev/null 2>&1; then
+    echo "'$1' is already a system or live account name"; return 1
+  fi
+}
+validate_hostname() {
+  [[ $1 =~ ^[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?$ ]] || { echo "use letters, digits and - (max 63, no leading/trailing -)"; return 1; }
+}
+
 # Partition device path: /dev/nvme0n1 -> /dev/nvme0n1p1, /dev/sda -> /dev/sda1
 part_dev() { [[ $1 =~ [0-9]$ ]] && printf '%sp%s' "$1" "$2" || printf '%s%s' "$1" "$2"; }
 is_uefi() { [[ -d /sys/firmware/efi ]]; }

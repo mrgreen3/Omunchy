@@ -34,7 +34,11 @@ cleanup_disk() {
   for dev in "${devs[@]}"; do swapoff "$dev" 2>/dev/null || true; done
   while read -r mp; do
     [[ -n $mp ]] || continue
+    case $mp in /|/usr|/etc|/home|/var|/boot|/run|/run/*|/proc|/sys|/dev|/dev/*) die "$DISK is in use by the running system ($mp); refusing to wipe it" ;; esac
+    umount "$mp" 2>/dev/null && continue
+    # busy: stop what is using it (e.g. a stray gpg-agent from a previous run), then unmount
     fuser -km "$mp" >/dev/null 2>&1 || true
+    sleep 1
     umount "$mp" 2>/dev/null || umount -l "$mp" 2>/dev/null || true
   done < <(for dev in "${devs[@]}"; do findmnt -rno TARGET -S "$dev"; done | sort -ru)
   for dev in "${devs[@]}"; do
@@ -104,6 +108,21 @@ phase_prepare_disk() {
   run mount -o umask=0077 "$ESP_DEV" "$MNT/boot"
 }
 
+# console keymap name -> xkb layout name for sway (falls back to us)
+xkb_for_keymap() {
+  local k=$1 base
+  case $k in
+    uk) base=gb ;; sv-*|sv) base=se ;; br-*) base=br ;; jp*) base=jp ;; pl*) base=pl ;; cz*) base=cz ;;
+    dvorak*) base=us ;; colemak*) base=us ;; ua*) base=ua ;; *) base=${k%%[-_.0-9]*} ;;
+  esac
+  if awk '/^! layout/{f=1;next} /^!/{f=0} f{print $1}' /usr/share/X11/xkb/rules/base.lst 2>/dev/null | grep -qx "$base"; then
+    echo "$base"
+  else
+    warn "no xkb layout for console keymap '$k'; using us for sway (change xkb_layout in ~/.config/sway/looknfeel)"
+    echo us
+  fi
+}
+
 # ---------------------------------------------------------------------------
 phase_copy_system() {
   info "copying the live system to $MNT"
@@ -114,10 +133,13 @@ phase_copy_system() {
   fi
   local total; total=$(du -sb "$LIVE_ROOT" | awk '{print $1}')
   printf '  %s to copy\n\n' "$(numfmt --to=iec-i --suffix=B "$total")"
-  set +o pipefail
+  # errexit off so PIPESTATUS is always inspected (a failed tar on either side must be caught)
+  local st
+  set +e
   tar cf - -C "$LIVE_ROOT" . | pv -u block -pterb -s "$total" | tar xpf - -C "$MNT"
-  local st=("${PIPESTATUS[@]}"); set -o pipefail
-  [[ ${st[0]} -eq 0 && ${st[2]} -eq 0 ]] || die "copying system files failed"
+  st=("${PIPESTATUS[@]}")
+  set -e
+  [[ ${st[0]} -eq 0 && ${st[2]} -eq 0 ]] || die "copying system files failed (tar: ${st[0]}/${st[2]})"
 
   # archiso keeps the kernel on the ISO media, not in the squashfs
   mkdir -p "$MNT/boot"
@@ -182,8 +204,8 @@ EOT
   chroot_run locale-gen
   printf 'LANG=%s\nLC_COLLATE=C\n' "$LOCALE" | write_file "$MNT/etc/locale.conf"
   printf 'KEYMAP=%s\nFONT=Lat2-Terminus16\n' "$KEYMAP" | write_file "$MNT/etc/vconsole.conf"
-  # sway layout: console keymap names mostly match xkb layouts, uk is the exception
-  local xkb=$KEYMAP; [[ $xkb == uk ]] && xkb=gb
+  local xkb; xkb=$(xkb_for_keymap "$KEYMAP")
+  info "sway keyboard layout: $xkb (from console keymap $KEYMAP)"
   ((DRY_RUN)) || sed -i "s/^\([[:space:]]*xkb_layout\).*/\1   $xkb/" "$MNT/home/$LIVE_USER/.config/sway/looknfeel" 2>/dev/null || true
 }
 
@@ -211,6 +233,8 @@ phase_mkinitcpio() {
   # No 'autodetect': keeps the install bootable on different hardware.
   local hooks="base systemd microcode modconf kms keyboard keymap sd-vconsole block filesystems fsck"
   ((ENCRYPT)) && hooks="base systemd microcode modconf kms keyboard keymap sd-vconsole sd-encrypt block filesystems fsck"
+  # the archiso drop-in would override our hooks on any rebuild that does not pass -c
+  run rm -f "$MNT/etc/mkinitcpio.conf.d/archiso.conf"
   chroot_run sed -i -E "s|^HOOKS=.*|HOOKS=($hooks)|" /etc/mkinitcpio.conf
   chroot_run sed -i 's/^COMPRESSION="xz"/#COMPRESSION="xz"/; s/^COMPRESSION_OPTIONS=/#COMPRESSION_OPTIONS=/' /etc/mkinitcpio.conf
   chroot_run mkinitcpio -p linux

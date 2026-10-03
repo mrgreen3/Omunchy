@@ -21,8 +21,8 @@ KEYMAP=${KEYMAP:-us}
 screen "Your account"
 while :; do
   USERNAME=$(ask "Username:")
-  [[ $USERNAME =~ ^[a-z_][a-z0-9_-]{0,31}$ ]] && break
-  gum style --foreground 9 "Invalid username (lowercase letters, digits, - and _)"
+  if msg=$(validate_username "$USERNAME"); then break; fi
+  gum style --foreground 9 "Invalid username: $msg"
 done
 while :; do
   PW=$(gum input --password --prompt "Password: ")
@@ -32,8 +32,12 @@ while :; do
 done
 
 screen "Computer name"
-HOSTNAME=$(ask "Hostname:" omunchy omunchy)
-HOSTNAME=${HOSTNAME:-omunchy}
+while :; do
+  HOSTNAME=$(ask "Hostname:" omunchy omunchy)
+  HOSTNAME=${HOSTNAME:-omunchy}
+  if msg=$(validate_hostname "$HOSTNAME"); then break; fi
+  gum style --foreground 9 "Invalid hostname: $msg"
+done
 
 screen "Timezone"
 TZ_DEFAULT=$(timedatectl show -p Timezone --value 2>/dev/null || readlink /etc/localtime 2>/dev/null | sed 's|.*/zoneinfo/||' || true)
