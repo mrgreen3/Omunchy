@@ -18,7 +18,15 @@
       "sudo pacman -R*": "ask",
       "sudo pacman -Sy*": "deny",
       "sudo pacman -Syu*": "ask",
-      "sudo pacman -Syyu*": "ask"
+      "sudo pacman -Syyu*": "ask",
+      "sudo -A pacman -R*": "ask",
+      "sudo -A pacman -Sy*": "deny",
+      "sudo -A pacman -Syu*": "ask",
+      "sudo -A pacman -Syyu*": "ask",
+      "SUDO_ASKPASS=* sudo -A pacman -R*": "ask",
+      "SUDO_ASKPASS=* sudo -A pacman -Sy*": "deny",
+      "SUDO_ASKPASS=* sudo -A pacman -Syu*": "ask",
+      "SUDO_ASKPASS=* sudo -A pacman -Syyu*": "ask"
     }
   }
 }

@@ -76,6 +76,9 @@ opencode auth login
   - runs as `opencode --standalone` on this system
   - pacman: official repos only; never `pacman -Sy` alone (partial upgrade)
   - explains every command and asks before any sudo use
+  - sudo has no terminal to ask on, so it is always written `sudo -A <cmd>`:
+    a themed password box (rofi) opens for the user and the password goes
+    straight to sudo, never through chat. See SUDO FROM OPENCODE below
   - no global npm/nodejs; user-local tools install under ~/.local or ~/.pi
     with their own installers (no sudo for those)
   - never pipes curl into a shell: downloads to /tmp, then runs
@@ -129,17 +132,25 @@ CLAUDE CODE
 Anthropic's coding CLI for AI coding in the terminal. Not in the Arch repos.
 
 What:   "claude" in the terminal; user wants an AI coding agent.
-Install:  official installer — no Node, no sudo:
+Install:  official installer — no Node, never with sudo (the script refuses):
   curl -fsSL https://claude.ai/install.sh -o /tmp/claude-install.sh
-  bash /tmp/claude-install.sh
-Location: ~/.local/bin/claude (files under ~/.local/share/claude/versions/)
-Needs:    network; first login inside Claude Code (/login — subscription or
-          API key, entered in the tool, not in chat)
+Terminal: own foot window — its setup step can draw a terminal UI, and the
+          first run/login needs a real terminal too, so do not run it in
+          OpenCode's own shell. Run it as in RUNNING AN INTERACTIVE INSTALLER:
+  setsid -f foot -T "Install Claude Code" sh -c 'bash /tmp/claude-install.sh; echo; echo "Finished. Press Enter to close this window."; read _'
+Location: ~/.local/bin/claude (files under ~/.local/share/claude/versions/;
+          the installer downloads to ~/.claude/downloads first)
+Needs:    network; roughly 512 MB of free memory to install (on the live ISO
+          that is RAM: check free -m first and say so); first login inside
+          Claude Code (run `claude` in a terminal, then /login — subscription
+          or API key, entered in the tool, not in chat)
 Verify:   claude --version
 Update:   claude update
 Remove:
   rm ~/.local/bin/claude
   rm -r ~/.local/share/claude
+  (~/.claude holds settings, history and credentials: leave it unless the
+  user asks to delete it)
 
 PI (PI.DEV)
 
@@ -325,6 +336,34 @@ SUDO
 Installed system requires password for sudo. Live session used passwordless sudo
 for convenience — installed system does not.
 
+SUDO FROM OPENCODE
+
+OpenCode's shell has no terminal, so plain sudo cannot ask for the password.
+Use sudo's askpass mode: SUDO_ASKPASS is already set (via /etc/environment) to
+/usr/local/bin/omunchy-askpass, which opens a password box for the user.
+
+  sudo -A pacman -S <package>
+
+If SUDO_ASKPASS is empty in the current shell, give it explicitly:
+
+  SUDO_ASKPASS=/usr/local/bin/omunchy-askpass sudo -A pacman -S <package>
+
+Rules:
+- State the exact command and why, and get a yes, BEFORE running it. The
+  password box does not show the command.
+- Tell the user a password box is about to appear. They type the password into
+  it; it never goes through chat, and the assistant never sees it.
+- sudo remembers a successful password for about five minutes: further
+  `sudo -A` commands in that window will not prompt. Treat each one as needing
+  the same care and say so.
+- Never run /usr/local/bin/omunchy-askpass directly (it refuses unless sudo
+  calls it) and never try to read, print or work around the password.
+- If the user cancels the box (Esc) or it does not appear, stop and ask; do
+  not retry blindly.
+- On the live ISO (passwordless sudo) `sudo -A` simply runs without a prompt.
+- Long or interactive root commands can still be run in a foot window instead
+  (see RUNNING AN INTERACTIVE INSTALLER).
+
 ---
 
 INITIALIZE PACMAN
@@ -344,6 +383,8 @@ BASIC PACKAGE USAGE
 
 Official Arch repos only. Show the exact command, explain it, and get a yes
 before any sudo command (passwordless sudo on live does not remove that).
+In OpenCode write sudo as `sudo -A` (see SUDO FROM OPENCODE); the commands
+below are shown as plain sudo for readability.
 No --noconfirm unless agreed for that command. Never pacman -Sy alone; full
 updates only (-Syu). The live ISO runs from RAM: warn before large installs.
 

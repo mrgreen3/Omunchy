@@ -1,0 +1,11 @@
+#!/bin/sh
+# omunchy-askpass: password prompt for `sudo -A` (sudo runs it via SUDO_ASKPASS).
+# Shows a themed rofi password box. The password goes straight to sudo.
+# Only sudo may call this: run by anything else (e.g. an assistant's shell) it
+# refuses, so the password cannot be captured as command output.
+case $(ps -o comm= -p "$PPID" 2>/dev/null) in
+  sudo | sudo-rs) ;;
+  *) echo "omunchy-askpass: only sudo may call this" >&2; exit 1 ;;
+esac
+exec rofi -dmenu -password -p "${1:-Password: }" \
+  -theme-str 'window { width: 32em; } listview { enabled: false; } entry { placeholder: ""; }' </dev/null
