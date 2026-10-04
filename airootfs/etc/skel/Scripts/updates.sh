@@ -8,6 +8,13 @@
 
 set -uo pipefail
 
+# Live session: updating there is pointless (nothing persists) and changes
+# what the installer copies, so show no badge.
+if [[ -d /run/archiso ]]; then
+    printf '{"text": "", "tooltip": "", "class": ""}\n'
+    exit 0
+fi
+
 n=0
 if command -v checkupdates >/dev/null 2>&1; then
     n=$(checkupdates 2>/dev/null | wc -l) || n=0

@@ -121,13 +121,13 @@ window#waybar {
     padding: 0 10px;
 }
 
-/* ---------- Updates (attention colour, as in Omarchy) ---------- */
+/* ---------- Updates (icon in the bar's green) ---------- */
 #custom-updates {
-    color: @fg;
+    color: @accent;
 }
 
 #custom-updates.pending {
-    color: @red;
+    color: @accent;
 }
 
 /* ---------- Tray ---------- */

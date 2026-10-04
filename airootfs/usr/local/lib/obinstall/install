@@ -57,6 +57,8 @@ cleanup() {
     else warn "left in place (contains secrets, shred it when done): $f"; fi
   done
   ((rc)) && warn "install failed (exit $rc) — see $LOG_FILE"
+  # keep the installer window open until acknowledged
+  if [[ -t 0 ]]; then echo; read -rsn1 -p "Press any key to exit..." || true; echo; fi
   return $rc
 }
 trap cleanup EXIT

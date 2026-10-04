@@ -153,7 +153,12 @@ phase_copy_system() {
   local upper; upper=$(find /run/archiso/cowspace -type d -path '*/persistent_*/x86_64/upperdir' 2>/dev/null | head -1)
   if [[ -n $upper && -d $upper ]]; then
     info "syncing live session changes"
-    rsync -a "$upper/" "$MNT/" >>"$LOG_FILE" 2>&1 || warn "cowspace sync had errors (non-fatal)"
+    # --no-D: overlayfs whiteouts (char 0/0) can't be recreated by rsync; apply them as deletes below
+    rsync -a --no-D "$upper/" "$MNT/" >>"$LOG_FILE" 2>&1 || warn "cowspace sync had errors (non-fatal)"
+    local wh
+    while IFS= read -r -d '' wh; do
+      if [[ $(stat -c '%t:%T' "$upper/$wh") == 0:0 ]]; then rm -rf -- "${MNT:?}/$wh"; fi
+    done < <(find "$upper" -type c -printf '%P\0')
   fi
 }
 
@@ -185,6 +190,9 @@ EOT
   # live-only bits
   run rm -f "$MNT/home/$LIVE_USER/Scripts/obinstall"
   run rm -rf "$MNT/usr/local/lib/obinstall"
+  # drop the live-only installer bind/window rule and its keybindings entry
+  ((DRY_RUN)) || { sed -i -e '/obinstall/d' -e '/^windowrule=.*Installer/d' "$MNT/home/$LIVE_USER/.config/mango/config.conf" 2>/dev/null || true
+    sed -i '/Install Omunchy/d' "$MNT/home/$LIVE_USER/Documents/Keybindings" 2>/dev/null || true; }
   run rm -rf "$MNT/etc/systemd/system/getty@tty1.service.d"
   run rm -f "$MNT/etc/systemd/system/default.target"
   if ((!DRY_RUN)) && [[ -f $MNT/etc/systemd/journald.conf.d/volatile-storage.conf ]]; then
@@ -194,9 +202,11 @@ EOT
   run rm -f "$MNT/etc/systemd/system/multi-user.target.wants/pacman-init.service" \
             "$MNT/etc/systemd/system/pacman-init.service" "$MNT/etc/systemd/system/etc-pacman.d-gnupg.mount"
   run rm -rf "$MNT/etc/skel"
+  # live NOPASSWD sudo drop-in -> password required
+  run rm -f "$MNT/etc/sudoers.d/10-live-nopasswd"
   ((DRY_RUN)) || { sed -i '/^Hidden=true/d' "$MNT/usr/share/applications/gparted.desktop" 2>/dev/null || true
-    # live NOPASSWD sudo -> password required
-    sed -i 's/^%wheel ALL=(ALL:ALL) NOPASSWD: ALL/# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/; s/^# %wheel ALL=(ALL:ALL) ALL$/%wheel ALL=(ALL:ALL) ALL/' "$MNT/etc/sudoers"; }
+    sed -i 's/^# %wheel ALL=(ALL:ALL) ALL$/%wheel ALL=(ALL:ALL) ALL/' "$MNT/etc/sudoers"
+    grep -q '^%wheel ALL=(ALL:ALL) ALL$' "$MNT/etc/sudoers" || die "sudoers: wheel rule not found after edit"; }
 
   info "fstab, locale, time, keyboard, hostname"
   ((DRY_RUN)) || { genfstab -U "$MNT" >"$MNT/etc/fstab"; grep -q 'subvol=' "$MNT/etc/fstab" || die "fstab has no btrfs subvolumes"; }
@@ -306,6 +316,7 @@ phase_validate() {
   grep -q 'root=' "$MNT/boot/grub/grub.cfg" || die "grub.cfg has no root="
   ! is_uefi || [[ -s $MNT/boot/EFI/BOOT/BOOTX64.EFI ]] || die "missing EFI fallback loader /EFI/BOOT/BOOTX64.EFI"
   [[ -d $MNT/home/$USERNAME ]] || die "home for $USERNAME missing"
+  ! grep -qE 'obinstall|^windowrule=.*Installer' "$MNT/home/$USERNAME/.config/mango/config.conf" || die "installer lines left in mango config"
   install_xkb
   grep -q "XKB_DEFAULT_LAYOUT=$XKB_LAYOUT " "$MNT/etc/greetd/config.toml" || die "greeter keyboard layout not set in greetd config"
   grep -qx "xkb_rules_layout=$XKB_LAYOUT" "$MNT/home/$USERNAME/.config/mango/config.conf" || warn "mango xkb_rules_layout in /home/$USERNAME is not $XKB_LAYOUT"
