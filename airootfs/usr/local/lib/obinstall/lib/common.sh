@@ -13,6 +13,7 @@ export GUM_INPUT_PROMPT_FOREGROUND=$ACCENT GUM_INPUT_CURSOR_FOREGROUND=$ACCENT G
 export GUM_CHOOSE_CURSOR_FOREGROUND=$ACCENT GUM_CHOOSE_SELECTED_FOREGROUND=$ACCENT GUM_CHOOSE_HEADER_FOREGROUND=$ACCENT
 export GUM_FILTER_INDICATOR_FOREGROUND=$ACCENT GUM_FILTER_MATCH_FOREGROUND=$ACCENT GUM_FILTER_PROMPT_FOREGROUND=$ACCENT
 export GUM_FILTER_HEADER_FOREGROUND=$ACCENT GUM_FILTER_SELECTED_PREFIX_FOREGROUND=$ACCENT
+export GUM_SPIN_SPINNER_FOREGROUND=$ACCENT GUM_SPIN_TITLE_FOREGROUND=$ACCENT
 export GUM_CONFIRM_SELECTED_BACKGROUND=$ACCENT GUM_CONFIRM_SELECTED_FOREGROUND=$DARK GUM_CONFIRM_PROMPT_FOREGROUND=$ACCENT
 
 info() { printf '\033[1;32m›\033[0m %s\n' "$*" | tee -a "$LOG_FILE" >&2; }
@@ -39,6 +40,16 @@ run() {
   "$@" >>"$LOG_FILE" 2>&1 || { tail -n 20 "$LOG_FILE" >&2; die "command failed: $*"; }
 }
 chroot_run() { run arch-chroot "$MNT" "$@"; }
+
+# run_spin TITLE CMD... — like run, with a spinner while a long silent command works.
+run_spin() {
+  local title=$1; shift
+  if ((DRY_RUN)) || ! command -v gum >/dev/null 2>&1; then run "$@"; return; fi
+  printf '+ %s\n' "$*" >>"$LOG_FILE"
+  gum spin --spinner dot --title "$title" -- bash -c '"$@" >>"$0" 2>&1' "$LOG_FILE" "$@" \
+    || { tail -n 20 "$LOG_FILE" >&2; die "command failed: $*"; }
+}
+chroot_run_spin() { local title=$1; shift; run_spin "$title" arch-chroot "$MNT" "$@"; }
 
 # write_file PATH [MODE] — stdin to a file.
 write_file() {

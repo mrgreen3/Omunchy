@@ -246,7 +246,7 @@ phase_mkinitcpio() {
   run rm -f "$MNT/etc/mkinitcpio.conf.d/archiso.conf"
   chroot_run sed -i -E "s|^HOOKS=.*|HOOKS=($hooks)|" /etc/mkinitcpio.conf
   chroot_run sed -i 's/^COMPRESSION="xz"/#COMPRESSION="xz"/; s/^COMPRESSION_OPTIONS=/#COMPRESSION_OPTIONS=/' /etc/mkinitcpio.conf
-  chroot_run mkinitcpio -p linux
+  chroot_run_spin "Building initramfs, please wait..." mkinitcpio -p linux
 }
 
 phase_greeter() {
