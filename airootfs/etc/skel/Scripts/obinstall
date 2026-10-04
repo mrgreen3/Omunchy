@@ -2,4 +2,17 @@
 # obinstall: install Omunchy to disk from this live session.
 # Copies this running system to the disk you pick (no network needed).
 # Wipes the whole disk you choose. Use --dry-run to preview without touching anything.
+#
+# Normal foot windows are translucent (foot.ini alpha=0.8), but the installer
+# is much easier to read on a solid background. Opacity is per-window, so there
+# is no way to make an already-running foot opaque; instead, run the wizard in
+# its own opaque foot window. --app-id=omunchy.Installer matches the mango
+# window rule that floats it at 80% of the screen. The env var marks the
+# relaunched instance so it doesn't spawn foot again.
+if [[ -z ${OMUNCHY_INSTALLER_FOOT:-} && -n ${WAYLAND_DISPLAY:-} ]] && command -v foot >/dev/null 2>&1; then
+  exec foot --app-id=omunchy.Installer --title="Omunchy Installer" \
+    -o colors-dark.alpha=1.0 \
+    -e env OMUNCHY_INSTALLER_FOOT=1 "$HOME/Scripts/obinstall" "$@"
+fi
+
 exec /usr/local/lib/obinstall/install "$@"

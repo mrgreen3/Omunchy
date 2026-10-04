@@ -7,14 +7,25 @@ MNT=${MNT:-/mnt}
 DRY_RUN=${DRY_RUN:-0}
 ACCENT=${ACCENT:-"#93D5AA"}
 DARK=${DARK:-"#1a1b26"}
+FG=${FG:-"#E2E2E9"}
+FG_DIM=${FG_DIM:-"#C4C6D0"}
 
-# gum defaults to pink: recolour every widget the installer uses
+# gum defaults to pink accents and grey 240 text: recolour every widget the
+# installer uses to match the Omunchy palette.
 export GUM_INPUT_PROMPT_FOREGROUND=$ACCENT GUM_INPUT_CURSOR_FOREGROUND=$ACCENT GUM_INPUT_HEADER_FOREGROUND=$ACCENT
 export GUM_CHOOSE_CURSOR_FOREGROUND=$ACCENT GUM_CHOOSE_SELECTED_FOREGROUND=$ACCENT GUM_CHOOSE_HEADER_FOREGROUND=$ACCENT
 export GUM_FILTER_INDICATOR_FOREGROUND=$ACCENT GUM_FILTER_MATCH_FOREGROUND=$ACCENT GUM_FILTER_PROMPT_FOREGROUND=$ACCENT
 export GUM_FILTER_HEADER_FOREGROUND=$ACCENT GUM_FILTER_SELECTED_PREFIX_FOREGROUND=$ACCENT
 export GUM_SPIN_SPINNER_FOREGROUND=$ACCENT GUM_SPIN_TITLE_FOREGROUND=$ACCENT
 export GUM_CONFIRM_SELECTED_BACKGROUND=$ACCENT GUM_CONFIRM_SELECTED_FOREGROUND=$DARK GUM_CONFIRM_PROMPT_FOREGROUND=$ACCENT
+
+# List options / helper text: gum leaves the option text at the terminal default
+# and its placeholders at grey 240, which is hard to read on the dark theme.
+# Pin them to the palette so the choices and prompts stay legible.
+export GUM_CHOOSE_ITEM_FOREGROUND=$FG
+export GUM_FILTER_TEXT_FOREGROUND=$FG GUM_FILTER_CURSOR_TEXT_FOREGROUND=$FG
+export GUM_FILTER_UNSELECTED_PREFIX_FOREGROUND=$FG_DIM GUM_FILTER_PLACEHOLDER_FOREGROUND=$FG_DIM
+export GUM_INPUT_PLACEHOLDER_FOREGROUND=$FG_DIM
 
 info() { printf '\033[1;32m›\033[0m %s\n' "$*" | tee -a "$LOG_FILE" >&2; }
 warn() { printf '\033[1;33m!\033[0m %s\n' "$*" | tee -a "$LOG_FILE" >&2; }

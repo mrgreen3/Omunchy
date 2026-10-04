@@ -1,0 +1,11 @@
+# remove from airootfs!
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = dgop
+
+[Action]
+Description = Patching dgop fallback logo colour...
+When = PostTransaction
+Exec = /bin/sh -c 'LC_ALL=C sed -i "s/#7D56F4/#93D5AA/g" /usr/bin/dgop'

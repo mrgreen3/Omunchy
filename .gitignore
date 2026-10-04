@@ -4,3 +4,4 @@
 # mkarchiso build artefacts (sudo mkarchiso -v -w work -o out . creates these in-tree)
 work/
 out/
+.claude/

@@ -340,8 +340,10 @@ it touches anything. Open a terminal (foot) and run:
 
 obinstall
 
-It asks for root itself (sudo). obinstall is interactive and will erase the
-disk you select. Run it yourself, and back up first.
+obinstall opens its own opaque foot window so the wizard text is easy to read
+(normal terminals stay translucent), then asks for root itself (sudo). It is
+interactive and will erase the disk you select. Run it yourself, and back up
+first.
 
 Note: the older right-click / rofi-menu "Install" route is not currently
 available — no installer .desktop file ships with the system.
