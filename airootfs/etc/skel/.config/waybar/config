@@ -18,7 +18,7 @@
 
   "modules-left": [
     "custom/menu",
-    "dwl/tags"
+    "ext/workspaces"
   ],
   "modules-center": [
     "custom/dnd",
@@ -48,8 +48,11 @@
   },
 
   // omarchy.workspaces — one pill per tag (mango); click switches tag
-  "dwl/tags": {
-    "num-tags": 5
+  "ext/workspaces": {
+    "format": "{id}",
+    "on-click": "activate",
+    "sort-by-id": true,
+    "all-outputs": true
   },
 
   // omarchy.indicators — DnD / NightLight / StayAwake: dim until on, click toggles

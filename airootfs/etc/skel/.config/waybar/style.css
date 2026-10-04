@@ -49,24 +49,20 @@ window#waybar {
 }
 
 /* ---------- Workspaces (pills) ---------- */
-#tags {
+#workspaces {
     padding: 0 4px;
 }
 
-#tags button {
+#workspaces button {
     padding: 0 1px;
     margin: 0 1px;
     color: alpha(@fg, 0.5);
     background: transparent;
 }
 
-#tags button.occupied {
-    color: alpha(@fg, 0.8);
-}
-
 /* Highlight is a fixed-size centred background so it can be smaller than the
    button (a button cannot be shorter than its text, margins would just shift it) */
-#tags button.focused {
+#workspaces button.active {
     color: @accent;
     background-image: linear-gradient(@accent, @accent);
     background-repeat: no-repeat;
@@ -74,7 +70,7 @@ window#waybar {
     background-size: 14px 14px;
 }
 
-#tags button.urgent {
+#workspaces button.urgent {
     color: @on-accent;
     background-image: linear-gradient(@red, @red);
     background-repeat: no-repeat;
@@ -82,7 +78,7 @@ window#waybar {
     background-size: 14px 14px;
 }
 
-#tags button:hover:not(.focused) {
+#workspaces button:hover:not(.active) {
     color: @fg;
     background-image: linear-gradient(alpha(@fg, 0.08), alpha(@fg, 0.08));
     background-repeat: no-repeat;

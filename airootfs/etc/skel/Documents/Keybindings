@@ -20,6 +20,7 @@ WINDOW CONTROLS
 
 Super + q               Close Window
 Super + t               Toggle Float
+Super + Shift + t       Toggle Float (all windows)
 Super + shift + f       Fullscreen
 Super + v               Toggle Split Direction
 
