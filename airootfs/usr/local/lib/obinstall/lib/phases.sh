@@ -264,6 +264,10 @@ user = "greeter"
 # greetd-greeter has no matching /etc/pam.d file; reuse the "greetd" PAM service instead
 service = "greetd"
 EOT
+  # LUKS passphrase is the login: start the session once at boot; logout falls back to gtkgreet
+  if ((ENCRYPT)) && ! ((DRY_RUN)); then
+    printf '\n[initial_session]\ncommand = "mango"\nuser = "%s"\n' "$USERNAME" >>"$MNT/etc/greetd/config.toml"
+  fi
   echo mango | write_file "$MNT/etc/greetd/environments"
   ((DRY_RUN)) || echo "GTK_THEME=adw-gtk3-dark" >>"$MNT/etc/environment"
   chroot_run systemctl enable greetd.service bluetooth.service power-profiles-daemon.service
