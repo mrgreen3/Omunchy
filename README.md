@@ -6,15 +6,15 @@ Omunchy is an all-in installer script — not a standalone distro — that layer
 
 ## Stack
 
-- **Compositor:** [sway](https://swaywm.org) — from the official Arch repos (i3-compatible Wayland; whole stack official-repo)
-- **Tiling:** [autotiling](https://github.com/nwg-piotr/autotiling) — dwindle-style split-orientation switching (Hyprland dwindle parity), toggle in the menu
+- **Compositor:** [mango](https://github.com/mangowm/mango) (`mangowm`) — from the official Arch repos (dwl-based Wayland; whole stack official-repo)
+- **Tiling:** mango's built-in dwindle layout (Hyprland dwindle parity), `Super+V` toggles the split direction
 - **Bar:** Waybar
 - **Launcher:** Rofi
 - **Notifications:** Mako
 - **Terminal:** foot
 - **Browser / web apps:** Firefox
 
-This stack was chosen specifically to avoid the RAM overhead of a full shell daemon (e.g. quickshell) on constrained hardware such as Chromebooks. sway is among the leanest full Wayland compositors (idle desktop within ~tens of MB of a bare compositor); everything else stays file-configured with no daemons. The Omarchy-exact animation set was dropped — see `SWAY_PORT.md`.
+This stack was chosen specifically to avoid the RAM overhead of a full shell daemon (e.g. quickshell) on constrained hardware such as Chromebooks. mango is among the leanest full Wayland compositors (idle desktop within ~tens of MB of a bare compositor); everything else stays file-configured with no daemons. Animations, blur and shadows are disabled.
 
 ## Features
 
@@ -29,7 +29,7 @@ Pattern-for-pattern with Omarchy (see `docs/omarchy-parity.md` for the full 42-r
 Helper scripts live in `~/Scripts` (on PATH):
 
 ```
-omunchy-welcome            # live-boot network report (started by sway)
+omunchy-welcome            # live-boot network report (started by mango)
 obinstall                  # install Omunchy to disk (copies this live system; no network needed)
 obinstall --dry-run --config FILE   # print every step, touch nothing
 ```
@@ -43,7 +43,7 @@ GRUB. It re-runs itself through sudo, so no need to prefix it. Source: `airootfs
 Untested on real hardware: try it in a VM first.
 
 - **AI setup assistant.** `opencode` ships in `packages.x86_64`. On the live ISO
-  `omunchy-welcome` (started from sway's `looknfeel`) shows a Super+K keybinds
+  `omunchy-welcome` (started from mango's `config.conf`) shows a Super+K keybinds
   hint at login, and a persistent warning with connection hints when offline,
   which closes itself once a connection appears (watched for 30 minutes). OpenCode runs as
   `opencode --standalone` (cloud-only, but free models work with no login) on the single `omunchy-guide` skill, which reads
@@ -55,11 +55,10 @@ Untested on real hardware: try it in a VM first.
 
 ## Keybindings
 
-The shipped `~/.config/sway/config` (+ `binds`/`looknfeel`/`theme` includes)
-mirrors Omarchy's bindings as i3-style sway config: `Super+Return` foot,
-`Super+Space` rofi, `Super+Q` close, `Super+F` fullscreen, `Super+T` float,
-`Super+V` split, `Super+P` screenshot, `Super+L` swaylock,
-`Super+Shift+E` power menu, `Super+1..5` workspaces,
+The shipped `~/.config/mango/config.conf` mirrors Omarchy's bindings:
+`Super+Return` foot, `Super+Space` rofi, `Super+Q` close,
+`Super+Shift+F` fullscreen, `Super+T` float, `Super+V` toggle split, `Super+P` screenshot, `Super+L` swaylock,
+`Super+Shift+E` power menu, `Super+1..5` tags (workspaces),
 XF86 audio/brightness via pamixer/brightnessctl. The full list lives in
 `Documents/Keybindings` (`Super+K` shows it in rofi).
 
@@ -67,22 +66,12 @@ XF86 audio/brightness via pamixer/brightnessctl. The full list lives in
 
 ```
 airootfs/etc/skel/Scripts/omunchy-welcome   live-boot network report via mako
-airootfs/                      archbang-derived archiso skeleton (sway skel config included)
+airootfs/                      archbang-derived archiso skeleton (mango skel config included)
 ```
-
-## Known issues
-
-- **Workspace pill left-click:** fixed by the sway port — the waybar 0.15
-  breakage (`hyprland/workspaces` + Hyprland's Lua config parser, see
-  `docs/waybar-hyprland-compat.md`) does not exist on sway; the
-  `sway/workspaces` module takes the standard click path. Scroll on the
-  pills, keyboard binds, urgent highlighting, and window counts all work;
-  `Super+1..5` and `Super+Tab` cover navigation. Full audit matrix in that
-  doc.
 
 ## Status
 
-Entry generation, interactive installers, removal, sync, the sway session,
+Entry generation, interactive installers, removal, sync, the mango session,
 theme/wallpaper switching, the update flow, and the base-stack installer are
 working. Dispatcher aliases/group descriptions are a possible next step.
 

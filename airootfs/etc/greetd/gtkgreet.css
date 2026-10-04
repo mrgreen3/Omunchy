@@ -1,4 +1,4 @@
-/* gtkgreet theme — matches the Omunchy desktop palette (sway/waybar/rofi/mako).
+/* gtkgreet theme — matches the Omunchy desktop palette (mango/waybar/rofi/mako).
    background-color is a fallback for if the image below fails to load; the
    image itself is copied to this fixed, extension-less path at install time
    (obinstall) since greetd's "greeter" user has no home

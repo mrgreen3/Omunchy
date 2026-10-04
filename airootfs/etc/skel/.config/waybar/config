@@ -5,7 +5,7 @@
   // (menu, workspaces | indicators, clock, keyboard, update | tray, network,
   // audio, monitor, power) with the Omunchy substitutions: rofi for the
   // quickshell menu, mako DnD for the notifications service, scripts for the
-  // indicator states. Omarchy's opt-in widgets (media/sway/window) are
+  // indicator states. Omarchy's opt-in widgets (media/window) are
   // enabled here since waybar costs nothing for them; elsewhen and agents are
   // Omarchy/Omunchy-specific and omitted.
   //
@@ -18,7 +18,7 @@
 
   "modules-left": [
     "custom/menu",
-    "sway/workspaces"
+    "dwl/tags"
   ],
   "modules-center": [
     "custom/dnd",
@@ -47,12 +47,9 @@
     "tooltip": false
   },
 
-  // omarchy.workspaces — one pill per workspace; scroll cycles workspaces
-  "sway/workspaces": {
-    "format": "{name}",
-    "on-click": "activate",
-    "on-scroll-up": "swaymsg workspace next_on_output",
-    "on-scroll-down": "swaymsg workspace prev_on_output"
+  // omarchy.workspaces — one pill per tag (mango); click switches tag
+  "dwl/tags": {
+    "num-tags": 5
   },
 
   // omarchy.indicators — DnD / NightLight / StayAwake: dim until on, click toggles

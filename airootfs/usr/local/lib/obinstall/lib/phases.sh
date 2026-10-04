@@ -108,7 +108,7 @@ phase_prepare_disk() {
   run mount -o umask=0077 "$ESP_DEV" "$MNT/boot"
 }
 
-# console keymap name -> xkb layout name for sway (falls back to us)
+# console keymap name -> xkb layout name for mango (falls back to us)
 xkb_for_keymap() {
   local k=$1 base
   case $k in
@@ -118,12 +118,12 @@ xkb_for_keymap() {
   if awk '/^! layout/{f=1;next} /^!/{f=0} f{print $1}' /usr/share/X11/xkb/rules/base.lst 2>/dev/null | grep -qx "$base"; then
     echo "$base"
   else
-    warn "no xkb layout for console keymap '$k'; using us for sway (change xkb_layout in ~/.config/sway/looknfeel)"
+    warn "no xkb layout for console keymap '$k'; using us for mango (change xkb_rules_layout in ~/.config/mango/config.conf)"
     echo us
   fi
 }
 
-# xkb layout for this install (sway and the greeter), computed once
+# xkb layout for this install (mango and the greeter), computed once
 XKB_LAYOUT=''
 install_xkb() { [[ -n $XKB_LAYOUT ]] || XKB_LAYOUT=$(xkb_for_keymap "$KEYMAP"); }
 
@@ -162,7 +162,7 @@ phase_configure_system() {
   info "converting the live copy into an installed system"
   # fixed wallpaper path for the greeter, before /etc/skel is removed
   local wp
-  wp=$(sed -n "s#.*swaybg -i [\"'][^\"']*/\([^\"']*\)[\"'].*#\1#p" "$MNT/etc/skel/.config/sway/looknfeel" 2>/dev/null | head -1 || true)
+  wp=$(sed -n "s#.*swaybg -i [\"'][^\"']*/\([^\"']*\)[\"'].*#\1#p" "$MNT/etc/skel/.config/mango/config.conf" 2>/dev/null | head -1 || true)
   if [[ -n ${wp:-} && -f $MNT/etc/skel/Backgrounds/$wp ]]; then
     run mkdir -p "$MNT/usr/share/backgrounds/omunchy"
     run cp -a "$MNT/etc/skel/Backgrounds/$wp" "$MNT/usr/share/backgrounds/omunchy/current"
@@ -209,12 +209,12 @@ EOT
   printf 'LANG=%s\nLC_COLLATE=C\n' "$LOCALE" | write_file "$MNT/etc/locale.conf"
   printf 'KEYMAP=%s\nFONT=Lat2-Terminus16\n' "$KEYMAP" | write_file "$MNT/etc/vconsole.conf"
   install_xkb
-  info "keyboard layout for sway and the login screen: $XKB_LAYOUT (from console keymap $KEYMAP)"
+  info "keyboard layout for mango and the login screen: $XKB_LAYOUT (from console keymap $KEYMAP)"
   if ((!DRY_RUN)); then
-    local lk=$MNT/home/$LIVE_USER/.config/sway/looknfeel
-    sed -i "s/^\([[:space:]]*xkb_layout\).*/\1   $XKB_LAYOUT/" "$lk" 2>>"$LOG_FILE" || true
-    grep -qE "^[[:space:]]*xkb_layout[[:space:]]+$XKB_LAYOUT\$" "$lk" 2>/dev/null \
-      || warn "could not set xkb_layout in sway's looknfeel; set it in ~/.config/sway/looknfeel after install"
+    local lk=$MNT/home/$LIVE_USER/.config/mango/config.conf
+    sed -i "s/^xkb_rules_layout=.*/xkb_rules_layout=$XKB_LAYOUT/" "$lk" 2>>"$LOG_FILE" || true
+    grep -qx "xkb_rules_layout=$XKB_LAYOUT" "$lk" 2>/dev/null \
+      || warn "could not set xkb_rules_layout in mango config; set it in ~/.config/mango/config.conf after install"
   fi
 }
 
@@ -264,7 +264,7 @@ user = "greeter"
 # greetd-greeter has no matching /etc/pam.d file; reuse the "greetd" PAM service instead
 service = "greetd"
 EOT
-  echo sway | write_file "$MNT/etc/greetd/environments"
+  echo mango | write_file "$MNT/etc/greetd/environments"
   ((DRY_RUN)) || echo "GTK_THEME=adw-gtk3-dark" >>"$MNT/etc/environment"
   chroot_run systemctl enable greetd.service bluetooth.service power-profiles-daemon.service
   chroot_run systemctl set-default graphical.target
@@ -304,7 +304,7 @@ phase_validate() {
   [[ -d $MNT/home/$USERNAME ]] || die "home for $USERNAME missing"
   install_xkb
   grep -q "XKB_DEFAULT_LAYOUT=$XKB_LAYOUT " "$MNT/etc/greetd/config.toml" || die "greeter keyboard layout not set in greetd config"
-  grep -qE "^[[:space:]]*xkb_layout[[:space:]]+$XKB_LAYOUT\$" "$MNT/home/$USERNAME/.config/sway/looknfeel" || warn "sway xkb_layout in /home/$USERNAME is not $XKB_LAYOUT"
+  grep -qx "xkb_rules_layout=$XKB_LAYOUT" "$MNT/home/$USERNAME/.config/mango/config.conf" || warn "mango xkb_rules_layout in /home/$USERNAME is not $XKB_LAYOUT"
   ! ((ENCRYPT)) || grep -q 'rd.luks.name' "$MNT/boot/grub/grub.cfg" || die "grub.cfg lost rd.luks.name"
 }
 

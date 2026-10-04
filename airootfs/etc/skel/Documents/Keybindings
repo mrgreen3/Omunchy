@@ -21,9 +21,9 @@ WINDOW CONTROLS
 Super + q               Close Window
 Super + t               Toggle Float
 Super + shift + f       Fullscreen
-Super + v               Toggle Split
+Super + v               Toggle Split Direction
 
-Tiling helper: windows auto-split dwindle-style (autotiling).
+Windows auto-split dwindle-style (mango dwindle layout).
 
 
 FOCUS & MOVEMENT

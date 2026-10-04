@@ -4,7 +4,7 @@
 # omunchy:args=
 # omunchy:examples=omunchy welcome
 
-# Started from sway (looknfeel) on the live ISO only. AUTORUN=1 opens the
+# Started from mango (config.conf) on the live ISO only. AUTORUN=1 opens the
 # OpenCode setup assistant as soon as a connection is up.
 
 set -uo pipefail
@@ -13,7 +13,7 @@ AUTORUN="${AUTORUN:-0}"
 
 [[ -d /run/archiso/airootfs ]] || exit 0
 
-# One instance only (a new sway session re-runs autostart).
+# One instance only (a new mango session re-runs autostart).
 exec 9>"${XDG_RUNTIME_DIR:-/tmp}/omunchy-welcome.lock"
 flock -n 9 || exit 0
 

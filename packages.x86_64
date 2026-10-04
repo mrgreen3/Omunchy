@@ -19,13 +19,12 @@ noto-fonts-emoji
 foot
 xdg-terminal-exec
 
-## === WAYLAND DESKTOP ENVIRONMENT (sway stack, all from official repos) ===
-sway
+## === WAYLAND DESKTOP ENVIRONMENT (mango stack, all from official repos) ===
+mangowm
 swayidle
 wlsunset
 xdg-desktop-portal-wlr
 swaybg
-autotiling
 waybar
 xorg-xwayland
 grim

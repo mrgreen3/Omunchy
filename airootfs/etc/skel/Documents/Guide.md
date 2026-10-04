@@ -1,6 +1,6 @@
  Omunchy Guide
 
-Welcome to Omunchy, a lightweight Arch-based Wayland live ISO built around sway.
+Welcome to Omunchy, a lightweight Arch-based Wayland live ISO built around mango.
 
 Note: Do not post Omunchy issues on the Arch Linux forums.
 
@@ -8,7 +8,7 @@ Note: Do not post Omunchy issues on the Arch Linux forums.
 
 ABOUT OMUNCHY
 
-Omunchy is Arch-based. The desktop is sway + waybar (bar) + mako
+Omunchy is Arch-based. The desktop is mango + waybar (bar) + mako
 (notifications) + rofi (launcher) + foot (terminal), all from the official
 Arch repos. It is delivered as a live ISO that runs from RAM/overlay;
 persistent changes require the installer, obinstall.
@@ -18,12 +18,12 @@ persistent changes require the installer, obinstall.
              changes are lost on reboot unless the system is installed.
   Absent   = installed: sudo asks for a password; changes persist.
 
-- Configs: ~/.config/sway (config + binds + looknfeel + theme includes),
+- Configs: ~/.config/mango/config.conf,
   ~/.config/{waybar,rofi,mako,foot}, ~/.config/opencode (settings, AGENTS.md,
   skills), ~/Documents (Guide, Keybindings, About), ~/Backgrounds.
 
-- Theme: one fixed theme (omunchy-forest palette) in ~/.config/sway/theme;
-  wallpaper set by swaybg in ~/.config/sway/looknfeel. There is no
+- Theme: one fixed theme (omunchy-forest palette) (border colours) in ~/.config/mango/config.conf;
+  wallpaper set by swaybg in the same file. There is no
   theme-switch command in the shipped scripts.
 
 - Scripts: ~/Scripts is on PATH. obinstall (installer), fix-keys (pacman
@@ -46,9 +46,9 @@ Network required for pacman or browser use in the live session.
 
 WORKSPACES AND LAYOUTS
 
-sway arranges windows automatically in a tiling layout.
+mango arranges windows automatically in a dwindle tiling layout.
 
-Switch workspaces with Super+1 through Super+5.
+Switch workspaces (tags) with Super+1 through Super+5.
 Toggle a window between floating and tiling with Super+T.
 
 ---
@@ -435,7 +435,7 @@ AUR:      only on explicit request; see YAY / AUR.
 CONSOLE KEYBOARD LAYOUT
 
 obinstall sets the raw tty console (rescue mode, the disk-unlock prompt,
-before sway starts) to the keyboard layout chosen in its wizard, and sway's
+before mango starts) to the keyboard layout chosen in its wizard, and mango's
 layout is derived from the same choice. To change the console layout afterwards:
 
 sudo nano /etc/vconsole.conf   # set KEYMAP=<layout>, e.g. KEYMAP=uk
@@ -456,7 +456,7 @@ If you remove the unused one after installation, update your bootloader config
 
 INTEL GRAPHICS
 
-Omunchy uses Wayland with sway, which relies on kernel modesetting via Mesa.
+Omunchy uses Wayland with mango, which relies on kernel modesetting via Mesa.
 No additional Intel drivers needed — built-in kernel drivers handle acceleration.
 
 ---
