@@ -15,8 +15,8 @@ list_zones() { timedatectl list-timezones 2>/dev/null || (cd /usr/share/zoneinfo
 ask() { gum input --prompt "$1 " --placeholder "${2:-}" --value "${3:-}"; }
 
 screen "Keyboard layout"
-KEYMAP=$(list_keymaps | gum filter --placeholder "type to search" --height 12 --value us || echo us)
-KEYMAP=${KEYMAP:-us}
+KEYMAP=$(list_keymaps | gum filter --placeholder "type to search" --height 12 --value uk || echo uk)
+KEYMAP=${KEYMAP:-uk}
 
 screen "Your account"
 while :; do
@@ -58,6 +58,6 @@ if ((ENCRYPT)); then LUKS_PASS_FILE=$dir/luks.pass; printf '%s' "$PW" >"$LUKS_PA
 
 {
   printf 'DISK=%q\nENCRYPT=%q\nLUKS_PASS_FILE=%q\nUSERNAME=%q\nUSER_HASH=%q\n' "$DISK" "$ENCRYPT" "$LUKS_PASS_FILE" "$USERNAME" "$USER_HASH"
-  printf 'HOSTNAME=%q\nTIMEZONE=%q\nKEYMAP=%q\nLOCALE=en_US.UTF-8\n' "$HOSTNAME" "$TIMEZONE" "$KEYMAP"
+  printf 'HOSTNAME=%q\nTIMEZONE=%q\nKEYMAP=%q\nLOCALE=en_GB.UTF-8\n' "$HOSTNAME" "$TIMEZONE" "$KEYMAP"
 } >"$OUT"
 chmod 600 "$OUT"
