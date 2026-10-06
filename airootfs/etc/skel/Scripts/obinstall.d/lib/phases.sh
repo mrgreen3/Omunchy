@@ -189,7 +189,7 @@ EOT
 
   # live-only bits
   run rm -f "$MNT/home/$LIVE_USER/Scripts/obinstall"
-  run rm -rf "$MNT/usr/local/lib/obinstall"
+  run rm -rf "$MNT/home/$LIVE_USER/Scripts/obinstall.d"
   # drop the live-only installer bind/window rule and its keybindings entry
   ((DRY_RUN)) || { sed -i -e '/obinstall/d' -e '/^windowrule=.*Installer/d' "$MNT/home/$LIVE_USER/.config/mango/config.conf" 2>/dev/null || true
     sed -i '/Install Omunchy/d' "$MNT/home/$LIVE_USER/Documents/Keybindings" 2>/dev/null || true; }

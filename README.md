@@ -39,7 +39,7 @@ summary screen before anything is touched. It partitions the disk (GPT, 1 GiB ES
 `@ @home @log @pkg`), copies the running live system to it
 (tar | pv | tar, kernel from the ISO media, live-session changes synced), then converts the copy
 into an installed system: user rename, mkinitcpio (systemd hooks, `sd-encrypt` for LUKS), greetd,
-GRUB. It re-runs itself through sudo, so no need to prefix it. Source: `airootfs/usr/local/lib/obinstall/`.
+GRUB. It re-runs itself through sudo, so no need to prefix it. Source: `airootfs/etc/skel/Scripts/obinstall.d/`.
 Untested on real hardware: try it in a VM first.
 
 - **AI setup assistant.** `opencode` ships in `packages.x86_64`. On the live ISO

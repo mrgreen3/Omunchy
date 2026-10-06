@@ -4,6 +4,9 @@
 
 . $HOME/.bashrc
 
+# Password helper for `sudo -A` (see ~/Documents/Guide.md)
+export SUDO_ASKPASS=$HOME/Scripts/omunchy-askpass
+
 # Environment for the Wayland session: `exec`-ed children (foot, firefox,
 # waybar) inherit this env.
 WindowManager=mango

@@ -15,4 +15,4 @@ if [[ -z ${OMUNCHY_INSTALLER_FOOT:-} && -n ${WAYLAND_DISPLAY:-} ]] && command -v
     -e env OMUNCHY_INSTALLER_FOOT=1 "$HOME/Scripts/obinstall" "$@"
 fi
 
-exec /usr/local/lib/obinstall/install "$@"
+exec "$HOME/Scripts/obinstall.d/install" "$@"
