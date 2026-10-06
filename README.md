@@ -48,7 +48,8 @@ Untested on real hardware: try it in a VM first.
   which closes itself once a connection appears (watched for 30 minutes). OpenCode runs as
   `opencode --standalone` (cloud-only, but free models work with no login) on the single `omunchy-guide` skill, which reads
   `~/Documents/Guide.md` (the human Guide doubles as the assistant's reference: ABOUT, AI SETUP, APPS, packages). The skill lives in
-  `~/.config/opencode/skills`; the user-local tools in the Guide use each tool's own installer into `~/.local`, so no
+  `~/.config/omunchy/skills` (with the shared `AGENTS.md`), linked into the paths opencode, pi, Gemini CLI and
+  Claude Code each scan (`~/.agents/skills`, `~/.claude/skills`, `~/.config/opencode/skills`), so any of them can load it; the user-local tools in the Guide use each tool's own installer into `~/.local`, so no
   nodejs/npm packages and nothing global. Opt in to opening the assistant
   automatically once online by starting the welcome with `AUTORUN=1`
   (e.g. `exec env AUTORUN=1 ~/Scripts/omunchy-welcome` in `looknfeel`).

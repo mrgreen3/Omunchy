@@ -5,3 +5,4 @@
 work/
 out/
 .claude/
+!/airootfs/etc/skel/.claude/

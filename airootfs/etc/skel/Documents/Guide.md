@@ -19,8 +19,9 @@ persistent changes require the installer, obinstall.
   Absent   = installed: sudo asks for a password; changes persist.
 
 - Configs: ~/.config/mango/config.conf,
-  ~/.config/{waybar,rofi,mako,foot}, ~/.config/opencode (settings, AGENTS.md,
-  skills), ~/Documents (Guide, Keybindings, About), ~/Backgrounds.
+  ~/.config/{waybar,rofi,mako,foot}, ~/.config/opencode (settings),
+  ~/.config/omunchy (AGENTS.md and skills, shared by opencode, pi, Gemini CLI and
+  Claude Code), ~/Documents (Guide, Keybindings, About), ~/Backgrounds.
 
 - Theme: one fixed theme (omunchy-forest palette) (border colours) in ~/.config/mango/config.conf;
   wallpaper set by swaybg in the same file. There is no
@@ -71,7 +72,7 @@ opencode auth login
 
   (browser login), or set OPENCODE_API_KEY in your own terminal, then retry.
 
-- Rules the assistant follows (its config: ~/.config/opencode):
+- Rules the assistant follows (shared file: ~/.config/omunchy/AGENTS.md; opencode settings: ~/.config/opencode):
 
   - runs as `opencode --standalone` on this system
   - pacman: official repos only; never `pacman -Sy` alone (partial upgrade)
