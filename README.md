@@ -40,6 +40,10 @@ summary screen before anything is touched. It partitions the disk (GPT, 1 GiB ES
 (tar | pv | tar, kernel from the ISO media, live-session changes synced), then converts the copy
 into an installed system: user rename, mkinitcpio (systemd hooks, `sd-encrypt` for LUKS), greetd,
 GRUB. It re-runs itself through sudo, so no need to prefix it. Source: `airootfs/etc/skel/Scripts/obinstall.d/`.
+The wizard's one password is used for the user, root and (if enabled) the LUKS disk. Encrypted installs
+auto-login through greetd, so the disk passphrase at boot is the only gate to the session.
+The pacman keyring is not initialised by the installer: after first boot, with a network connection,
+run `fix-keys` (sets up the keyring and updates `archlinux-keyring`) before the first `pacman -Syu`.
 Untested on real hardware: try it in a VM first.
 
 - **AI setup assistant.** `opencode` ships in `packages.x86_64`. On the live ISO

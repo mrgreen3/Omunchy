@@ -6,6 +6,7 @@ Type = Package
 Target = pacman-mirrorlist
 
 [Action]
+Depends = pacman-mirrorlist
 Description = Uncommenting mirrorlist for the live ISO...
 When = PostTransaction
-Exec = /bin/sh -c 'sed -i "s/^#Server/Server/" /etc/pacman.d/mirrorlist'
+Exec = /bin/sh -c 'sed -E -i "s/^#(Server = https:)/\\1/" /etc/pacman.d/mirrorlist'

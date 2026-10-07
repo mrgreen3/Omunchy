@@ -121,6 +121,9 @@ show_summary() {
     3. Locale, time, user, login screen and bootloader are configured
 
 EOT
+  echo "  Current contents of $DISK:"
+  lsblk -f "$DISK" 2>/dev/null | sed 's/^/    /'
+  echo
   gum style --foreground 9 --bold "  ALL DATA ON $DISK WILL BE DESTROYED."
   echo
 }
