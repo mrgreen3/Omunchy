@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Interactive pacman update for the waybar updates badge (on-click).
+# Shows what's pending, runs the update, refreshes the badge, keeps the
+# terminal open so the result can be read.
+
+if [[ ! -s /etc/pacman.d/gnupg/pubring.gpg ]]; then
+    echo "Pacman keyring not set up - run fix-keys first."
+    read -rp "Press Enter to close..."
+    exit 1
+fi
+
+echo "Checking for updates..."
+pending=$(checkupdates 2>/dev/null)
+if [[ -z $pending ]]; then
+    echo "System is up to date."
+    read -rp "Press Enter to close..."
+    exit 0
+fi
+
+echo
+echo "$pending"
+echo
+echo "$(wc -l <<<"$pending") updates pending. Running: sudo pacman -Syu"
+echo
+
+sudo pacman -Syu
+rc=$?
+echo
+if ((rc == 0)); then
+    echo "Update complete."
+else
+    echo "Update failed (exit $rc). Scroll up for pacman's output."
+fi
+
+pkill -RTMIN+8 waybar 2>/dev/null
+read -rp "Press Enter to close..."

@@ -42,8 +42,8 @@ into an installed system: user rename, mkinitcpio (systemd hooks, `sd-encrypt` f
 GRUB. It re-runs itself through sudo, so no need to prefix it. Source: `airootfs/etc/skel/Scripts/obinstall.d/`.
 The wizard's one password is used for the user, root and (if enabled) the LUKS disk. Encrypted installs
 auto-login through greetd, so the disk passphrase at boot is the only gate to the session.
-The pacman keyring is not initialised by the installer: after first boot, with a network connection,
-run `fix-keys` (sets up the keyring and updates `archlinux-keyring`) before the first `pacman -Syu`.
+The installer builds a fresh pacman keyring offline (the live one is a tmpfs, so the copy has none).
+If pacman later reports signature errors, run `fix-keys` with a network connection (it also updates `archlinux-keyring`).
 Untested on real hardware: try it in a VM first.
 
 - **AI setup assistant.** `opencode` ships in `packages.x86_64`. On the live ISO

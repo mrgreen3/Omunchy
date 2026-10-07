@@ -15,6 +15,18 @@ if [[ -d /run/archiso ]]; then
     exit 0
 fi
 
+# Keyring not initialised (fresh install): checkupdates can't verify the sync
+# databases and would silently report "Up to date". Warn once per boot instead.
+if [[ ! -s /etc/pacman.d/gnupg/pubring.gpg ]]; then
+    flag="${XDG_RUNTIME_DIR:-/tmp}/updates-keyring-warned"
+    if [[ ! -e $flag ]] && command -v notify-send >/dev/null 2>&1; then
+        notify-send -u normal "Pacman keyring not set up" \
+            "Open a terminal and run fix-keys before updating." && : >"$flag"
+    fi
+    printf '{"text": "󰌆", "tooltip": "Pacman keyring not set up - run fix-keys", "class": "pending"}\n'
+    exit 0
+fi
+
 n=0
 if command -v checkupdates >/dev/null 2>&1; then
     n=$(checkupdates 2>/dev/null | wc -l) || n=0

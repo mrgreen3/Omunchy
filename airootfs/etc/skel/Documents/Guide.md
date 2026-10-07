@@ -393,12 +393,14 @@ Rules:
 
 INITIALIZE PACMAN
 
-The live session sets up pacman keys automatically (part of archiso). On a
-newly installed system, set up the keys and keyring afresh before first use:
+The live session sets up pacman keys automatically (part of archiso), and the
+installer builds a fresh keyring on the installed system. If pacman reports
+signature errors (e.g. after a long gap between updates), set up the keys and
+keyring afresh with a network connection:
 
 fix-keys
 
-This creates keys, refreshes the package cache, and updates archlinux-keyring.
+This recreates keys, refreshes the package cache, and updates archlinux-keyring.
 It is the one exception to the "no `pacman -Sy` alone" rule: it installs
 archlinux-keyring itself.
 

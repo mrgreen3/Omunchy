@@ -202,6 +202,12 @@ EOT
   fi
   run rm -f "$MNT/etc/systemd/system/multi-user.target.wants/pacman-init.service" \
             "$MNT/etc/systemd/system/pacman-init.service" "$MNT/etc/systemd/system/etc-pacman.d-gnupg.mount"
+  # the live keyring is a tmpfs, so the copy has none: build a fresh one (offline) or checkupdates can't verify the sync dbs
+  info "initialising pacman keyring"
+  run rm -rf "$MNT/etc/pacman.d/gnupg"
+  chroot_run pacman-key --init
+  chroot_run pacman-key --populate archlinux
+  chroot_run gpgconf --homedir /etc/pacman.d/gnupg --kill all
   run rm -rf "$MNT/etc/skel"
   # live NOPASSWD sudo drop-in -> password required
   run rm -f "$MNT/etc/sudoers.d/10-live-nopasswd"
@@ -331,7 +337,7 @@ phase_finish() {
   run sync
   ((DRY_RUN)) || { umount -R "$MNT" 2>/dev/null || true; ((ENCRYPT)) && cryptsetup close "$ROOT_MAPPER" 2>/dev/null || true; }
   info "Installation complete. Remove the install media and reboot."
-  info "After first boot, connect to a network and run fix-keys to set up the pacman keyring."
+  info "If pacman reports signature errors after first boot, connect to a network and run fix-keys."
 }
 
 PHASES=(preflight prepare_disk copy_system configure_system user mkinitcpio greeter bootloader validate finish)

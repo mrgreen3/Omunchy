@@ -101,7 +101,7 @@
     "exec": "~/Scripts/updates.sh",
     "return-type": "json",
     "interval": 21600,
-    "on-click": "foot -e sudo pacman -Syu",
+    "on-click": "foot -e ~/Scripts/system-update",
     "signal": 8
   },
 
