@@ -19,8 +19,9 @@ persistent changes require the installer, obinstall.
   Absent   = installed: sudo asks for a password; changes persist.
 
 - Configs: ~/.config/mango/config.conf,
-  ~/.config/{waybar,rofi,mako,foot}, ~/.config/opencode (settings, AGENTS.md,
-  skills), ~/Documents (Guide, Keybindings, About), ~/Backgrounds.
+  ~/.config/{waybar,rofi,mako,foot}, ~/.config/opencode (settings),
+  ~/.config/omunchy (AGENTS.md and skills, shared by opencode, pi, Gemini CLI and
+  Claude Code), ~/Documents (Guide, Keybindings, About), ~/Backgrounds.
 
 - Theme: one fixed theme (omunchy-forest palette) (border colours) in ~/.config/mango/config.conf;
   wallpaper set by swaybg in the same file. There is no
@@ -71,7 +72,7 @@ opencode auth login
 
   (browser login), or set OPENCODE_API_KEY in your own terminal, then retry.
 
-- Rules the assistant follows (its config: ~/.config/opencode):
+- Rules the assistant follows (shared file: ~/.config/omunchy/AGENTS.md; opencode settings: ~/.config/opencode):
 
   - runs as `opencode --standalone` on this system
   - pacman: official repos only; never `pacman -Sy` alone (partial upgrade)
@@ -360,14 +361,14 @@ for convenience — installed system does not.
 SUDO FROM OPENCODE
 
 OpenCode's shell has no terminal, so plain sudo cannot ask for the password.
-Use sudo's askpass mode: SUDO_ASKPASS is already set (via /etc/environment) to
-/usr/local/bin/omunchy-askpass, which opens a password box for the user.
+Use sudo's askpass mode: SUDO_ASKPASS is already set (by ~/.bash_profile) to
+~/Scripts/omunchy-askpass, which opens a password box for the user.
 
   sudo -A pacman -S <package>
 
 If SUDO_ASKPASS is empty in the current shell, give it explicitly:
 
-  SUDO_ASKPASS=/usr/local/bin/omunchy-askpass sudo -A pacman -S <package>
+  SUDO_ASKPASS=~/Scripts/omunchy-askpass sudo -A pacman -S <package>
 
 Rules:
 - State the exact command and why, and get a yes, BEFORE running it. The
@@ -380,7 +381,7 @@ Rules:
 - sudo remembers a successful password for about five minutes: further
   `sudo -A` commands in that window will not prompt. Treat each one as needing
   the same care and say so.
-- Never run /usr/local/bin/omunchy-askpass directly (it refuses unless sudo
+- Never run ~/Scripts/omunchy-askpass directly (it refuses unless sudo
   calls it) and never try to read, print or work around the password.
 - If the user cancels the box (Esc) or it does not appear, stop and ask; do
   not retry blindly.

@@ -39,7 +39,11 @@ summary screen before anything is touched. It partitions the disk (GPT, 1 GiB ES
 `@ @home @log @pkg`), copies the running live system to it
 (tar | pv | tar, kernel from the ISO media, live-session changes synced), then converts the copy
 into an installed system: user rename, mkinitcpio (systemd hooks, `sd-encrypt` for LUKS), greetd,
-GRUB. It re-runs itself through sudo, so no need to prefix it. Source: `airootfs/usr/local/lib/obinstall/`.
+GRUB. It re-runs itself through sudo, so no need to prefix it. Source: `airootfs/etc/skel/Scripts/obinstall.d/`.
+The wizard's one password is used for the user, root and (if enabled) the LUKS disk. Encrypted installs
+auto-login through greetd, so the disk passphrase at boot is the only gate to the session.
+The pacman keyring is not initialised by the installer: after first boot, with a network connection,
+run `fix-keys` (sets up the keyring and updates `archlinux-keyring`) before the first `pacman -Syu`.
 Untested on real hardware: try it in a VM first.
 
 - **AI setup assistant.** `opencode` ships in `packages.x86_64`. On the live ISO
@@ -48,7 +52,8 @@ Untested on real hardware: try it in a VM first.
   which closes itself once a connection appears (watched for 30 minutes). OpenCode runs as
   `opencode --standalone` (cloud-only, but free models work with no login) on the single `omunchy-guide` skill, which reads
   `~/Documents/Guide.md` (the human Guide doubles as the assistant's reference: ABOUT, AI SETUP, APPS, packages). The skill lives in
-  `~/.config/opencode/skills`; the user-local tools in the Guide use each tool's own installer into `~/.local`, so no
+  `~/.config/omunchy/skills` (with the shared `AGENTS.md`), linked into the paths opencode, pi, Gemini CLI and
+  Claude Code each scan (`~/.agents/skills`, `~/.claude/skills`, `~/.config/opencode/skills`), so any of them can load it; the user-local tools in the Guide use each tool's own installer into `~/.local`, so no
   nodejs/npm packages and nothing global. Opt in to opening the assistant
   automatically once online by starting the welcome with `AUTORUN=1`
   (e.g. `exec env AUTORUN=1 ~/Scripts/omunchy-welcome` in `looknfeel`).

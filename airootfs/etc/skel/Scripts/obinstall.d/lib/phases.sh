@@ -140,7 +140,7 @@ phase_copy_system() {
   # errexit off so PIPESTATUS is always inspected (a failed tar on either side must be caught)
   local st
   set +e
-  tar cf - -C "$LIVE_ROOT" . | pv -u block -pterb -s "$total" | tar xpf - -C "$MNT"
+  tar --acls --xattrs -cf - -C "$LIVE_ROOT" . | pv -u block -pterb -s "$total" | tar --acls --xattrs -xpf - -C "$MNT"
   st=("${PIPESTATUS[@]}")
   set -e
   [[ ${st[0]} -eq 0 && ${st[2]} -eq 0 ]] || die "copying system files failed (tar: ${st[0]}/${st[2]})"
@@ -154,7 +154,7 @@ phase_copy_system() {
   if [[ -n $upper && -d $upper ]]; then
     info "syncing live session changes"
     # --no-D: overlayfs whiteouts (char 0/0) can't be recreated by rsync; apply them as deletes below
-    rsync -a --no-D "$upper/" "$MNT/" >>"$LOG_FILE" 2>&1 || warn "cowspace sync had errors (non-fatal)"
+    rsync -aAXH --no-D "$upper/" "$MNT/" >>"$LOG_FILE" 2>&1 || warn "cowspace sync had errors (non-fatal)"
     local wh
     while IFS= read -r -d '' wh; do
       if [[ $(stat -c '%t:%T' "$upper/$wh") == 0:0 ]]; then rm -rf -- "${MNT:?}/$wh"; fi
@@ -189,7 +189,7 @@ EOT
 
   # live-only bits
   run rm -f "$MNT/home/$LIVE_USER/Scripts/obinstall"
-  run rm -rf "$MNT/usr/local/lib/obinstall"
+  run rm -rf "$MNT/home/$LIVE_USER/Scripts/obinstall.d"
   # drop the live-only installer bind/window rule and its keybindings entry
   ((DRY_RUN)) || { sed -i -e '/obinstall/d' -e '/^windowrule=.*Installer/d' "$MNT/home/$LIVE_USER/.config/mango/config.conf" 2>/dev/null || true
     sed -i '/Install Omunchy/d' "$MNT/home/$LIVE_USER/Documents/Keybindings" 2>/dev/null || true; }
@@ -209,7 +209,9 @@ EOT
     grep -q '^%wheel ALL=(ALL:ALL) ALL$' "$MNT/etc/sudoers" || die "sudoers: wheel rule not found after edit"; }
 
   info "fstab, locale, time, keyboard, hostname"
-  ((DRY_RUN)) || { genfstab -U "$MNT" >"$MNT/etc/fstab"; grep -q 'subvol=' "$MNT/etc/fstab" || die "fstab has no btrfs subvolumes"; }
+  ((DRY_RUN)) || { genfstab -U "$MNT" >"$MNT/etc/fstab"; grep -q 'subvol=' "$MNT/etc/fstab" || die "fstab has no btrfs subvolumes"
+    # subvolid pins a mount to one subvolume id and breaks rollbacks; subvol= is enough
+    sed -i -E 's/,subvolid=[0-9]+//' "$MNT/etc/fstab"; }
   echo "$HOSTNAME" | write_file "$MNT/etc/hostname"
   printf '127.0.0.1\tlocalhost\n::1\t\tlocalhost\n127.0.1.1\t%s.localdomain\t%s\n' "$HOSTNAME" "$HOSTNAME" | write_file "$MNT/etc/hosts"
   run ln -sf "/usr/share/zoneinfo/$TIMEZONE" "$MNT/etc/localtime"
@@ -328,6 +330,7 @@ phase_finish() {
   run sync
   ((DRY_RUN)) || { umount -R "$MNT" 2>/dev/null || true; ((ENCRYPT)) && cryptsetup close "$ROOT_MAPPER" 2>/dev/null || true; }
   info "Installation complete. Remove the install media and reboot."
+  info "After first boot, connect to a network and run fix-keys to set up the pacman keyring."
 }
 
 PHASES=(preflight prepare_disk copy_system configure_system user mkinitcpio greeter bootloader validate finish)

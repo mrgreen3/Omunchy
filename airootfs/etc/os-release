@@ -5,6 +5,6 @@ ID_LIKE=arch
 BUILD_ID=rolling
 
 ANSI_COLOR="0;32"
-HOME_URL="https://archbang.org/"
-DOCUMENTATION_URL="https://archbang.org/guides"
-SUPPORT_URL="https://archbang.org/contact"
+HOME_URL="https://github.com/mrgreen3/Omunchy"
+DOCUMENTATION_URL="https://github.com/mrgreen3/Omunchy"
+SUPPORT_URL="https://github.com/mrgreen3/Omunchy/issues"

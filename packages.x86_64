@@ -144,6 +144,12 @@ cryptsetup
 device-mapper
 diffutils
 e2fsprogs
+exfatprogs
+nvme-cli
+smartmontools
+wireless-regdb
+sof-firmware
+imv
 file
 filesystem
 findutils
