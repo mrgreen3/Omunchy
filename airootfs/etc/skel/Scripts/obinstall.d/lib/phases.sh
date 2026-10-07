@@ -140,7 +140,8 @@ phase_copy_system() {
   # errexit off so PIPESTATUS is always inspected (a failed tar on either side must be caught)
   local st
   set +e
-  tar --acls --xattrs -cf - -C "$LIVE_ROOT" . | pv -u block -pterb -s "$total" | tar --acls --xattrs -xpf - -C "$MNT"
+  # the ESP is vfat (no ACLs/xattrs) and already mounted at $MNT/boot; the live /boot is empty
+  tar --acls --xattrs --exclude=./boot -cf - -C "$LIVE_ROOT" . | pv -u block -pterb -s "$total" | tar --acls --xattrs -xpf - -C "$MNT"
   st=("${PIPESTATUS[@]}")
   set -e
   [[ ${st[0]} -eq 0 && ${st[2]} -eq 0 ]] || die "copying system files failed (tar: ${st[0]}/${st[2]})"
