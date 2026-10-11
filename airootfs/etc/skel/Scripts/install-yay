@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Install the yay AUR helper.
-#   install-yay            install yay-bin (prebuilt upstream release; needs only
-#                          git, fakeroot and binutils, no compiler, no go)
-#   install-yay --source   build yay from source (needs base-devel and go)
+#   install-yay            install yay-bin (prebuilt upstream release, no go)
+#   install-yay --source   build yay from source (also needs go)
+# Both install base-devel and git: building any AUR package needs them.
 
 set -e
 
@@ -34,30 +34,19 @@ fi
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 
-if [[ $mode == bin ]]; then
-    # only pacman -S what is missing (all three ship on the Omunchy image)
-    missing=()
-    for p in git fakeroot binutils; do
-        pacman -Qq "$p" >/dev/null 2>&1 || missing+=("$p")
-    done
-    if ((${#missing[@]})); then
-        echo "Installing build prerequisites: ${missing[*]}"
-        "${SUDO[@]}" pacman -S --noconfirm --needed "${missing[@]}" || {
-            echo "Could not install ${missing[*]}. If the package database is empty, run fix-keys or 'sudo pacman -Syu' first." >&2
-            exit 1
-        }
-    fi
+echo "Installing build prerequisites: base-devel git"
+"${SUDO[@]}" pacman -S --noconfirm --needed base-devel git || {
+    echo "Could not install base-devel/git. If the package database is empty, run fix-keys or 'sudo pacman -Syu' first." >&2
+    exit 1
+}
 
+if [[ $mode == bin ]]; then
     echo "Cloning yay-bin..."
     git clone https://aur.archlinux.org/yay-bin.git "$TMP/yay-bin"
 
-    # makepkg's default 'debug' option needs debugedit (which needs gdb); nothing is
-    # compiled here, so switch it off for this build only (the last OPTIONS entry wins)
-    printf 'source /etc/makepkg.conf\nOPTIONS+=(!debug)\n' >"$TMP/makepkg.conf"
-
     echo "Packaging yay-bin (downloads the upstream release, checksum-verified)..."
     cd "$TMP/yay-bin"
-    makepkg --config "$TMP/makepkg.conf" -f --noconfirm
+    makepkg -f --noconfirm
 
     echo "Installing yay-bin..."
     "${SUDO[@]}" pacman -U --noconfirm ./yay-bin-[0-9]*.pkg.tar.zst
@@ -66,9 +55,7 @@ if [[ $mode == bin ]]; then
     exit 0
 fi
 
-# ---- --source: build from source (needs base-devel and go) ----
-"${SUDO[@]}" pacman -Sy --noconfirm --needed base-devel git
-
+# ---- --source: build from source (needs go) ----
 # yay builds with go: remember whether it was already installed so it is only
 # removed afterwards if this script added it
 had_go=0

@@ -264,11 +264,12 @@ never answer prompts blindly. On the live ISO, installs are lost on reboot.
 
 Install:  ~/Scripts/install-yay   (use the full path). It installs yay-bin, the
           prebuilt upstream release of yay (its checksum is pinned in the AUR
-          PKGBUILD). It only needs git, fakeroot and binutils, which ship with
-          Omunchy: nothing is compiled, no go, no base-devel, about 12 MiB.
+          PKGBUILD). It first installs base-devel and git, which building any
+          AUR package needs (a few hundred MiB, mostly gcc); yay itself is not
+          compiled, no go.
           ~/Scripts/install-yay --source builds yay from source instead: it
-          needs base-devel and go (about 0.75 GiB of RAM at peak on the live
-          ISO) and removes go afterwards only if the script itself added it.
+          also needs go (about 0.75 GiB of RAM at peak on the live ISO) and
+          removes go afterwards only if the script itself added it.
 Needs:    network; sudo. Run without a terminal (as the assistant does), the
           script uses `sudo -A` itself, so the password goes into the askpass
           box (see SUDO FROM OPENCODE): say first which pacman commands will
