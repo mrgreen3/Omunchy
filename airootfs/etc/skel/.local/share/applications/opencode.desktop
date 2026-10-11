@@ -11,3 +11,4 @@ Terminal=false
 Categories=Development;
 Keywords=ai;agent;coding;terminal;
 StartupNotify=false
+Hidden=true

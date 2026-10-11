@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Install the OpenCode AI assistant (official repos) if missing, then start it.
+# Installed system only: on the live ISO it would be lost on reboot.
 #   install-opencode             install if needed, then open OpenCode
 #   install-opencode --guide     same, opening with the omunchy-guide skill
 #   install-opencode --no-start  install only
@@ -11,7 +12,7 @@ case "${1:-}" in
     "") ;;
     --guide) guide=1 ;;
     --no-start) start=0 ;;
-    -h | --help) sed -n '2,5p' "$0"; exit 0 ;;
+    -h | --help) sed -n '2,6p' "$0"; exit 0 ;;
     *) echo "unknown option: $1 (use --guide, --no-start or no option)" >&2; exit 2 ;;
 esac
 
@@ -23,22 +24,16 @@ fail() {
 }
 
 if ! command -v opencode >/dev/null 2>&1; then
+    [[ -d /run/archiso/airootfs ]] && fail "OpenCode is available after installing Omunchy (obinstall)."
     echo "Checking network..."
     "$HOME/Scripts/netcheck" || fail "OpenCode needs a network connection. Connect first and retry."
 
-    SUDO=(sudo) confirm=()
-    if [[ ! -t 0 ]]; then
-        [[ -n ${SUDO_ASKPASS:-} ]] && SUDO=(sudo -A)
-        confirm=(--noconfirm)
-    fi
-    # the ISO ships no sync databases, so a plain -S cannot work: full update (-Syu).
-    # live: keep the running kernel, or its modules vanish until a reboot that loses everything
-    ignore=()
-    [[ -d /run/archiso/airootfs ]] && ignore=(--ignore linux)
+    SUDO=(sudo)
+    [[ ! -t 0 && -n ${SUDO_ASKPASS:-} ]] && SUDO=(sudo -A)
 
     echo "Installing OpenCode (about 80 MiB download, 200 MiB installed) with a full system update."
-    [[ -d /run/archiso/airootfs ]] && echo "Live session: this runs from RAM and is lost on reboot."
-    "${SUDO[@]}" pacman -Syu --needed "${confirm[@]}" "${ignore[@]}" opencode ||
+    # no partial upgrades: opencode links icu/glibc, so install it with a full update
+    "${SUDO[@]}" pacman -Syu --needed --noconfirm opencode ||
         fail "Install failed. On signature errors run fix-keys, then retry."
     guide=1
 fi

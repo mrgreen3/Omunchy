@@ -196,7 +196,8 @@ EOT
   run rm -rf "$MNT/home/$LIVE_USER/Scripts/obinstall.d"
   # drop the live-only installer bind/window rule and its keybindings entry
   ((DRY_RUN)) || { sed -i -e '/obinstall/d' -e '/^window_rule=.*Installer/d' "$MNT/home/$LIVE_USER/.config/mango/config.conf" 2>/dev/null || true
-    sed -i '/Install Omunchy/d' "$MNT/home/$LIVE_USER/Documents/Keybindings" 2>/dev/null || true; }
+    sed -i '/Install Omunchy/d' "$MNT/home/$LIVE_USER/Documents/Keybindings" 2>/dev/null || true
+    sed -i '/^Hidden=true/d' "$MNT/home/$LIVE_USER/.local/share/applications/opencode.desktop" 2>/dev/null || true; }
   run rm -rf "$MNT/etc/systemd/system/getty@tty1.service.d"
   run rm -f "$MNT/etc/systemd/system/default.target"
   if ((!DRY_RUN)) && [[ -f $MNT/etc/systemd/journald.conf.d/volatile-storage.conf ]]; then

@@ -56,22 +56,19 @@ Toggle a window between floating and tiling with Super+T.
 
 AI SETUP (OPENCODE)
 
-The AI setup assistant is OpenCode. It is not on the ISO (it cannot reach its
-models offline anyway): once connected, open "OpenCode" from the rofi menu
-(Super+Space) or run:
+The AI setup assistant is OpenCode. It is not on the ISO and is offered on the
+installed system only (installed live, it would be lost on reboot): once
+connected, open "OpenCode" from the rofi menu (Super+Space) or run:
 
 install-opencode
 
 The first time, it installs OpenCode from the official repos (about 80 MiB
-download, 200 MiB installed) together with a full system update (pacman -Syu;
-the live ISO keeps its running kernel), then opens it with the omunchy-guide
-skill. After that the same entry, or `opencode --standalone`, just starts it.
-On the live ISO the install runs from RAM and is lost on reboot; anything
-installed in the live session is copied to the disk by obinstall.
+download, 200 MiB installed) together with a full system update (pacman -Syu),
+then opens it with the omunchy-guide skill. After that the same entry, or
+`opencode --standalone`, just starts it. To try it in the live session anyway,
+run `sudo pacman -Syu --ignore linux opencode` yourself (lost on reboot).
 
-On the live ISO, omunchy-welcome shows connection hints when offline and, once
-a connection appears, says how to get the assistant (or, if started with
-AUTORUN=1, installs and opens it automatically).
+On the live ISO, omunchy-welcome shows connection hints when offline.
 
 - If OpenCode answers with 401 / Invalid credential, run:
 

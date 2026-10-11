@@ -4,12 +4,9 @@
 # omunchy:args=
 # omunchy:examples=omunchy welcome
 
-# Started from mango (config.conf) on the live ISO only. AUTORUN=1 opens the
-# OpenCode setup assistant (installing it first) as soon as a connection is up.
+# Started from mango (config.conf) on the live ISO only.
 
 set -uo pipefail
-
-AUTORUN="${AUTORUN:-0}"
 
 [[ -d /run/archiso/airootfs ]] || exit 0
 
@@ -25,15 +22,6 @@ have_net() {
     || ping -c1 -W2 8.8.8.8 >/dev/null 2>&1
 }
 
-# Connection up: AUTORUN=1 opens the assistant; otherwise say how to get it.
-online() {
-  if [[ $AUTORUN == 1 ]]; then
-    setsid -f foot -T OpenCode "$HOME/Scripts/install-opencode" --guide >/dev/null 2>&1
-  elif ! command -v opencode >/dev/null 2>&1; then
-    notify -t 15000 "AI assistant" "Open OpenCode from the launcher (Super+Space) to install it."
-  fi
-}
-
 # Wait for mako to claim the notification bus.
 for _ in $(seq 30); do
   busctl --user status org.freedesktop.Notifications >/dev/null 2>&1 && break
@@ -46,23 +34,19 @@ notify -t 15000 "Keybinds" "Press Super+K to see all keybinds."
 # Give NetworkManager a moment before calling it offline.
 for _ in $(seq 10); do have_net && break; sleep 2; done
 
-if have_net; then
-  online
-  exit 0
-fi
+have_net && exit 0
 
 # Persistent (-t 0) until dismissed; -p prints its id for the watcher to close.
 warn_id=$(notify -p -u critical -t 0 "No network connection" \
 "Wi-Fi: click the network icon in the bar, or run nmtui.
 Wired: plug in a cable.
-Software installs and the AI assistant need a connection.")
+Software installs need a connection.")
 
 # Watch for a connection for 30 minutes.
 while (( SECONDS < 1800 )); do
   sleep 5
   if have_net; then
     [[ -n $warn_id ]] && makoctl dismiss -n "$warn_id" 2>/dev/null
-    online
     exit 0
   fi
 done
