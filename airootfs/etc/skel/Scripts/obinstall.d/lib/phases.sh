@@ -195,7 +195,7 @@ EOT
   run rm -f "$MNT/home/$LIVE_USER/Scripts/obinstall"
   run rm -rf "$MNT/home/$LIVE_USER/Scripts/obinstall.d"
   # drop the live-only installer bind/window rule and its keybindings entry
-  ((DRY_RUN)) || { sed -i -e '/obinstall/d' -e '/^windowrule=.*Installer/d' "$MNT/home/$LIVE_USER/.config/mango/config.conf" 2>/dev/null || true
+  ((DRY_RUN)) || { sed -i -e '/obinstall/d' -e '/^window_rule=.*Installer/d' "$MNT/home/$LIVE_USER/.config/mango/config.conf" 2>/dev/null || true
     sed -i '/Install Omunchy/d' "$MNT/home/$LIVE_USER/Documents/Keybindings" 2>/dev/null || true; }
   run rm -rf "$MNT/etc/systemd/system/getty@tty1.service.d"
   run rm -f "$MNT/etc/systemd/system/default.target"
@@ -330,7 +330,7 @@ phase_validate() {
   grep -q 'root=' "$MNT/boot/grub/grub.cfg" || die "grub.cfg has no root="
   ! is_uefi || [[ -s $MNT/boot/EFI/BOOT/BOOTX64.EFI ]] || die "missing EFI fallback loader /EFI/BOOT/BOOTX64.EFI"
   [[ -d $MNT/home/$USERNAME ]] || die "home for $USERNAME missing"
-  ! grep -qE 'obinstall|^windowrule=.*Installer' "$MNT/home/$USERNAME/.config/mango/config.conf" || die "installer lines left in mango config"
+  ! grep -qE 'obinstall|^window_rule=.*Installer' "$MNT/home/$USERNAME/.config/mango/config.conf" || die "installer lines left in mango config"
   install_xkb
   grep -q "XKB_DEFAULT_LAYOUT=$XKB_LAYOUT " "$MNT/etc/greetd/config.toml" || die "greeter keyboard layout not set in greetd config"
   grep -qx "xkb_rules_layout=$XKB_LAYOUT" "$MNT/home/$USERNAME/.config/mango/config.conf" || warn "mango xkb_rules_layout in /home/$USERNAME is not $XKB_LAYOUT"
