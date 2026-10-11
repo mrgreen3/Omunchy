@@ -4,10 +4,12 @@
 
 LIVE_USER=live
 LIVE_ROOT=/run/archiso/airootfs
-LIVE_BOOT=/run/archiso/bootmnt
 ROOT_MAPPER=cryptroot
 BTRFS_TOP=/tmp/obinstall-btrfs-top
 ROOT_DEV=''; LUKS_PART=''; ESP_DEV=''
+
+# the linux package's own copy; the ISO media (bootmnt) is unmounted under copytoram
+live_kernel() { local k; for k in "$LIVE_ROOT"/usr/lib/modules/*/vmlinuz; do [[ -f $k ]] && { echo "$k"; return 0; }; done; return 1; }
 
 # ---------------------------------------------------------------------------
 phase_preflight() {
@@ -16,7 +18,8 @@ phase_preflight() {
     command -v "$t" >/dev/null || die "missing tool: $t"
   done
   if ((!DRY_RUN)); then
-    [[ -d $LIVE_ROOT && -f $LIVE_BOOT/arch/boot/x86_64/vmlinuz-linux ]] || die "not running from the live ISO ($LIVE_ROOT missing)"
+    [[ -d $LIVE_ROOT ]] || die "not running from the live ISO ($LIVE_ROOT missing)"
+    live_kernel >/dev/null || die "no kernel found under $LIVE_ROOT/usr/lib/modules"
     [[ -b $DISK ]] || die "$DISK is not a block device"
     lsblk -nro MOUNTPOINTS "$DISK" | grep -qE '^(/|/run/archiso.*)$' && die "$DISK holds the running live system"
   fi
@@ -132,7 +135,7 @@ phase_copy_system() {
   info "copying the live system to $MNT"
   if ((DRY_RUN)); then
     echo "  [dry-run] tar cf - -C $LIVE_ROOT . | pv | tar xpf - -C $MNT" >&2
-    echo "  [dry-run] cp vmlinuz-linux from $LIVE_BOOT, rsync live-session changes, machine-id" >&2
+    echo "  [dry-run] cp vmlinuz-linux from $LIVE_ROOT/usr/lib/modules, rsync live-session changes, machine-id" >&2
     return 0
   fi
   local total; total=$(du -sb "$LIVE_ROOT" | awk '{print $1}')
@@ -146,9 +149,9 @@ phase_copy_system() {
   set -e
   [[ ${st[0]} -eq 0 && ${st[2]} -eq 0 ]] || die "copying system files failed (tar: ${st[0]}/${st[2]})"
 
-  # archiso keeps the kernel on the ISO media, not in the squashfs
+  # archiso strips /boot from the squashfs; the linux package keeps a copy under /usr/lib/modules
   mkdir -p "$MNT/boot"
-  cp -a "$LIVE_BOOT/arch/boot/x86_64/vmlinuz-linux" "$MNT/boot/vmlinuz-linux"
+  cp -a "$(live_kernel)" "$MNT/boot/vmlinuz-linux"
 
   # live-session changes (cowspace overlay)
   local upper; upper=$(find /run/archiso/cowspace -type d -path '*/persistent_*/x86_64/upperdir' 2>/dev/null | head -1)
