@@ -260,9 +260,9 @@ phase_user() {
 # ---------------------------------------------------------------------------
 phase_mkinitcpio() {
   info "initramfs"
-  # No 'autodetect': keeps the install bootable on different hardware.
-  local hooks="base systemd microcode modconf kms keyboard keymap sd-vconsole block filesystems fsck"
-  ((ENCRYPT)) && hooks="base systemd microcode modconf kms keyboard keymap sd-vconsole sd-encrypt block filesystems fsck"
+  # autodetect keeps the default image small; the fallback preset builds without it for other hardware
+  local hooks="base systemd autodetect microcode modconf kms keyboard sd-vconsole block filesystems fsck"
+  ((ENCRYPT)) && hooks="base systemd autodetect microcode modconf kms keyboard sd-vconsole sd-encrypt block filesystems fsck"
   # the archiso drop-in would override our hooks on any rebuild that does not pass -c
   run rm -f "$MNT/etc/mkinitcpio.conf.d/archiso.conf"
   chroot_run sed -i -E "s|^HOOKS=.*|HOOKS=($hooks)|" /etc/mkinitcpio.conf
