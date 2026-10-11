@@ -46,10 +46,14 @@ The installer builds a fresh pacman keyring offline (the live one is a tmpfs, so
 If pacman later reports signature errors, run `fix-keys` with a network connection (it also updates `archlinux-keyring`).
 Untested on real hardware: try it in a VM first.
 
-- **AI setup assistant.** `opencode` ships in `packages.x86_64`. On the live ISO
+- **AI setup assistant.** `opencode` is not on the ISO (it needs a network anyway).
+  `~/Scripts/install-opencode`, also behind the rofi "OpenCode" entry, installs it from the
+  official repos with a full `pacman -Syu` (live: `--ignore linux` to keep the running kernel's
+  modules) and opens it on the guide skill; once installed it just starts it. On the live ISO
   `omunchy-welcome` (started from mango's `config.conf`) shows a Super+K keybinds
   hint at login, and a persistent warning with connection hints when offline,
-  which closes itself once a connection appears (watched for 30 minutes). OpenCode runs as
+  which closes itself once a connection appears (watched for 30 minutes), then says how to
+  get the assistant. OpenCode runs as
   `opencode --standalone` (cloud-only, but free models work with no login) on the single `omunchy-guide` skill, which reads
   `~/Documents/Guide.md` (the human Guide doubles as the assistant's reference: ABOUT, AI SETUP, APPS, packages). The skill lives in
   `~/.config/omunchy/skills` (with the shared `AGENTS.md`), linked into the paths opencode, pi, Gemini CLI and

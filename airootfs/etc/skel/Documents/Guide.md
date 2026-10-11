@@ -28,7 +28,7 @@ persistent changes require the installer, obinstall.
   theme-switch command in the shipped scripts.
 
 - Scripts: ~/Scripts is on PATH. obinstall (installer), fix-keys (pacman
-  keyring), omunchy-welcome (live-session network report), netcheck (is the network up?), screenshot,
+  keyring), install-opencode (AI assistant), install-yay (AUR helper), omunchy-welcome (live-session network report), netcheck (is the network up?), screenshot,
   powermenu, omunchy-lock, updates.sh.
 
 - Keybindings: full list in ~/Documents/Keybindings; Super+K opens it in rofi
@@ -56,15 +56,22 @@ Toggle a window between floating and tiling with Super+T.
 
 AI SETUP (OPENCODE)
 
-The AI setup assistant is OpenCode. Open it from the rofi menu (Super+Space,
-entry "OpenCode") or run:
+The AI setup assistant is OpenCode. It is not on the ISO (it cannot reach its
+models offline anyway): once connected, open "OpenCode" from the rofi menu
+(Super+Space) or run:
 
-opencode --standalone
+install-opencode
 
-It needs a network connection; it cannot reach its models offline. On the live
-ISO, omunchy-welcome shows connection hints when offline, reports when a
-connection appears, and — if started with AUTORUN=1 — opens OpenCode
-automatically once online.
+The first time, it installs OpenCode from the official repos (about 80 MiB
+download, 200 MiB installed) together with a full system update (pacman -Syu;
+the live ISO keeps its running kernel), then opens it with the omunchy-guide
+skill. After that the same entry, or `opencode --standalone`, just starts it.
+On the live ISO the install runs from RAM and is lost on reboot; anything
+installed in the live session is copied to the disk by obinstall.
+
+On the live ISO, omunchy-welcome shows connection hints when offline and, once
+a connection appears, says how to get the assistant (or, if started with
+AUTORUN=1, installs and opens it automatically).
 
 - If OpenCode answers with 401 / Invalid credential, run:
 

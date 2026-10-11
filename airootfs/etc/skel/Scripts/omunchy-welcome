@@ -5,7 +5,7 @@
 # omunchy:examples=omunchy welcome
 
 # Started from mango (config.conf) on the live ISO only. AUTORUN=1 opens the
-# OpenCode setup assistant as soon as a connection is up.
+# OpenCode setup assistant (installing it first) as soon as a connection is up.
 
 set -uo pipefail
 
@@ -25,9 +25,13 @@ have_net() {
     || ping -c1 -W2 8.8.8.8 >/dev/null 2>&1
 }
 
-# Connection up: AUTORUN=1 opens the assistant (warn-only, no toast).
+# Connection up: AUTORUN=1 opens the assistant; otherwise say how to get it.
 online() {
-  [[ $AUTORUN == 1 ]] && setsid -f foot -e opencode --standalone --prompt "Use the omunchy-guide skill to show me what you can set up." >/dev/null 2>&1
+  if [[ $AUTORUN == 1 ]]; then
+    setsid -f foot -T OpenCode "$HOME/Scripts/install-opencode" --guide >/dev/null 2>&1
+  elif ! command -v opencode >/dev/null 2>&1; then
+    notify -t 15000 "AI assistant" "Open OpenCode from the launcher (Super+Space) to install it."
+  fi
 }
 
 # Wait for mako to claim the notification bus.
