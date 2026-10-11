@@ -211,6 +211,8 @@ EOT
   run rm -rf "$MNT/etc/skel"
   # live NOPASSWD sudo drop-in -> password required
   run rm -f "$MNT/etc/sudoers.d/10-live-nopasswd"
+  # live polkit rule grants every udisks action (incl. system disks) with no auth
+  run rm -f "$MNT/etc/polkit-1/rules.d/50-default.rules"
   ((DRY_RUN)) || { sed -i '/^Hidden=true/d' "$MNT/usr/share/applications/gparted.desktop" 2>/dev/null || true
     sed -i 's/^# %wheel ALL=(ALL:ALL) ALL$/%wheel ALL=(ALL:ALL) ALL/' "$MNT/etc/sudoers"
     grep -q '^%wheel ALL=(ALL:ALL) ALL$' "$MNT/etc/sudoers" || die "sudoers: wheel rule not found after edit"; }
