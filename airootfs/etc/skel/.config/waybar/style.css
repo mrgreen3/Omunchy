@@ -86,25 +86,6 @@ window#waybar {
     background-size: 14px 14px;
 }
 
-/* ---------- Indicators ---------- */
-/* Ghost icon: always present but faint; lit when DnD is on, brighter on
-   hover; click toggles it. */
-#custom-dnd {
-    color: @fg;
-    padding: 0 6px;
-    opacity: 0.3;
-}
-
-#custom-dnd.active {
-    color: @yellow;
-    opacity: 1;
-}
-
-#custom-dnd:hover:not(.active) {
-    color: @accent;
-    opacity: 1;
-}
-
 /* ---------- Clock ---------- */
 #clock {
     color: @fg;

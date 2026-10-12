@@ -1,13 +1,8 @@
 {
   // Omunchy default bar — Omarchy quattro (shell.json) parity, waybar edition.
-  // Widget-for-widget mapping of Omarchy's default bar layout, per
-  // docs/bar-research.md §5. Module list mirrors shell.json's bar.layout
-  // (menu, workspaces | indicators, clock, keyboard, update | tray, network,
-  // audio, monitor, power) with the Omunchy substitutions: rofi for the
-  // quickshell menu, mako DnD for the notifications service, scripts for the
-  // indicator states. Omarchy's opt-in widgets (media/window) are
-  // enabled here since waybar costs nothing for them; elsewhen and agents are
-  // Omarchy/Omunchy-specific and omitted.
+  // Layout: menu, workspaces | clock, updates | tray, bluetooth, network,
+  // audio, brightness, battery, power profile, media, power. Panels and
+  // notifications are noctalia's (DnD on Super+Shift+N).
   //
   // Colour: all colours live in style.css as @define-color lines, rewritten
   // — no hex values in this file.
@@ -21,7 +16,6 @@
     "ext/workspaces"
   ],
   "modules-center": [
-    "custom/dnd",
     "clock",
     "custom/updates"
   ],
@@ -53,16 +47,6 @@
     "all-outputs": true
   },
 
-  // omarchy.indicators — DnD: dim until on, click toggles (night light and
-  // stay awake are in the noctalia control centre); signal 7 (8 is custom/updates)
-  "custom/dnd": {
-    "format": "{}",
-    "exec": "~/Scripts/indicators.sh state dnd",
-    "return-type": "json",
-    "interval": 5,
-    "signal": 7,
-    "on-click": "~/Scripts/indicators.sh toggle-dnd"
-  },
 
   // omarchy.clock — "dddd HH:mm" in Omarchy; click opens the noctalia calendar
   "clock": {
@@ -129,20 +113,20 @@
     "tooltip-format": "{desc}"
   },
 
-  // omarchy.monitor — brightness control (not a CPU/RAM readout; Omarchy's
-  // default bar has no sysmon widgets either)
+  // omarchy.monitor — brightness; icon only, scroll adjusts
   "backlight": {
-    "format": "{icon} {percent}%",
+    "format": "{icon}",
+    "tooltip-format": "Brightness: {percent}%",
     "format-icons": ["󰃞", "󰃟", "󰃠"],
     "on-scroll-up": "noctalia msg brightness-up",
     "on-scroll-down": "noctalia msg brightness-down"
   },
 
-  // omarchy.power — battery via UPower (built into the waybar package)
+  // omarchy.power — battery; icon only, details in tooltip
   "battery": {
-    "format": "{icon} {capacity}%",
-    "format-charging": "󰂄 {capacity}%",
-    "format-full": "󰁹 {capacity}%",
+    "format": "{icon}",
+    "format-charging": "󰂄",
+    "format-full": "󰁹",
     "format-icons": ["󰁺", "󰁼", "󰁾", "󰂀", "󰂂"],
     "states": {
       "warning": 20,

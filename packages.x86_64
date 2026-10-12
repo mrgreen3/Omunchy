@@ -21,6 +21,7 @@ xdg-terminal-exec
 mangowm
 xdg-desktop-portal-wlr
 waybar
+rofi
 noctalia
 xorg-xwayland
 wl-clipboard
@@ -191,4 +192,3 @@ memtest86+-efi
 mkinitcpio
 mkinitcpio-archiso
 archlinux-keyring
-

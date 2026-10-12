@@ -52,4 +52,10 @@ custom_palette = "Omunchy"
 shadow = false
 
 [shell.panel]
-shadow = false
+shadow  = false
+borders = true
+
+[shell.launcher]
+categories = false
+show_icons = false
+compact    = true

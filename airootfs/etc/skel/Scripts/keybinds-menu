@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# omunchy:summary=Searchable mango keybinds menu (Super+K); picking a row runs it
+# Descriptions come from a "#: text" line directly above each mango bind.
+conf="${XDG_CONFIG_HOME:-$HOME/.config}/mango/config.conf"
+
+# Rows shown first, in this order; everything else follows in config order.
+top="Mango keybinds|Launch apps|Terminal|Browser|File manager|Close window|Full screen|Toggle window floating|Lock screen|Control centre|Power menu"
+
+# One record per row: chord<TAB>description<TAB>function<TAB>args
+records=$(awk -F, -v top="$top" '
+function chord(mods, key,   n, m, j, out) {
+    out = ""
+    if (mods != "NONE") {
+        n = split(mods, m, "+")
+        for (j = 1; j <= n; j++) out = out toupper(m[j]) " + "
+    }
+    return out (key ~ /^XF86/ ? key : toupper(key))
+}
+function flush() {
+    if (!have) return
+    c = (first_key == last_key) ? chord(mods, first_key) : chord(mods, first_key) "…" last_key
+    rows[++count] = c "\t" desc "\t" (merged ? "" : fn) "\t" (merged ? "" : args)
+    have = 0
+}
+BEGIN { n = split(top, t, "|"); for (i = 1; i <= n; i++) rank[t[i]] = i }
+/^#: / { pending = substr($0, 4); next }
+/^bind=/ {
+    sub(/^bind=/, "")
+    m_ = $1; k_ = $2; f_ = $3
+    a_ = ""; for (i = 4; i <= NF; i++) a_ = a_ (i > 4 ? "," : "") $i
+    sub(/[ \t]+#.*$/, "", a_)
+    d_ = pending != "" ? pending : (f_ == "spawn" ? a_ : f_ (a_ != "" ? " " a_ : ""))
+    pending = ""
+    if (have && d_ == desc && m_ == mods) { last_key = k_; merged = 1; next }
+    flush()
+    have = 1; merged = 0; mods = m_; first_key = k_; last_key = k_; desc = d_; fn = f_; args = a_
+    next
+}
+{ pending = "" }
+END {
+    flush()
+    for (i = 1; i <= count; i++) {
+        split(rows[i], r, "\t")
+        printf "%03d\t%s\n", (r[2] in rank) ? rank[r[2]] : 100 + i, rows[i]
+    }
+}' "$conf" | sort -n | cut -f2-)
+
+choice=$(awk -F'\t' '{ printf "%-28s → %s\n", $1, $2 }' <<<"$records" |
+    rofi -dmenu -i -p "Mango Keybinds" -format i -no-show-icons -theme-str '
+        * { font: "JetBrains Mono 10.5"; background-color: transparent; text-color: #e2e2e9; }
+        window { width: 800px; background-color: #111318e6; border: 2px; border-color: #93d5aa; padding: 12px; }
+        mainbox { children: [ inputbar, listview ]; spacing: 8px; }
+        inputbar { background-color: #1d2024; padding: 8px 10px; children: [ prompt, entry ]; spacing: 6px; }
+        prompt { text-color: #93d5aa; }
+        listview { lines: 18; scrollbar: false; spacing: 2px; }
+        element { padding: 3px 10px; }
+        element selected.normal { background-color: #93d5aa; text-color: #00391f; }
+        element-text { text-color: inherit; }')
+
+[[ -z $choice ]] && exit 0
+
+IFS=$'\t' read -r _ _ func args < <(sed -n "$((choice + 1))p" <<<"$records")
+case "$func" in
+    "") exit 0 ;;
+    spawn) setsid sh -c "$args" >/dev/null 2>&1 & ;;
+    *) mmsg dispatch "$func${args:+,$args}" ;;
+esac
