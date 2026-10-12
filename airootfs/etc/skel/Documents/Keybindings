@@ -8,7 +8,7 @@ APPLICATIONS
 ───────────────────────
 
 Super + Return          Terminal (foot)
-Super + Space           Launcher (noctalia)
+Super + Space           Launcher (rofi)
 Super + C               Control centre
 Super + ,               Noctalia settings
 Super + w               Web Browser (firefox)

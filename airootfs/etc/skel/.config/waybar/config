@@ -31,7 +31,7 @@
     "custom/power"
   ],
 
-  // omarchy.menu — noctalia launcher (same as Super+Space)
+  // omarchy.menu — noctalia launcher (Super+Space is rofi)
   "custom/menu": {
     "format": "󰍜",
     "on-click": "noctalia msg panel-toggle launcher",

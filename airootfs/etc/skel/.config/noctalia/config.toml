@@ -57,7 +57,7 @@ borders = true
 
 [shell.launcher]
 categories = false
-show_icons = false
+show_icons = true
 compact    = true
 
 [hooks]
