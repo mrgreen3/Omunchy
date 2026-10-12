@@ -48,9 +48,9 @@ Desktop
   - mango Wayland compositor
   - waybar panel with workspace indicators
   - foot terminal
-  - rofi launcher (Super+Space)
-  - mako notification daemon
-  - swaybg wallpaper
+  - noctalia launcher (Super+Space)
+  - noctalia notifications
+  - noctalia wallpaper
 
 Installation
   - Guided installer (obinstall) with a review screen before install

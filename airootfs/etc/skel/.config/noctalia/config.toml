@@ -1,0 +1,51 @@
+# Omunchy: noctalia runs wallpaper, notifications, launcher, lock and panels; waybar is the bar.
+
+[shell]
+font_family  = "JetBrains Mono"
+polkit_agent = false
+setup_wizard_enabled = false
+corner_radius_scale  = 0.0
+
+[notification]
+enable_daemon = true
+
+[wallpaper]
+enabled   = true
+fill_mode = "crop"
+directory = "~/Backgrounds"
+
+[wallpaper.default]
+path = "~/Backgrounds/mountain-moon.jpg"
+
+[nightlight]
+enabled = false
+
+[lockscreen]
+enabled             = true
+lock_before_suspend = true
+
+[idle]
+behavior_order = ["lock"]
+
+[idle.behavior.lock]
+timeout = 300
+action  = "lock"
+enabled = true
+
+[bar]
+order = ["main"]
+
+[bar.main]
+enabled        = false
+shadow         = false
+contact_shadow = false
+
+[theme]
+source         = "custom"
+custom_palette = "Omunchy"
+
+[dock]
+shadow = false
+
+[shell.panel]
+shadow = false

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Omunchy profile — ArchBang base, Omarchy-style lean stack (waybar/foot/mako/rofi)
+# Omunchy profile — ArchBang base, Omarchy-style lean stack (waybar/foot/noctalia)
 
 iso_name="omunchy-rc"
 iso_label="OMUNCHY_$(date +%d%m%y)"

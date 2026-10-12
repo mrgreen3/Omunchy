@@ -8,8 +8,8 @@ Note: Do not post Omunchy issues on the Arch Linux forums.
 
 ABOUT OMUNCHY
 
-Omunchy is Arch-based. The desktop is mango + waybar (bar) + mako
-(notifications) + rofi (launcher) + foot (terminal), all from the official
+Omunchy is Arch-based. The desktop is mango + waybar (bar) + noctalia
+(notifications, launcher) + foot (terminal), all from the official
 Arch repos. It is delivered as a live ISO that runs from RAM/overlay;
 persistent changes require the installer, obinstall.
 
@@ -19,19 +19,19 @@ persistent changes require the installer, obinstall.
   Absent   = installed: sudo asks for a password; changes persist.
 
 - Configs: ~/.config/mango/config.conf,
-  ~/.config/{waybar,rofi,mako,foot}, ~/.config/opencode (settings),
+  ~/.config/{waybar,noctalia,foot}, ~/.config/opencode (settings),
   ~/.config/omunchy (AGENTS.md and skills, shared by opencode, pi, Gemini CLI and
   Claude Code), ~/Documents (Guide, Keybindings, About), ~/Backgrounds.
 
 - Theme: one fixed theme (omunchy-forest palette) (border colours) in ~/.config/mango/config.conf;
-  wallpaper set by swaybg in the same file. There is no
+  wallpaper set in ~/.config/noctalia/config.toml ([wallpaper.default]). There is no
   theme-switch command in the shipped scripts.
 
 - Scripts: ~/Scripts is on PATH. obinstall (installer), fix-keys (pacman
   keyring), install-opencode (AI assistant), install-yay (AUR helper), omunchy-welcome (live-session network report), netcheck (is the network up?), screenshot,
-  powermenu, omunchy-lock, updates.sh.
+  updates.sh.
 
-- Keybindings: full list in ~/Documents/Keybindings; Super+K opens it in rofi
+- Keybindings: full list in ~/Documents/Keybindings; Super+K opens it in the launcher
   from inside the desktop. Super = Windows key.
 
 ---
@@ -58,7 +58,7 @@ AI SETUP (OPENCODE)
 
 The AI setup assistant is OpenCode. It is not on the ISO and is offered on the
 installed system only (installed live, it would be lost on reboot): once
-connected, open "OpenCode" from the rofi menu (Super+Space) or run:
+connected, open "OpenCode" from the launcher (Super+Space) or run:
 
 install-opencode
 
@@ -351,7 +351,7 @@ obinstall opens its own opaque foot window so the wizard text is easy to read
 interactive and will erase the disk you select. Run it yourself, and back up
 first.
 
-Note: the older right-click / rofi-menu "Install" route is not currently
+Note: the older right-click / launcher "Install" route is not currently
 available — no installer .desktop file ships with the system.
 
 ---

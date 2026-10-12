@@ -39,10 +39,10 @@
     "custom/power"
   ],
 
-  // omarchy.menu — rofi applications launcher (same as Super+Space)
+  // omarchy.menu — noctalia launcher (same as Super+Space)
   "custom/menu": {
     "format": "󰍜",
-    "on-click": "rofi -show drun",
+    "on-click": "noctalia msg panel-toggle launcher",
     "on-click-right": "foot",
     "tooltip": false
   },
@@ -186,10 +186,10 @@
     }
   },
 
-  // omarchy power panel-equivalent — existing Omunchy powermenu
+  // omarchy power panel-equivalent — noctalia session panel
   "custom/power": {
     "format": "󰐥",
-    "on-click": "~/Scripts/powermenu",
+    "on-click": "noctalia msg panel-toggle session",
     "tooltip": false
   },
 

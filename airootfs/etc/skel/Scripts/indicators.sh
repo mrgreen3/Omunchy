@@ -12,7 +12,7 @@
 # service is not running, that indicator simply shows nothing.
 #
 # State sources (mirroring Omarchy's quattro widgets):
-#   dnd         makoctl mode  (mode "do-not-disturb" present = on)
+#   dnd         noctalia msg notification-dnd-status
 #   night       wlsunset running with -T < 6000K = on (process args; wlsunset
 #               has no IPC, identity = wlsunset not running at all)
 #   recording   pgrep -f "^wf-recorder|^gpu-screen-recorder"
@@ -32,8 +32,7 @@ NIGHT_TEMP=4000
 # --- state checks (each independent, each non-fatal) -------------------------
 
 dnd_on() {
-    command -v makoctl >/dev/null 2>&1 || return 1
-    makoctl mode 2>/dev/null | grep -q do-not-disturb
+    [[ $(noctalia msg notification-dnd-status 2>/dev/null) == on ]]
 }
 
 night_on() {
@@ -54,8 +53,7 @@ awake_on() {
 # --- actions ------------------------------------------------------------------
 
 toggle_dnd() {
-    command -v makoctl >/dev/null 2>&1 || return 0
-    makoctl mode -t do-not-disturb >/dev/null 2>&1 || true
+    noctalia msg notification-dnd-toggle >/dev/null 2>&1 || true
 }
 
 nightlight_toggle() {
@@ -179,7 +177,7 @@ toggle-awake)
 --help | -h)
     echo "Usage: indicators.sh [state <mode>|toggle-dnd|toggle-night|toggle-awake]"
     echo "  state <mode>   print waybar JSON for dnd | night | awake | recording"
-    echo "  toggle-dnd     toggle do-not-disturb (mako); 'toggle' is an alias"
+    echo "  toggle-dnd     toggle do-not-disturb (noctalia); 'toggle' is an alias"
     echo "  toggle-night   toggle night light (wlsunset 4000K)"
     echo "  toggle-awake   toggle stay-awake (idle inhibit, 8 h max)"
     echo "  (no args)      print the combined JSON of all active modes"

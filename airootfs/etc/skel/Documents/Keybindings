@@ -8,10 +8,12 @@ APPLICATIONS
 ───────────────────────
 
 Super + Return          Terminal (foot)
-Super + Space           Launcher (rofi)
+Super + Space           Launcher (noctalia)
+Super + C               Control centre
+Super + ,               Noctalia settings
 Super + w               Web Browser (firefox)
 Super + f               File Manager (superfile)
-Super + s               System Monitor (dgop)
+Super + s               System Monitor
 Super + i               Install Omunchy (live ISO)
 Super + k               Show Keybindings
 

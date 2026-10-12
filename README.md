@@ -48,7 +48,7 @@ Untested on real hardware: try it in a VM first.
 
 - **AI setup assistant.** `opencode` is not on the ISO and is offered on the installed system
   only (live, it would be lost on reboot; users can still `pacman -S` it themselves).
-  `~/Scripts/install-opencode`, also behind the rofi "OpenCode" entry (hidden on the live ISO,
+  `~/Scripts/install-opencode`, also behind the launcher "OpenCode" entry (hidden on the live ISO,
   unhidden by obinstall), installs it from the official repos with a full
   `pacman -Syu --noconfirm` and opens it on the guide skill; once installed it just starts it. On the live ISO
   `omunchy-welcome` (started from mango's `config.conf`) shows a Super+K keybinds
@@ -63,16 +63,16 @@ Untested on real hardware: try it in a VM first.
 ## Keybindings
 
 The shipped `~/.config/mango/config.conf` mirrors Omarchy's bindings:
-`Super+Return` foot, `Super+Space` rofi, `Super+Q` close,
-`Super+Shift+F` fullscreen, `Super+T` float, `Super+V` toggle split, `Super+P` screenshot, `Super+L` swaylock,
+`Super+Return` foot, `Super+Space` launcher, `Super+Q` close,
+`Super+Shift+F` fullscreen, `Super+T` float, `Super+V` toggle split, `Super+P` screenshot, `Super+L` lock,
 `Super+Shift+E` power menu, `Super+1..5` tags (workspaces),
 XF86 audio/brightness via pamixer/brightnessctl. The full list lives in
-`Documents/Keybindings` (`Super+K` shows it in rofi).
+`Documents/Keybindings` (`Super+K` shows it in the launcher).
 
 ## Layout
 
 ```
-airootfs/etc/skel/Scripts/omunchy-welcome   live-boot network report via mako
+airootfs/etc/skel/Scripts/omunchy-welcome   live-boot network report via notifications
 airootfs/                      archbang-derived archiso skeleton (mango skel config included)
 ```
 

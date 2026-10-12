@@ -21,21 +21,17 @@ xdg-terminal-exec
 
 ## === WAYLAND DESKTOP ENVIRONMENT (mango stack, all from official repos) ===
 mangowm
-swayidle
 wlsunset
 xdg-desktop-portal-wlr
-swaybg
 waybar
+noctalia
 xorg-xwayland
 grim
 slurp
 wl-clipboard
 libnotify
 brightnessctl
-swaylock
-mako
 reflector
-rofi
 blueman
 playerctl
 matugen
@@ -71,7 +67,6 @@ ttf-nerd-fonts-symbols-mono
 ttf-dejavu
 
 ## === SYSTEM MONITORING ===
-dgop
 fastfetch
 
 ## === DISK & PARTITION TOOLS ===

@@ -171,7 +171,7 @@ phase_configure_system() {
   info "converting the live copy into an installed system"
   # fixed wallpaper path for the greeter, before /etc/skel is removed
   local wp
-  wp=$(sed -n "s#.*swaybg -i [\"'][^\"']*/\([^\"']*\)[\"'].*#\1#p" "$MNT/etc/skel/.config/mango/config.conf" 2>/dev/null | head -1 || true)
+  wp=$(sed -n '/^\[wallpaper\.default\]/,/^\[/s#^path *= *"[^"]*/\([^"/]*\)"#\1#p' "$MNT/etc/skel/.config/noctalia/config.toml" 2>/dev/null | head -1 || true)
   if [[ -n ${wp:-} && -f $MNT/etc/skel/Backgrounds/$wp ]]; then
     run mkdir -p "$MNT/usr/share/backgrounds/omunchy"
     run cp -a "$MNT/etc/skel/Backgrounds/$wp" "$MNT/usr/share/backgrounds/omunchy/current"
