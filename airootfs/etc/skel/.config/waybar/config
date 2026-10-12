@@ -68,15 +68,7 @@
   "clock": {
     "format": "{:%a %d %b  %H:%M}",
     "on-click": "noctalia msg panel-toggle control-center calendar",
-    "tooltip-format": "{:%A, %d %B %Y}\n<tt><small>{calendar}</small></tt>",
-    "calendar": {
-      "mode": "month",
-      "weeks-pos": "right",
-      "on-scroll": 1,
-      "format": {
-        "today": "<span color='#93d5aa'><u>{}</u></span>"
-      }
-    },
+    "tooltip": false,
     "interval": 60
   },
 
