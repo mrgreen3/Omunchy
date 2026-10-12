@@ -59,3 +59,6 @@ borders = true
 categories = false
 show_icons = false
 compact    = true
+
+[hooks]
+colors_changed = "/home/live/Scripts/noctalia-colors"

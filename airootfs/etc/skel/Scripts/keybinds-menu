@@ -46,16 +46,8 @@ END {
 }' "$conf" | sort -n | cut -f2-)
 
 choice=$(awk -F'\t' '{ printf "%-28s → %s\n", $1, $2 }' <<<"$records" |
-    rofi -dmenu -i -p "Mango Keybinds" -format i -no-show-icons -theme-str '
-        * { font: "JetBrains Mono 10.5"; background-color: transparent; text-color: #e2e2e9; }
-        window { width: 800px; background-color: #111318e6; border: 2px; border-color: #93d5aa; padding: 12px; }
-        mainbox { children: [ inputbar, listview ]; spacing: 8px; }
-        inputbar { background-color: #1d2024; padding: 8px 10px; children: [ prompt, entry ]; spacing: 6px; }
-        prompt { text-color: #93d5aa; }
-        listview { lines: 18; scrollbar: false; spacing: 2px; }
-        element { padding: 3px 10px; }
-        element selected.normal { background-color: #93d5aa; text-color: #00391f; }
-        element-text { text-color: inherit; }')
+    rofi -dmenu -i -p "Mango Keybinds" -format i -no-show-icons \
+        -theme-str 'window { width: 800px; background-color: @bg-menu; } listview { lines: 18; } element { padding: 3px 10px; }')
 
 [[ -z $choice ]] && exit 0
 

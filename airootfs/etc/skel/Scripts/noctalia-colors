@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# omunchy:summary=Re-render rofi colours from noctalia's active palette (colors_changed hook)
+state="$HOME/.local/state/noctalia/settings.toml"
+conf="$HOME/.config/noctalia/config.toml"
+
+# [theme] key from runtime state, falling back to the shipped config
+get() {
+    local f v
+    for f in "$state" "$conf"; do
+        [[ -f $f ]] || continue
+        v=$(awk -F'"' -v k="$1" '/^\[theme\]/{f=1;next} /^\[/{f=0} f && $1 ~ "^"k" *=" {print $2; exit}' "$f")
+        [[ -n $v ]] && { echo "$v"; return; }
+    done
+}
+
+mode=$(get mode); mode=${mode:-dark}
+templates="$HOME/.config/noctalia/templates.toml"
+
+case $(get source) in
+    custom)
+        palette="$HOME/.config/noctalia/palettes/$(get custom_palette).json"
+        [[ -f $palette ]] && noctalia theme --theme-json "$palette" --"$mode" -c "$templates"
+        ;;
+    wallpaper)
+        wp=$(awk -F'"' '/^\[wallpaper\.last\]/{f=1;next} /^\[/{f=0} f && /^path *=/{print $2; exit}' "$state")
+        [[ -n $wp ]] && noctalia theme "$wp" --scheme "$(get wallpaper_scheme | grep . || echo m3-tonal-spot)" --"$mode" -c "$templates"
+        ;;
+esac
