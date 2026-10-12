@@ -10,7 +10,6 @@ unzip
 xz
 
 ## === OMUNCHY STACK (Omarchy-like, lean) ===
-pamixer
 polkit-gnome
 xdg-desktop-portal-gtk
 noto-fonts-emoji
@@ -21,7 +20,6 @@ xdg-terminal-exec
 
 ## === WAYLAND DESKTOP ENVIRONMENT (mango stack, all from official repos) ===
 mangowm
-wlsunset
 xdg-desktop-portal-wlr
 waybar
 noctalia
@@ -30,7 +28,6 @@ grim
 slurp
 wl-clipboard
 libnotify
-brightnessctl
 reflector
 blueman
 playerctl
@@ -77,7 +74,7 @@ ntfs-3g
 
 ## === NETWORK MANAGEMENT ===
 networkmanager
-networkmanager-dmenu
+pinentry
 nm-connection-editor
 
 ## === DESKTOP UTILITIES ===

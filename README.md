@@ -66,7 +66,7 @@ The shipped `~/.config/mango/config.conf` mirrors Omarchy's bindings:
 `Super+Return` foot, `Super+Space` launcher, `Super+Q` close,
 `Super+Shift+F` fullscreen, `Super+T` float, `Super+V` toggle split, `Super+P` screenshot, `Super+L` lock,
 `Super+Shift+E` power menu, `Super+1..5` tags (workspaces),
-XF86 audio/brightness via pamixer/brightnessctl. The full list lives in
+XF86 audio/brightness via noctalia. The full list lives in
 `Documents/Keybindings` (`Super+K` shows it in the launcher).
 
 ## Layout

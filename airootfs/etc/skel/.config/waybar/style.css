@@ -87,30 +87,20 @@ window#waybar {
 }
 
 /* ---------- Indicators ---------- */
-/* Ghost icons: always present but faint; lit when the mode is on, brighter on
-   hover; click toggles the mode. */
-#custom-dnd,
-#custom-night,
-#custom-awake {
+/* Ghost icon: always present but faint; lit when DnD is on, brighter on
+   hover; click toggles it. */
+#custom-dnd {
     color: @fg;
     padding: 0 6px;
     opacity: 0.3;
 }
 
-#custom-dnd.active,
-#custom-night.active {
+#custom-dnd.active {
     color: @yellow;
     opacity: 1;
 }
 
-#custom-awake.active {
-    color: @accent;
-    opacity: 1;
-}
-
-#custom-dnd:hover:not(.active),
-#custom-night:hover:not(.active),
-#custom-awake:hover:not(.active) {
+#custom-dnd:hover:not(.active) {
     color: @accent;
     opacity: 1;
 }

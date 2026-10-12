@@ -22,8 +22,6 @@
   ],
   "modules-center": [
     "custom/dnd",
-    "custom/night",
-    "custom/awake",
     "clock",
     "custom/updates"
   ],
@@ -55,8 +53,8 @@
     "all-outputs": true
   },
 
-  // omarchy.indicators — DnD / NightLight / StayAwake: dim until on, click toggles
-  // signal 7 (8 belongs to custom/updates)
+  // omarchy.indicators — DnD: dim until on, click toggles (night light and
+  // stay awake are in the noctalia control centre); signal 7 (8 is custom/updates)
   "custom/dnd": {
     "format": "{}",
     "exec": "~/Scripts/indicators.sh state dnd",
@@ -65,27 +63,11 @@
     "signal": 7,
     "on-click": "~/Scripts/indicators.sh toggle-dnd"
   },
-  "custom/night": {
-    "format": "{}",
-    "exec": "~/Scripts/indicators.sh state night",
-    "return-type": "json",
-    "interval": 5,
-    "signal": 9,
-    "on-click": "~/Scripts/indicators.sh toggle-night"
-  },
-  "custom/awake": {
-    "format": "{}",
-    "exec": "~/Scripts/indicators.sh state awake",
-    "return-type": "json",
-    "interval": 5,
-    "signal": 10,
-    "on-click": "~/Scripts/indicators.sh toggle-awake"
-  },
 
-  // omarchy.clock — "dddd HH:mm" in Omarchy; long-form date on right-click
+  // omarchy.clock — "dddd HH:mm" in Omarchy; click opens the noctalia calendar
   "clock": {
     "format": "{:%a %d %b  %H:%M}",
-    "format-alt": "{:%A %d %B  %H:%M}",
+    "on-click": "noctalia msg panel-toggle control-center calendar",
     "tooltip-format": "<big>{:%A, %d %B %Y}</big>\n<tt><small>{calendar}</small></tt>",
     "calendar": {
       "mode": "month",
@@ -112,7 +94,7 @@
     "show-passive-items": false
   },
 
-  // omarchy.bluetooth — rofi menu as the panel-equivalent
+  // omarchy.bluetooth — noctalia control-centre bluetooth tab
   "bluetooth": {
     "format": "{icon}",
     "format-disabled": "",
@@ -121,11 +103,11 @@
       "disabled": "󰂲",
       "connected": "󰂱"
     },
-    "on-click": "blueman-manager",
+    "on-click": "noctalia msg panel-toggle control-center bluetooth",
     "tooltip-format": "Bluetooth: {status}"
   },
 
-  // omarchy.network — networkmanager-dmenu as the panel-equivalent
+  // omarchy.network — noctalia control-centre network tab
   "network": {
     "format": "{icon}",
     "format-icons": {
@@ -136,19 +118,19 @@
     "tooltip-format": "{essid} ({signalStrength}%)",
     "tooltip-format-ethernet": "{ipaddr}",
     "tooltip-format-disconnected": "Disconnected",
-    "on-click": "networkmanager_dmenu"
+    "on-click": "noctalia msg panel-toggle control-center network"
   },
 
-  // omarchy.audio — pamixer toggle/scroll
+  // omarchy.audio — click opens the noctalia audio tab; scroll via noctalia (OSD)
   "pulseaudio": {
     "format": "{icon}",
     "format-muted": "󰝟",
     "format-icons": {
       "default": ["󰕿", "󰖀", "󰕾"]
     },
-    "on-click": "pamixer -t",
-    "on-scroll-up": "pamixer -i 5",
-    "on-scroll-down": "pamixer -d 5",
+    "on-click": "noctalia msg panel-toggle control-center audio",
+    "on-scroll-up": "noctalia msg volume-up",
+    "on-scroll-down": "noctalia msg volume-down",
     "tooltip-format": "{desc}"
   },
 
@@ -157,8 +139,8 @@
   "backlight": {
     "format": "{icon} {percent}%",
     "format-icons": ["󰃞", "󰃟", "󰃠"],
-    "on-scroll-up": "brightnessctl set +5%",
-    "on-scroll-down": "brightnessctl set 5%-"
+    "on-scroll-up": "noctalia msg brightness-up",
+    "on-scroll-down": "noctalia msg brightness-down"
   },
 
   // omarchy.power — battery via UPower (built into the waybar package)
@@ -172,6 +154,7 @@
       "critical": 10
     },
     "interval": 60,
+    "on-click": "noctalia msg panel-toggle control-center power",
     "tooltip-format": "{capacity}% · {time} remaining · {power}W"
   },
 
@@ -209,6 +192,9 @@
       "paused": "󰐊"
     },
     "dynamic-order": ["title", "artist"],
+    "on-click": "noctalia msg panel-toggle control-center media",
+    "on-scroll-up": "noctalia msg media next",
+    "on-scroll-down": "noctalia msg media previous",
     "interval": 5,
     "tooltip": true
   }
