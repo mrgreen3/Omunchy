@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # omunchy-askpass: password prompt for `sudo -A` (sudo runs it via SUDO_ASKPASS).
-# Shows a pinentry-gtk password box that also names the command sudo is about to
+# Shows a GTK3 password box that also names the command sudo is about to
 # run, read from sudo's own command line. The password goes straight to sudo.
 # Only sudo may call this: run by anything else (e.g. an assistant's shell) it
 # refuses, so the password cannot be captured as command output.
@@ -30,44 +30,12 @@ elif (( ${#cmd} > max )); then
 fi
 
 # sudo resets the environment before running askpass (without -E): find the
-# user's Wayland session again. pinentry-gtk also wants DISPLAY set or it falls
-# back to the tty; GTK itself still uses Wayland.
+# user's Wayland session again.
 export XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
 if [[ -z $WAYLAND_DISPLAY ]]; then
   for sock in "$XDG_RUNTIME_DIR"/wayland-[0-9]; do
     [[ -S $sock ]] && { export WAYLAND_DISPLAY=${sock##*/}; break; }
   done
 fi
-export DISPLAY=${DISPLAY:-:0}
 
-# Assuan escaping for pinentry: %, CR, LF.
-esc() { local s=${1//%/%25}; s=${s//$'\r'/%0D}; printf '%s' "${s//$'\n'/%0A}"; }
-
-coproc PE { pinentry-gtk 2>/dev/null; }
-exec {to}>&"${PE[1]}" {from}<&"${PE[0]}"
-read -r -u "$from" line || exit 1
-[[ $line == OK* ]] || exit 1
-
-printf '%s\n' \
-  "SETTITLE Omunchy" \
-  "SETDESC $(esc "Run as root:"$'\n\n'"$cmd")" \
-  "SETPROMPT $(esc "${1:-Password:}")" \
-  "SETOK Run" \
-  "GETPIN" \
-  "BYE" >&"$to"
-
-pin=
-ok=1
-while read -r -u "$from" line; do
-  case $line in
-    "D "*) pin=${line#D } ;;
-    ERR*) ok=0; break ;;
-    OK*) [[ -n $pin ]] && break ;;
-  esac
-done
-exec {to}>&- {from}<&-
-wait "$PE_PID" 2>/dev/null
-
-(( ok )) || exit 1
-pin=${pin//%0A/$'\n'}; pin=${pin//%0D/$'\r'}; pin=${pin//%25/%}
-printf '%s\n' "$pin"
+exec "$(dirname "$(readlink -f "$0")")/omunchy-askpass-gtk" "$cmd" "${1:-Password:}"

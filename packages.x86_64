@@ -73,6 +73,7 @@ pinentry
 nm-connection-editor
 
 ## === DESKTOP UTILITIES ===
+python-gobject
 polkit
 libsecret
 xdg-user-dirs
