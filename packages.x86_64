@@ -10,7 +10,6 @@ unzip
 xz
 
 ## === OMUNCHY STACK (Omarchy-like, lean) ===
-polkit-gnome
 xdg-desktop-portal-gtk
 noto-fonts-emoji
 
@@ -24,13 +23,10 @@ xdg-desktop-portal-wlr
 waybar
 noctalia
 xorg-xwayland
-grim
-slurp
 wl-clipboard
 libnotify
 reflector
 playerctl
-matugen
 
 ## === BLUETOOTH & POWER (daemons: live ISO enables them via
 ## multi-user.target.wants, obinstall enables them on installed systems) ===

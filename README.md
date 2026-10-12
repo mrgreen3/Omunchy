@@ -20,7 +20,7 @@ This stack was chosen specifically to avoid the RAM overhead of a full shell dae
 
 Pattern-for-pattern with Omarchy (see `docs/omarchy-parity.md` for the full 42-row analysis):
 
-- **Kept:** the bar/launcher/notification apps as plain configs, grim+slurp screenshots, the keybind-cheatsheet doc, thunar, fastfetch, adw-gtk theming.
+- **Kept:** the bar/launcher/notification apps as plain configs, noctalia screenshots, the keybind-cheatsheet doc, thunar, fastfetch, adw-gtk theming.
 - **Lean replacements:** one fixed theme and wallpaper, a one-script update (reflector → pacman → yay → orphan prune) instead of the 22-cmd update system with snapper/migrations/channels.
 - **Stripped:** Omarchy's branded extras, per-app theming, protocol handlers, first-boot provisioning, plymouth/limine/snapper, plugin ecosystem, release channels, the CLI dispatcher and web app/TUI installers.
 

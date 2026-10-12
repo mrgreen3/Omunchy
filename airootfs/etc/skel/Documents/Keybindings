@@ -26,6 +26,7 @@ Super + t               Toggle Float
 Super + Shift + t       Toggle Float (all windows)
 Super + shift + f       Fullscreen
 Super + v               Toggle Split Direction
+Super + Shift + v       Clipboard history
 
 Windows auto-split dwindle-style (mango dwindle layout).
 

@@ -28,7 +28,7 @@ persistent changes require the installer, obinstall.
   theme-switch command in the shipped scripts.
 
 - Scripts: ~/Scripts is on PATH. obinstall (installer), fix-keys (pacman
-  keyring), install-opencode (AI assistant), install-yay (AUR helper), omunchy-welcome (live-session network report), netcheck (is the network up?), screenshot,
+  keyring), install-opencode (AI assistant), install-yay (AUR helper), omunchy-welcome (live-session network report), netcheck (is the network up?),
   updates.sh.
 
 - Keybindings: full list in ~/Documents/Keybindings; Super+K opens it in the launcher

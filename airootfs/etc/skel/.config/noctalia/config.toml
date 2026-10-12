@@ -2,9 +2,13 @@
 
 [shell]
 font_family  = "JetBrains Mono"
-polkit_agent = false
+polkit_agent = true
+clipboard_enabled = true
 setup_wizard_enabled = false
 corner_radius_scale  = 0.0
+
+[shell.screenshot]
+directory = "~/Pictures"
 
 [notification]
 enable_daemon = true
