@@ -1,41 +1,103 @@
-#!/usr/bin/env bash
+#!/usr/bin/env python3
 # omunchy-askpass: password prompt for `sudo -A` (sudo runs it via SUDO_ASKPASS).
 # Shows a GTK3 password box that also names the command sudo is about to
 # run, read from sudo's own command line. The password goes straight to sudo.
 # Only sudo may call this: run by anything else (e.g. an assistant's shell) it
 # refuses, so the password cannot be captured as command output.
-case $(ps -o comm= -p "$PPID" 2>/dev/null) in
-  sudo | sudo-rs) ;;
-  *) echo "omunchy-askpass: only sudo may call this" >&2; exit 1 ;;
-esac
+import glob
+import os
+import re
+import sys
 
-max=120
+MAX = 120
+ppid = os.getppid()
+
+try:
+    parent = open(f"/proc/{ppid}/comm").read().strip()
+except OSError:
+    parent = ""
+if parent not in ("sudo", "sudo-rs"):
+    sys.exit("omunchy-askpass: only sudo may call this")
+
 # sudo's argv minus sudo itself and its own options: just the command to run.
-mapfile -d '' -t argv <"/proc/$PPID/cmdline" 2>/dev/null
-i=1
-while (( i < ${#argv[@]} )); do
-  case ${argv[i]} in
-    --) (( i++ )); break ;;
-    -[ughpCDrtTUR] | --user | --group | --host | --prompt | --close-from | --chdir | --role | --type | --other-user | --command-timeout) (( i += 2 )) ;;
-    -*) (( i++ )) ;;
-    *) break ;;
-  esac
-done
-cmd="${argv[*]:i}"
-cmd=$(printf '%s' "$cmd" | tr '\n' ';' | tr -d '\001-\010\013-\037\177')
-if [[ -z $cmd ]]; then
-  cmd="(could not read the command: cancel unless you expect this)"
-elif (( ${#cmd} > max )); then
-  cmd="${cmd:0:max}… (+$(( ${#cmd} - max )) more)"
-fi
+try:
+    argv = open(f"/proc/{ppid}/cmdline", "rb").read().split(b"\0")[:-1]
+    argv = [a.decode(errors="replace") for a in argv]
+except OSError:
+    argv = []
+takes_value = {"-u", "-g", "-h", "-p", "-C", "-D", "-r", "-t", "-T", "-U", "-R",
+               "--user", "--group", "--host", "--prompt", "--close-from", "--chdir",
+               "--role", "--type", "--other-user", "--command-timeout"}
+i = 1
+while i < len(argv):
+    a = argv[i]
+    if a == "--":
+        i += 1
+        break
+    if a in takes_value:
+        i += 2
+    elif a.startswith("-"):
+        i += 1
+    else:
+        break
+cmd = " ".join(argv[i:]).replace("\n", ";")
+cmd = re.sub(r"[\x01-\x08\x0b-\x1f\x7f]", "", cmd)
+if not cmd:
+    cmd = "(could not read the command: cancel unless you expect this)"
+elif len(cmd) > MAX:
+    cmd = f"{cmd[:MAX]}… (+{len(cmd) - MAX} more)"
+
+prompt = sys.argv[1] if len(sys.argv) > 1 else "Password:"
 
 # sudo resets the environment before running askpass (without -E): find the
-# user's Wayland session again.
-export XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
-if [[ -z $WAYLAND_DISPLAY ]]; then
-  for sock in "$XDG_RUNTIME_DIR"/wayland-[0-9]; do
-    [[ -S $sock ]] && { export WAYLAND_DISPLAY=${sock##*/}; break; }
-  done
-fi
+# user's Wayland session again, before GTK starts.
+os.environ.setdefault("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}")
+if not os.environ.get("WAYLAND_DISPLAY"):
+    for sock in sorted(glob.glob(os.path.join(os.environ["XDG_RUNTIME_DIR"], "wayland-[0-9]"))):
+        os.environ["WAYLAND_DISPLAY"] = os.path.basename(sock)
+        break
 
-exec "$(dirname "$(readlink -f "$0")")/omunchy-askpass-gtk" "$cmd" "${1:-Password:}"
+import gi  # noqa: E402
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import GLib, Gtk  # noqa: E402
+
+GLib.set_prgname("omunchy-askpass")
+
+dlg = Gtk.Dialog(title="Omunchy")
+dlg.set_keep_above(True)
+dlg.set_resizable(False)
+dlg.set_default_size(560, -1)
+dlg.add_buttons("Cancel", Gtk.ResponseType.CANCEL, "Run", Gtk.ResponseType.OK)
+dlg.set_default_response(Gtk.ResponseType.OK)
+
+box = dlg.get_content_area()
+box.set_spacing(10)
+box.set_border_width(20)
+
+head = Gtk.Label(xalign=0)
+head.set_markup("<b>Run as root:</b>")
+box.add(head)
+
+shown = Gtk.Label(xalign=0)
+shown.set_markup("<tt>%s</tt>" % GLib.markup_escape_text(cmd))
+shown.set_line_wrap(True)
+shown.set_max_width_chars(70)
+box.add(shown)
+
+row = Gtk.Box(spacing=8)
+row.add(Gtk.Label(label=prompt))
+entry = Gtk.Entry(visibility=False, activates_default=True, hexpand=True)
+entry.set_input_purpose(Gtk.InputPurpose.PASSWORD)
+row.add(entry)
+box.add(row)
+
+dlg.show_all()
+entry.grab_focus()
+ok = dlg.run() == Gtk.ResponseType.OK
+pw = entry.get_text()
+dlg.destroy()
+
+if not ok:
+    sys.exit(1)
+print(pw)
