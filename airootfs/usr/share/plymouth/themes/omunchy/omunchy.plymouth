@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Omunchy
+Description=Omunchy boot splash and disk unlock
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/omunchy
+ScriptFile=/usr/share/plymouth/themes/omunchy/omunchy.script

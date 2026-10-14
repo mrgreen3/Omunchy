@@ -265,8 +265,10 @@ phase_user() {
 phase_mkinitcpio() {
   info "initramfs"
   # autodetect keeps the default image small; the fallback preset builds without it for other hardware
-  local hooks="base systemd autodetect microcode modconf kms keyboard sd-vconsole block filesystems fsck"
-  ((ENCRYPT)) && hooks="base systemd autodetect microcode modconf kms keyboard sd-vconsole sd-encrypt block filesystems fsck"
+  # plymouth sits before sd-encrypt so the LUKS prompt is drawn by the splash
+  local hooks="base systemd plymouth autodetect microcode modconf kms keyboard sd-vconsole block filesystems fsck"
+  ((ENCRYPT)) && hooks="base systemd plymouth autodetect microcode modconf kms keyboard sd-vconsole sd-encrypt block filesystems fsck"
+  printf '[Daemon]\nTheme=omunchy\n' | write_file "$MNT/etc/plymouth/plymouthd.conf"
   # the archiso drop-in would override our hooks on any rebuild that does not pass -c
   run rm -f "$MNT/etc/mkinitcpio.conf.d/archiso.conf"
   chroot_run sed -i -E "s|^HOOKS=.*|HOOKS=($hooks)|" /etc/mkinitcpio.conf
@@ -294,6 +296,8 @@ EOT
     printf '\n[initial_session]\ncommand = "mango"\nuser = "%s"\n' "$USERNAME" >>"$MNT/etc/greetd/config.toml"
   fi
   echo mango | write_file "$MNT/etc/greetd/environments"
+  # let the splash hand over vt1 before cage grabs it
+  printf '[Unit]\nAfter=plymouth-quit-wait.service\n' | write_file "$MNT/etc/systemd/system/greetd.service.d/plymouth.conf"
   ((DRY_RUN)) || echo "GTK_THEME=adw-gtk3-dark" >>"$MNT/etc/environment"
   chroot_run systemctl enable greetd.service bluetooth.service power-profiles-daemon.service
   chroot_run systemctl set-default graphical.target
@@ -317,6 +321,7 @@ phase_bootloader() {
     run grub-install --target=i386-pc --boot-directory="$MNT/boot" "$DISK"
   fi
   chroot_run sed -i.bak -E "s|^GRUB_CMDLINE_LINUX=.*|GRUB_CMDLINE_LINUX=\"$cmdline\"|" /etc/default/grub
+  chroot_run sed -i -E 's|^GRUB_CMDLINE_LINUX_DEFAULT="([^"]*)"|GRUB_CMDLINE_LINUX_DEFAULT="\1 splash"|' /etc/default/grub
   chroot_run rm -f /etc/default/grub.bak
   chroot_run grub-mkconfig -o /boot/grub/grub.cfg
 }
@@ -336,6 +341,7 @@ phase_validate() {
   grep -q "XKB_DEFAULT_LAYOUT=$XKB_LAYOUT " "$MNT/etc/greetd/config.toml" || die "greeter keyboard layout not set in greetd config"
   grep -qx "xkb_rules_layout=$XKB_LAYOUT" "$MNT/home/$USERNAME/.config/mango/config.conf" || warn "mango xkb_rules_layout in /home/$USERNAME is not $XKB_LAYOUT"
   ! ((ENCRYPT)) || grep -q 'rd.luks.name' "$MNT/boot/grub/grub.cfg" || die "grub.cfg lost rd.luks.name"
+  grep -q 'splash' "$MNT/boot/grub/grub.cfg" || warn "grub.cfg has no splash: plymouth will not show"
 }
 
 phase_finish() {
