@@ -37,7 +37,7 @@ fun display_password(text, count) {
     lock.sprite.SetImage(lock.image);
     lock.sprite.SetOpacity(1);
 
-    if (!text) text = "Enter disk password";
+    text = "Enter disk password";
     prompt.image = Image.Text(text, 0.604, 0.576, 0.549, 1, "Sans 12");
     prompt.sprite.SetImage(prompt.image);
     prompt.sprite.SetPosition(Window.GetX() + (W - prompt.image.GetWidth()) / 2, entry.y - prompt.image.GetHeight() - 14, 11);

@@ -322,6 +322,8 @@ phase_bootloader() {
   fi
   chroot_run sed -i.bak -E "s|^GRUB_CMDLINE_LINUX=.*|GRUB_CMDLINE_LINUX=\"$cmdline\"|" /etc/default/grub
   chroot_run sed -i -E 's|^GRUB_CMDLINE_LINUX_DEFAULT="([^"]*)"|GRUB_CMDLINE_LINUX_DEFAULT="\1 splash"|' /etc/default/grub
+  # menu hidden; hold Esc or Shift during the 1s timeout to show it
+  chroot_run sed -i -E 's|^#?GRUB_TIMEOUT=.*|GRUB_TIMEOUT=1|; s|^#?GRUB_TIMEOUT_STYLE=.*|GRUB_TIMEOUT_STYLE=hidden|' /etc/default/grub
   chroot_run rm -f /etc/default/grub.bak
   chroot_run grub-mkconfig -o /boot/grub/grub.cfg
 }
