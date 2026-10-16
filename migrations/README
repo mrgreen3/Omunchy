@@ -1,0 +1,2 @@
+# Run once each by omunchy-update, in name order: YYYYMMDD-HHMM-what.sh
+# $OMUNCHY_DIR = the checkout. Must be safe to rerun.

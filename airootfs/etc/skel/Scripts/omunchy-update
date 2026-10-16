@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+# Update Omunchy's own files from the git repo (not packages; that's system-update).
+#   1. clone or fast-forward ~/.local/share/omunchy
+#   2. copy changed scripts into ~/Scripts (own versions go in ~/.local/bin)
+#   3. run new migrations/*.sh once each
+# On first run, migrations already in the repo are marked done: the installed
+# system came from an ISO that had them baked in.
+
+set -euo pipefail
+
+REPO=${OMUNCHY_REPO:-https://github.com/mrgreen3/Omunchy.git}
+BRANCH=${OMUNCHY_BRANCH:-main}
+SRC=${XDG_DATA_HOME:-$HOME/.local/share}/omunchy
+STATE=${XDG_STATE_HOME:-$HOME/.local/state}/omunchy/migrations
+SCRIPTS=$HOME/Scripts
+
+case "${1:-}" in
+    "") ;;
+    -h | --help) sed -n '2,7p' "$0"; exit 0 ;;
+    *) echo "unknown option: $1" >&2; exit 2 ;;
+esac
+
+if [[ -d /run/archiso ]]; then
+    echo "Running live - install Omunchy first."
+    exit 1
+fi
+
+if ! "$SCRIPTS/netcheck"; then
+    echo "Connect first and retry."
+    exit 1
+fi
+
+mkdir -p "$STATE"
+
+if [[ ! -d $SRC/.git ]]; then
+    echo "Fetching Omunchy source..."
+    git clone --quiet --branch "$BRANCH" "$REPO" "$SRC"
+    for m in "$SRC"/migrations/*.sh; do
+        [[ -e $m ]] && touch "$STATE/$(basename "$m")"
+    done
+    before=
+else
+    echo "Updating Omunchy source..."
+    before=$(git -C "$SRC" rev-parse HEAD)
+    if ! git -C "$SRC" pull --quiet --ff-only origin "$BRANCH"; then
+        echo "git pull failed. Local changes in $SRC? Check: git -C $SRC status"
+        exit 1
+    fi
+fi
+after=$(git -C "$SRC" rev-parse HEAD)
+
+if [[ $before == "$after" ]]; then
+    echo "Already up to date ($(git -C "$SRC" log -1 --format='%h %s'))."
+else
+    [[ -n $before ]] && git -C "$SRC" log --oneline "$before..$after"
+fi
+
+# Copy via temp + rename so a running script (this one included) keeps its old inode.
+changed=0
+for f in "$SRC"/airootfs/etc/skel/Scripts/*; do
+    [[ -f $f ]] || continue
+    dest=$SCRIPTS/$(basename "$f")
+    cmp -s "$f" "$dest" && continue
+    cp -p "$f" "$dest.new.$$"
+    mv -f "$dest.new.$$" "$dest"
+    echo "  updated ~/Scripts/$(basename "$f")"
+    changed=$((changed + 1))
+done
+
+ran=0
+for m in "$SRC"/migrations/*.sh; do
+    [[ -e $m ]] || continue
+    name=$(basename "$m")
+    [[ -e $STATE/$name ]] && continue
+    echo "Running migration $name"
+    if ! OMUNCHY_DIR=$SRC bash "$m"; then
+        echo "Migration $name failed - stopping. Fix and rerun omunchy-update."
+        exit 1
+    fi
+    touch "$STATE/$name"
+    ran=$((ran + 1))
+done
+
+echo "Done: $changed script(s) updated, $ran migration(s) run."
