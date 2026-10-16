@@ -42,8 +42,17 @@ if [[ ! -d $SRC/.git ]]; then
 else
     echo "Updating Omunchy source..."
     before=$(git -C "$SRC" rev-parse HEAD)
-    if ! git -C "$SRC" pull --quiet --ff-only origin "$BRANCH"; then
-        echo "git pull failed. Local changes in $SRC? Check: git -C $SRC status"
+    if ! git -C "$SRC" fetch --quiet origin "+$BRANCH:refs/remotes/origin/$BRANCH"; then
+        echo "git fetch of $BRANCH failed."
+        exit 1
+    fi
+    if [[ $(git -C "$SRC" branch --show-current) != "$BRANCH" ]] &&
+        ! git -C "$SRC" switch --quiet "$BRANCH"; then
+        echo "Can't switch to $BRANCH. Local changes in $SRC? Check: git -C $SRC status"
+        exit 1
+    fi
+    if ! git -C "$SRC" merge --quiet --ff-only "origin/$BRANCH"; then
+        echo "Update failed. Local changes in $SRC? Check: git -C $SRC status"
         exit 1
     fi
 fi
@@ -59,6 +68,8 @@ fi
 changed=0
 for f in "$SRC"/airootfs/etc/skel/Scripts/*; do
     [[ -f $f ]] || continue
+    # live-only, removed by obinstall
+    [[ $(basename "$f") == obinstall ]] && continue
     dest=$SCRIPTS/$(basename "$f")
     cmp -s "$f" "$dest" && continue
     cp -p "$f" "$dest.new.$$"
