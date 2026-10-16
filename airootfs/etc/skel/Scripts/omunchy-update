@@ -2,6 +2,7 @@
 # Update Omunchy's own files from the git repo (not packages; that's system-update).
 #   1. clone or fast-forward ~/.local/share/omunchy
 #   2. copy changed scripts into ~/Scripts (own versions go in ~/.local/bin)
+#      and any new wallpapers into ~/Backgrounds
 #   3. run new migrations/*.sh once each
 # On first run, migrations already in the repo are marked done: the installed
 # system came from an ISO that had them baked in.
@@ -16,7 +17,7 @@ SCRIPTS=$HOME/Scripts
 
 case "${1:-}" in
     "") ;;
-    -h | --help) sed -n '2,7p' "$0"; exit 0 ;;
+    -h | --help) sed -n '2,8p' "$0"; exit 0 ;;
     *) echo "unknown option: $1" >&2; exit 2 ;;
 esac
 
@@ -78,6 +79,18 @@ for f in "$SRC"/airootfs/etc/skel/Scripts/*; do
     changed=$((changed + 1))
 done
 
+# Wallpapers are additive: add new ones, never overwrite or remove.
+added=0
+mkdir -p "$HOME/Backgrounds"
+for f in "$SRC"/airootfs/etc/skel/Backgrounds/*; do
+    [[ -f $f && ${f,,} =~ \.(jpe?g|png|webp)$ ]] || continue
+    dest=$HOME/Backgrounds/$(basename "$f")
+    [[ -e $dest ]] && continue
+    cp -p "$f" "$dest"
+    echo "  new wallpaper ~/Backgrounds/$(basename "$f")"
+    added=$((added + 1))
+done
+
 ran=0
 for m in "$SRC"/migrations/*.sh; do
     [[ -e $m ]] || continue
@@ -92,4 +105,4 @@ for m in "$SRC"/migrations/*.sh; do
     ran=$((ran + 1))
 done
 
-echo "Done: $changed script(s) updated, $ran migration(s) run."
+echo "Done: $changed script(s) updated, $added wallpaper(s) added, $ran migration(s) run."
