@@ -198,6 +198,14 @@ EOT
   ((DRY_RUN)) || { sed -i -e '/obinstall/d' -e '/^window_rule=.*Installer/d' "$MNT/home/$LIVE_USER/.config/mango/config.conf" 2>/dev/null || true
     sed -i '/Install Omunchy/d' "$MNT/home/$LIVE_USER/Documents/Keybindings" 2>/dev/null || true
     sed -i '/^Hidden=true/d' "$MNT/home/$LIVE_USER/.local/share/applications/opencode.desktop" 2>/dev/null || true; }
+  # keep only the microcode for this machine's CPU; unknown vendor keeps both
+  local vendor ucode=
+  vendor=$(awk -F': ' '/^vendor_id/{print $2; exit}' /proc/cpuinfo)
+  case $vendor in
+    GenuineIntel) ucode=amd-ucode ;;
+    AuthenticAMD) ucode=intel-ucode ;;
+  esac
+  [[ -n $ucode ]] && chroot_run pacman -R --noconfirm "$ucode"
   run rm -rf "$MNT/etc/systemd/system/getty@tty1.service.d"
   run rm -f "$MNT/etc/systemd/system/default.target"
   if ((!DRY_RUN)) && [[ -f $MNT/etc/systemd/journald.conf.d/volatile-storage.conf ]]; then
