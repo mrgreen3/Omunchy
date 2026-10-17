@@ -57,14 +57,14 @@ echo "[detect] btrfs root, grub=$grub, separate /.snapshots=$sep_snap, separate 
 # 2. packages
 want=("${PKGS[@]}")
 ((grub)) && want+=("${GRUB_PKGS[@]}")
-for p in "${want[@]}"; do
+missing=()
+for p in "${want[@]}"; do pacman -Q "$p" >/dev/null 2>&1 || missing+=("$p"); done
+for p in "${missing[@]}"; do
     if ! pacman -Si "$p" >/dev/null 2>&1; then
         echo "[packages] $p is not in the official repos (or the package db is out of date: run system-update): stopping." >&2
         exit 1
     fi
 done
-missing=()
-for p in "${want[@]}"; do pacman -Q "$p" >/dev/null 2>&1 || missing+=("$p"); done
 if ((${#missing[@]})); then
     # the pre/post hooks are not active yet: snap-pac lands in this transaction
     pacman -S --noconfirm --needed "${missing[@]}" >/dev/null
