@@ -1,0 +1,154 @@
+#!/usr/bin/env bash
+# Set up snapper on a btrfs root: pre/post snapshots on every pacman
+# transaction (snap-pac), timeline snapshots, and snapshots in the GRUB menu
+# (grub-btrfs). Needs root: re-runs itself with sudo. Safe to re-run.
+#   install-snapper
+
+set -euo pipefail
+
+# ---- retention: kept small for low-disk machines ----
+ROOT_HOURLY=5 ROOT_DAILY=5 ROOT_NUMBER=10
+HOME_HOURLY=3 HOME_DAILY=3
+
+PKGS=(snapper snap-pac btrfs-progs)
+GRUB_PKGS=(grub-btrfs inotify-tools)
+LAYOUT=/var/lib/omunchy/snapper-layout.txt
+
+case "${1:-}" in
+    "") ;;
+    -h | --help) sed -n '2,5p' "$0"; exit 0 ;;
+    *) echo "unknown option: $1" >&2; exit 2 ;;
+esac
+
+if [[ -d /run/archiso ]]; then
+    echo "Running live - install Omunchy first."
+    exit 1
+fi
+
+if ((EUID != 0)); then
+    echo "install-snapper needs root, re-running with sudo..."
+    SUDO=(sudo)
+    [[ ! -t 0 && -n ${SUDO_ASKPASS:-} ]] && SUDO=(sudo -A)
+    exec "${SUDO[@]}" "$0" "$@"
+fi
+
+changed=0
+
+# 1. detect
+fstype=$(findmnt -no FSTYPE /)
+if [[ $fstype != btrfs ]]; then
+    echo "[detect] / is $fstype, not btrfs: snapshots skipped."
+    exit 0
+fi
+grub=0
+[[ -f /boot/grub/grub.cfg ]] && pacman -Q grub >/dev/null 2>&1 && grub=1
+sep_snap=0
+findmnt -n /.snapshots >/dev/null 2>&1 && sep_snap=1
+sep_home=0
+[[ $(findmnt -no FSTYPE /home 2>/dev/null) == btrfs ]] && sep_home=1
+mkdir -p "${LAYOUT%/*}"
+{
+    echo "# $(date -Is)"
+    btrfs subvolume list /
+    findmnt -t btrfs -no TARGET,SOURCE
+} >"$LAYOUT"
+echo "[detect] btrfs root, grub=$grub, separate /.snapshots=$sep_snap, separate /home=$sep_home (layout in $LAYOUT)"
+
+# 2. packages
+want=("${PKGS[@]}")
+((grub)) && want+=("${GRUB_PKGS[@]}")
+for p in "${want[@]}"; do
+    if ! pacman -Si "$p" >/dev/null 2>&1; then
+        echo "[packages] $p is not in the official repos (or the package db is out of date: run system-update): stopping." >&2
+        exit 1
+    fi
+done
+missing=()
+for p in "${want[@]}"; do pacman -Q "$p" >/dev/null 2>&1 || missing+=("$p"); done
+if ((${#missing[@]})); then
+    # the pre/post hooks are not active yet: snap-pac lands in this transaction
+    pacman -S --noconfirm --needed "${missing[@]}" >/dev/null
+    echo "[packages] installed: ${missing[*]}"
+    changed=1
+else
+    echo "[packages] already installed: ${want[*]}"
+fi
+
+# 3. root config
+if snapper -c root get-config >/dev/null 2>&1; then
+    echo "[root] snapper config exists, left as is"
+elif ((sep_snap)); then
+    # create-config refuses an existing /.snapshots: swap the mount for its nested subvolume, then back
+    umount /.snapshots
+    rmdir /.snapshots
+    snapper -c root create-config /
+    btrfs subvolume delete /.snapshots >/dev/null
+    mkdir /.snapshots
+    mount /.snapshots
+    chmod 750 /.snapshots
+    echo "[root] snapper config created, /.snapshots stays on its own subvolume"
+    changed=1
+else
+    snapper -c root create-config /
+    echo "[root] snapper config created; no separate snapshots subvolume, using nested /.snapshots"
+    changed=1
+fi
+
+# 4. home config
+if ((!sep_home)); then
+    echo "[home] /home is not its own subvolume: home snapshots skipped"
+elif snapper -c home get-config >/dev/null 2>&1; then
+    echo "[home] snapper config exists, left as is"
+else
+    snapper -c home create-config /home
+    echo "[home] snapper config created"
+    changed=1
+fi
+
+# 5. retention (set-config only writes when a value differs)
+set_config() {
+    local cfg=$1; shift
+    local kv cur
+    for kv in "$@"; do
+        cur=$(snapper -c "$cfg" --csvout get-config --columns key,value | awk -F, -v k="${kv%%=*}" '$1 == k {print $2}')
+        [[ $cur == "${kv#*=}" ]] && continue
+        snapper -c "$cfg" set-config "$kv"
+        changed=1
+    done
+}
+set_config root TIMELINE_CREATE=yes TIMELINE_CLEANUP=yes NUMBER_CLEANUP=yes \
+    TIMELINE_LIMIT_HOURLY=$ROOT_HOURLY TIMELINE_LIMIT_DAILY=$ROOT_DAILY \
+    TIMELINE_LIMIT_WEEKLY=0 TIMELINE_LIMIT_MONTHLY=0 TIMELINE_LIMIT_YEARLY=0 \
+    NUMBER_LIMIT=$ROOT_NUMBER NUMBER_LIMIT_IMPORTANT=$ROOT_NUMBER
+if ((sep_home)); then
+    set_config home TIMELINE_CREATE=yes TIMELINE_CLEANUP=yes NUMBER_CLEANUP=yes \
+        TIMELINE_LIMIT_HOURLY=$HOME_HOURLY TIMELINE_LIMIT_DAILY=$HOME_DAILY \
+        TIMELINE_LIMIT_WEEKLY=0 TIMELINE_LIMIT_MONTHLY=0 TIMELINE_LIMIT_YEARLY=0 \
+        NUMBER_LIMIT=0 NUMBER_LIMIT_IMPORTANT=0
+    # snap-pac snapshots every config unless told not to
+    if ! grep -q '^\[home\]' /etc/snap-pac.ini; then
+        printf '\n[home]\nsnapshot = no\n' >>/etc/snap-pac.ini
+        changed=1
+    fi
+fi
+echo "[retention] root ${ROOT_HOURLY}h/${ROOT_DAILY}d/${ROOT_NUMBER} pacman$( ((sep_home)) && echo ", home ${HOME_HOURLY}h/${HOME_DAILY}d, no pacman snapshots")"
+
+# 6. services and GRUB
+units=(snapper-timeline.timer snapper-cleanup.timer)
+((grub)) && units+=(grub-btrfsd.service)
+for u in "${units[@]}"; do
+    if ! systemctl is-enabled --quiet "$u"; then
+        systemctl enable --now --quiet "$u"
+        changed=1
+    fi
+done
+echo "[services] enabled: ${units[*]}"
+
+if ((!grub)); then
+    echo "[grub] bootloader is not GRUB: boot-menu step skipped"
+elif ((changed)); then
+    grub-mkconfig -o /boot/grub/grub.cfg >/dev/null 2>&1
+    echo "[grub] grub.cfg regenerated with the snapshots submenu"
+else
+    echo "[grub] nothing changed, grub.cfg left as is"
+fi

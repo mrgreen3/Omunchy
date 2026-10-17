@@ -113,7 +113,7 @@ show_summary() {
   Disk        $DISK  ${size}${model:+  $model}
   Encryption  $enc
   Boot        $boot
-  Filesystem  btrfs (zstd) with subvolumes @ @home @log @pkg
+  Filesystem  btrfs (zstd) with subvolumes @ @home @log @pkg @snapshots
 
   What will happen:
     1. $DISK is partitioned and ERASED (everything on it is lost)

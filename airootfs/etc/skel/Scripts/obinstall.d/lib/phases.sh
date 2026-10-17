@@ -100,14 +100,17 @@ phase_prepare_disk() {
   run mkfs.btrfs -f -L omunchy "$ROOT_DEV"
   run mkdir -p "$BTRFS_TOP" "$MNT"
   run mount "$ROOT_DEV" "$BTRFS_TOP"
-  local sv; for sv in @ @home @log @pkg; do run btrfs subvolume create "$BTRFS_TOP/$sv"; done
+  local sv; for sv in @ @home @log @pkg @snapshots; do run btrfs subvolume create "$BTRFS_TOP/$sv"; done
   run umount "$BTRFS_TOP"
   local o=noatime,compress=zstd
   run mount -o "$o,subvol=@" "$ROOT_DEV" "$MNT"
-  run mkdir -p "$MNT"/{boot,home,var/log,var/cache/pacman/pkg}
+  run mkdir -p "$MNT"/{boot,home,var/log,var/cache/pacman/pkg,.snapshots}
   run mount -o "$o,subvol=@home" "$ROOT_DEV" "$MNT/home"
   run mount -o "$o,subvol=@log" "$ROOT_DEV" "$MNT/var/log"
   run mount -o "$o,subvol=@pkg" "$ROOT_DEV" "$MNT/var/cache/pacman/pkg"
+  # own subvolume so snapshots survive replacing @ on rollback (install-snapper uses it)
+  run mount -o "$o,subvol=@snapshots" "$ROOT_DEV" "$MNT/.snapshots"
+  run chmod 750 "$MNT/.snapshots"
   run mount -o umask=0077 "$ESP_DEV" "$MNT/boot"
 }
 
