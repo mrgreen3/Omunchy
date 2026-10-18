@@ -331,7 +331,7 @@ profile. Ships with Omunchy; nothing to install.
 What:   each app opens in its own window with its own app id
         (firefox.webapp-<id>); the main Firefox profile is not touched.
 Use:
-  omunchy-webapp presets        (YouTube, Arch Wiki, Arch Packages, Omunchy;
+  omunchy-webapp presets        (Arch News, Arch Wiki, Arch Packages, Omunchy;
                                  list in ~/.config/omunchy-webapp/presets.conf)
   omunchy-webapp add <name> <url> [icon]
   omunchy-webapp list
