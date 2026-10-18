@@ -323,6 +323,29 @@ Update:   TODO: verify
 Remove:   TODO: verify (do not delete ~/.hermes blindly: it holds your
           memory, sessions and keys; stop its gateway service first)
 
+WEB APPS
+
+Sites as launchable apps, using Firefox's built-in web apps in one shared
+profile. Ships with Omunchy; nothing to install.
+
+What:   each app opens in its own window with its own app id
+        (firefox.webapp-<id>); the main Firefox profile is not touched.
+Use:
+  omunchy-webapp presets        (YouTube, Arch Wiki, Arch Packages, Omunchy;
+                                 list in ~/.config/omunchy-webapp/presets.conf)
+  omunchy-webapp add <name> <url> [icon]
+  omunchy-webapp list
+  omunchy-webapp remove <name>
+Location: ~/Scripts/omunchy-webapp; launchers in ~/.local/share/applications/
+          (omunchy-webapp-*.desktop), shared profile and icons in
+          ~/.local/share/omunchy-webapp/
+Needs:    network for the site and its icon; close all web app windows
+          before add or remove
+Verify:   omunchy-webapp list
+Notes:    web apps share one profile, so a login in one is a login in all
+          and separate from the main Firefox. Links to other sites open in
+          a normal window of that profile.
+
 ADD A NEW APP — use this template; fill only from the tool's official docs:
 
 <APP NAME> (<one line: what it is, when a user wants it>)

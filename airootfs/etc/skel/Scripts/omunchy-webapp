@@ -1,0 +1,254 @@
+#!/bin/sh
+# omunchy-webapp: turn a site into a launchable app using Firefox's built-in
+# web apps (Taskbar Tabs) in one shared profile. Each app gets its own window
+# and app id (firefox.webapp-<uuid>); the main Firefox profile is not touched.
+set -eu
+
+DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
+APPS=$DATA_HOME/applications
+DATA=${OMUNCHY_WEBAPP_DATA:-$DATA_HOME/omunchy-webapp}
+PROFILE=$DATA/profile
+ICONS=$DATA/icons
+REGISTRY=$PROFILE/taskbartabs/taskbartabs.json
+PRESETS=${OMUNCHY_WEBAPP_PRESETS:-${XDG_CONFIG_HOME:-$HOME/.config}/omunchy-webapp/presets.conf}
+PREFIX=omunchy-webapp-
+FALLBACK_ICON=web-browser
+
+die() { printf 'omunchy-webapp: %s\n' "$*" >&2; exit 1; }
+
+usage() {
+	cat <<EOF
+usage: omunchy-webapp add <name> <url> [icon]
+       omunchy-webapp remove <name>
+       omunchy-webapp list
+       omunchy-webapp presets   (adds every entry in $PRESETS)
+EOF
+	exit "${1:-1}"
+}
+
+# lowercase id for file names: a-z 0-9 -
+slug() {
+	s=$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9' '-' | sed 's/^-*//; s/-*$//')
+	[ -n "$s" ] || die "name '$1' has no usable characters"
+	[ ${#s} -le 64 ] || die "name too long"
+	printf '%s' "$s"
+}
+
+check_url() {
+	case $1 in
+		http://* | https://*) ;;
+		*) die "url must start with http:// or https://" ;;
+	esac
+	# no whitespace, quotes or shell/desktop-entry metacharacters
+	printf '%s' "$1" | grep -Eq '^https?://[A-Za-z0-9.-]+(:[0-9]+)?([/?#][^][:space:]"`$\\<>{}|^]*)?$' ||
+		die "invalid url: $1"
+}
+
+host_of() { printf '%s' "$1" | sed -E 's#^https?://([^/:?#]+).*#\1#'; }
+
+# Firefox rewrites the registry from memory, so edit only while it's closed
+check_closed() {
+	if pgrep -f -- "--profile $PROFILE" >/dev/null 2>&1; then
+		die "close all web app windows first (the web app Firefox is running)"
+	fi
+}
+
+ensure_profile() {
+	[ -f "$PROFILE/user.js" ] && return
+	mkdir -p "$PROFILE/taskbartabs"
+	cat >"$PROFILE/user.js" <<'EOF'
+user_pref("browser.taskbarTabs.enabled", true);
+user_pref("browser.aboutwelcome.enabled", false);
+user_pref("browser.startup.homepage_override.mstone", "ignore");
+user_pref("startup.homepage_welcome_url", "");
+user_pref("browser.shell.checkDefaultBrowser", false);
+user_pref("datareporting.policy.dataSubmissionPolicyBypassNotification", true);
+user_pref("trailhead.firstrun.didSeeAboutWelcome", true);
+EOF
+}
+
+# our desktop entries: only those carrying our marker key
+our_entries() {
+	for f in "$APPS/$PREFIX"*.desktop; do
+		[ -f "$f" ] && grep -q '^X-Omunchy-WebApp-Id=' "$f" && printf '%s\n' "$f"
+	done
+	return 0
+}
+
+field() { sed -n "s/^$1=//p" "$2" | head -n 1; }
+
+# rebuild Firefox's registry from our desktop entries
+write_registry() {
+	mkdir -p "${REGISTRY%/*}"
+	tmp=$REGISTRY.tmp
+	{
+		printf '{"version":1,"taskbarTabs":['
+		sep=
+		for f in $(our_entries); do
+			u=$(field X-Omunchy-WebApp-URL "$f")
+			printf '%s{"id":"%s","scopes":[{"hostname":"%s"}],"userContextId":0,"startUrl":"%s","name":"%s"}' \
+				"$sep" "$(field X-Omunchy-WebApp-Id "$f")" "$(host_of "$u")" "$u" "$(field Name "$f")"
+			sep=,
+		done
+		printf ']}\n'
+	} >"$tmp"
+	mv "$tmp" "$REGISTRY"
+}
+
+# returns 0 if the file looks like png/ico/gif/jpeg/svg
+is_image() {
+	[ -s "$1" ] || return 1
+	case $(od -An -tx1 -N4 "$1" | tr -d ' \n') in
+		89504e47 | 00000100 | 47494638 | ffd8ff*) return 0 ;;
+	esac
+	head -c 512 "$1" | grep -qi '<svg'
+}
+
+fetch_icon() { # url dest-without-ext -> prints icon path or fallback name
+	command -v curl >/dev/null 2>&1 || { printf '%s' "$FALLBACK_ICON"; return; }
+	origin=$(printf '%s' "$1" | sed -E 's#^(https?://[^/?#]+).*#\1#')
+	tmp=$(mktemp)
+	links=$(curl -fsSL --max-time 10 --max-filesize 2000000 "$1" 2>/dev/null |
+		tr '\n' ' ' | grep -oiE '<link[^>]+>') || true
+	# prefer apple-touch-icon (usually 180px) over small favicons
+	cands=$( { printf '%s\n' "$links" | grep -iE 'rel="?apple-touch-icon'
+		printf '%s\n' "$links" | grep -iE 'rel="?(shortcut )?icon"?'; } |
+		sed -nE 's/.*href="([^"]+)".*/\1/p' | sed 's/&amp;/\&/g' | head -n 4) || true
+	for href in $cands "$origin/favicon.ico"; do
+		case $href in
+			//*) href=${origin%%:*}:$href ;;
+			/*) href=$origin$href ;;
+			http://* | https://*) ;;
+			*) href=$origin/$href ;;
+		esac
+		if curl -fsSL --max-time 10 --max-filesize 2000000 -o "$tmp" "$href" 2>/dev/null && is_image "$tmp"; then
+			if head -c 512 "$tmp" | grep -qi '<svg'; then ext=svg
+			else case $(od -An -tx1 -N2 "$tmp" | tr -d ' \n') in
+				8950) ext=png ;; 0000) ext=ico ;; 4749) ext=gif ;; *) ext=jpg ;;
+			esac; fi
+			mv "$tmp" "$2.$ext"
+			printf '%s' "$2.$ext"
+			return
+		fi
+	done
+	rm -f "$tmp"
+	printf '%s' "$FALLBACK_ICON"
+}
+
+# 0 if the user's GTK icon theme (or one it inherits, or hicolor) has the icon
+theme_has() {
+	theme=$(sed -n 's/^gtk-icon-theme-name *= *//p' "${XDG_CONFIG_HOME:-$HOME/.config}/gtk-3.0/settings.ini" 2>/dev/null | tr -d '"' | head -n 1)
+	queue="${theme:-hicolor} hicolor"
+	seen=
+	while [ -n "$queue" ]; do
+		t=${queue%% *}; queue=${queue#"$t"}; queue=${queue# }
+		case " $seen " in *" $t "*) continue ;; esac
+		seen="$seen $t"
+		for d in "$DATA_HOME/icons/$t" "$HOME/.icons/$t" "/usr/share/icons/$t"; do
+			[ -d "$d" ] || continue
+			[ -n "$(find "$d" \( -name "$1.svg" -o -name "$1.png" \) -print -quit 2>/dev/null)" ] && return 0
+			inh=$(sed -n 's/^Inherits *= *//p' "$d/index.theme" 2>/dev/null | tr ',' ' ')
+			queue="$queue $inh"
+		done
+	done
+	return 1
+}
+
+# icon for a new app: theme name, then favicon, then generic
+pick_icon() { # url id [icon]
+	if [ -n "${3:-}" ]; then
+		case $3 in
+			/*) [ -f "$3" ] && { printf '%s' "$3"; return; } ;;
+			*) theme_has "$3" && { printf '%s' "$3"; return; } ;;
+		esac
+	fi
+	fetch_icon "$1" "$ICONS/$2"
+}
+
+cmd_add() {
+	[ $# -eq 2 ] || [ $# -eq 3 ] || usage
+	# shellcheck disable=SC1003 # deletes control chars, " and \ (JSON-safe name)
+	label=$(printf '%s' "$1" | tr -d '\000-\037"\\')
+	id=$(slug "$1")
+	url=$2
+	check_url "$url"
+	desktop=$APPS/$PREFIX$id.desktop
+	[ -e "$desktop" ] && die "'$id' already exists (remove it first)"
+	check_closed
+
+	ensure_profile
+	mkdir -p "$APPS" "$ICONS"
+	uuid=$(cat /proc/sys/kernel/random/uuid)
+	icon=$(pick_icon "$url" "$id" "${3:-}")
+	# desktop-entry Exec: escape % as %%
+	eurl=$(printf '%s' "$url" | sed 's/%/%%/g')
+	cat >"$desktop" <<EOF
+[Desktop Entry]
+Type=Application
+Name=$label
+Comment=$url
+Exec=firefox --profile "$PROFILE" -taskbar-tab $uuid -new-window "$eurl"
+Icon=$icon
+Terminal=false
+StartupWMClass=firefox.webapp-$uuid
+Categories=Network;
+X-Omunchy-WebApp-Id=$uuid
+X-Omunchy-WebApp-URL=$url
+EOF
+	write_registry
+	printf 'added %s (%s)\n  app id: firefox.webapp-%s\n  icon: %s\n' "$label" "$url" "$uuid" "$icon"
+}
+
+cmd_remove() {
+	[ $# -eq 1 ] || usage
+	id=$(slug "$1")
+	desktop=$APPS/$PREFIX$id.desktop
+	[ -f "$desktop" ] || die "no web app '$id'"
+	grep -q '^X-Omunchy-WebApp-Id=' "$desktop" || die "'$id' was not created by omunchy-webapp, leaving it alone"
+	check_closed
+	rm -f "$desktop" "$ICONS/$id".*
+	write_registry
+	printf 'removed %s\n' "$id"
+}
+
+cmd_list() {
+	[ $# -eq 0 ] || usage
+	for f in $(our_entries); do
+		id=${f##*/"$PREFIX"}; id=${id%.desktop}
+		printf '%-20s %s\n' "$id" "$(field X-Omunchy-WebApp-URL "$f")"
+	done
+}
+
+# add every preset not already present; safe to re-run
+cmd_presets() {
+	[ $# -eq 0 ] || usage
+	[ -f "$PRESETS" ] || die "no presets file at $PRESETS"
+	check_closed
+	fail=0
+	while IFS='|' read -r name url icon || [ -n "$name" ]; do
+		case $name in '' | '#'*) continue ;; esac
+		id=$(slug "$name")
+		desktop=$APPS/$PREFIX$id.desktop
+		if [ -e "$desktop" ]; then
+			if [ "$(field X-Omunchy-WebApp-URL "$desktop")" = "$url" ]; then
+				printf 'exists  %s\n' "$id"
+			else
+				printf 'skipped %s (a different %s already exists)\n' "$id" "${desktop##*/}" >&2
+			fi
+			continue
+		fi
+		( cmd_add "$name" "$url" "$icon" ) || fail=1
+	done <"$PRESETS"
+	return $fail
+}
+
+[ $# -ge 1 ] || usage
+cmd=$1; shift
+case $cmd in
+	add) cmd_add "$@" ;;
+	remove | rm) cmd_remove "$@" ;;
+	list | ls) cmd_list "$@" ;;
+	presets) cmd_presets "$@" ;;
+	-h | --help | help) usage 0 ;;
+	*) usage ;;
+esac
