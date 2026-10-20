@@ -1,0 +1,190 @@
+#!/usr/bin/env bash
+# Detect the GPU(s) and install the matching driver packages, with early KMS
+# for NVIDIA. Needs root for installing: re-runs itself with sudo. Safe to re-run.
+#   install-gpu              detect, show the plan, install
+#   install-gpu --dry-run    detect and show the plan only
+#   install-gpu --classify "GP107 [GeForce GTX 1050 Ti]"
+
+set -euo pipefail
+
+DROPIN=/etc/mkinitcpio.conf.d/90-install-gpu.conf
+NV_MODS=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)
+
+# PCI model prefix -> NVIDIA family; Turing and newer take the open modules.
+# "Device xxxx" means hwdata doesn't know the card yet, so assume a recent one.
+family() {
+    case ${1^^} in
+        GB* | AD* | GA* | TU* | DEVICE* | "") echo nvidia-open ;;
+        GV* | GM* | GP*) echo nvidia-580 ;;
+        GK*) echo nvidia-470 ;;
+        GF*) echo nvidia-390 ;;
+        *) echo nouveau ;;
+    esac
+}
+
+# header comment lines 2-6, without the leading '# '
+usage() { sed -n '2,6s/^# \{0,1\}//p' "$0"; }
+
+dry=0
+case "${1:-}" in
+    "") ;;
+    --dry-run) dry=1 ;;
+    --classify) family "${2:?--classify needs a GPU name}"; exit 0 ;;
+    -h | --help) usage; exit 0 ;;
+    *) echo "unknown option: $1" >&2; usage >&2; exit 2 ;;
+esac
+
+# print an error and stop
+die() { echo "$*" >&2; exit 1; }
+
+[[ -d /run/archiso ]] && die "Running live - install Omunchy first."
+
+SUDO=(sudo)
+[[ ! -t 0 && -n ${SUDO_ASKPASS:-} ]] && SUDO=(sudo -A)
+((dry || EUID == 0)) || exec "${SUDO[@]}" "$0" "$@"
+
+# a kernel upgraded but not yet booted leaves no module dir for the running one
+[[ -d /usr/lib/modules/$(uname -r) ]] || die "The running kernel's modules are gone (kernel updated?): reboot, then re-run."
+kernel=$(</usr/lib/modules/"$(uname -r)"/pkgbase)
+multilib=0
+grep -q '^\[multilib\]' /etc/pacman.conf && multilib=1
+
+# open NVIDIA driver to match the running kernel: prebuilt for linux/linux-lts, dkms + headers for anything else
+nv_driver() {
+    case $kernel in
+        linux) echo nvidia-open ;;
+        linux-lts) echo nvidia-open-lts ;;
+        *) echo "nvidia-open-dkms dkms $kernel-headers" ;;
+    esac
+}
+
+# family -> driver packages it needs; legacy NVIDIA branches only exist in the AUR
+packages() {
+    case $1 in
+        nvidia-open) echo "$(nv_driver) nvidia-utils egl-wayland opencl-nvidia" ;;
+        nvidia-580 | nvidia-470 | nvidia-390)
+            local v=${1#nvidia-}
+            echo "nvidia-${v}xx-dkms nvidia-${v}xx-utils dkms $kernel-headers" ;;
+        intel-xe) echo "mesa vulkan-intel intel-media-driver vpl-gpu-rt" ;;
+        intel-i915) echo "mesa vulkan-intel intel-media-driver libva-intel-driver" ;;
+        amdgpu | radeon) echo "mesa vulkan-radeon" ;;
+        nouveau) echo "mesa vulkan-nouveau" ;;
+        vm-vmware) echo "mesa open-vm-tools vulkan-swrast" ;;
+        vm-virtualbox) echo "mesa virtualbox-guest-utils vulkan-swrast" ;;
+        vm-qemu) echo "mesa spice-vdagent qemu-guest-agent vulkan-virtio" ;;
+        *) echo "mesa vulkan-swrast" ;;
+    esac
+}
+
+# 32-bit twin of a package for Steam/Wine, only for those that have one in multilib
+lib32() {
+    case $1 in
+        mesa | vulkan-intel | vulkan-radeon | vulkan-nouveau | nvidia-utils | opencl-nvidia | nvidia-*xx-utils)
+            echo "lib32-$1" ;;
+    esac
+}
+
+# guest services a VM family needs enabled
+services() {
+    case $1 in
+        vm-vmware) echo "vmtoolsd.service vmware-vmblock-fuse.service" ;;
+        vm-virtualbox) echo "vboxservice.service" ;;
+    esac
+}
+
+# 1. detect
+fams=() notes=()
+vm=$(systemd-detect-virt --vm 2>/dev/null || true)
+case $vm in
+    vmware) fams=(vm-vmware) ;;
+    oracle) fams=(vm-virtualbox) ;;
+    qemu | kvm) fams=(vm-qemu) ;;
+    none | "") ;;
+    *) fams=(generic) ;;
+esac
+((${#fams[@]})) && echo "[detect] virtual machine ($vm): ${fams[0]}"
+
+# GPUs passed through to a VM are picked up too; their emulated display is skipped
+# one line per display device: PCI line plus its 'driver in use', classified by vendor ID
+while read -r line; do
+    [[ -n $line ]] || continue
+    case $line in
+        *10de:*)
+            name=$(sed -E 's/.*NVIDIA Corporation ([^[]*).*/\1/' <<<"$line")
+            fam=$(family "$name")
+            [[ ${name^^} == DEVICE* ]] &&
+                notes+=("unknown NVIDIA ID, assuming a recent card; update hwdata and re-run") ;;
+        *8086:*) [[ $line == *"driver in use: xe"* ]] && fam=intel-xe || fam=intel-i915 ;;
+        *1002:*) [[ $line == *"driver in use: amdgpu"* ]] && fam=amdgpu || fam=radeon ;;
+        *) [[ -n $vm && $vm != none ]] && continue; fam=generic ;;
+    esac
+    echo "[detect] ${line%% | *}: $fam"
+    fams+=("$fam")
+done < <(lspci -nnk -d ::03xx | awk '/^[0-9a-f]{2}:[0-9a-f]{2}\.[0-9a-f]/ {if (dev) print dev; dev=$0; next}
+    /Kernel driver in use/ {dev=dev" | "$0} END {if (dev) print dev}')
+
+((${#fams[@]})) || { echo "[detect] no GPU found" >&2; exit 1; }
+has_nv=0 legacy=0
+for f in "${fams[@]}"; do
+    [[ $f == nvidia-* ]] && has_nv=1
+    [[ $f == nvidia-470 || $f == nvidia-390 ]] && legacy=1
+done
+
+# 2. plan
+all=()
+for f in "${fams[@]}"; do
+    for p in $(packages "$f"); do
+        all+=("$p")
+        ((multilib)) && l=$(lib32 "$p") && [[ -n $l ]] && all+=("$l")
+    done
+done
+mapfile -t all < <(printf '%s\n' "${all[@]}" | sort -u)
+
+# split by what the sync db has; the rest is AUR (or a stale db)
+repo=() aur=()
+for p in "${all[@]}"; do
+    pacman -Si "$p" >/dev/null 2>&1 && repo+=("$p") || aur+=("$p")
+done
+echo "[plan] kernel $kernel, multilib $( ((multilib)) && echo on || echo off)"
+echo "[plan] from the repos: ${repo[*]:-none}"
+((${#aur[@]})) && echo "[plan] not in the repos (AUR, or the package db is out of date): ${aur[*]}"
+for n in "${notes[@]}"; do echo "[plan] warning: $n"; done
+((legacy)) && echo "[plan] legacy branch: add nvidia_drm.modeset=1 to GRUB_CMDLINE_LINUX in /etc/default/grub, then grub-mkconfig -o /boot/grub/grub.cfg"
+((dry)) && exit 0
+
+# 3. packages
+((${#repo[@]})) && pacman -Syu --needed "${repo[@]}"
+
+# 4. services
+for f in "${fams[@]}"; do
+    for s in $(services "$f"); do
+        systemctl is-enabled --quiet "$s" || systemctl enable --now --quiet "$s"
+        echo "[services] enabled $s"
+    done
+done
+
+# 5. early KMS: only once the nvidia module exists, else mkinitcpio fails on every rebuild.
+# The kms hook is dropped so nouveau can't claim the card first.
+rebuild=0
+if ((has_nv)) && modinfo -k "$(uname -r)" nvidia >/dev/null 2>&1; then
+    # shellcheck disable=SC2016 # expanded by mkinitcpio when it sources the drop-in
+    want=$(printf '# written by install-gpu\nMODULES+=(%s)\nHOOKS=(${HOOKS[@]/#kms/})' "${NV_MODS[*]}")
+    if [[ -f $DROPIN && $(<"$DROPIN") == "$want" ]]; then
+        echo "[initramfs] early KMS already set in $DROPIN"
+    else
+        mkdir -p "${DROPIN%/*}"
+        printf '%s\n' "$want" >"$DROPIN"
+        echo "[initramfs] early KMS written to $DROPIN"
+        rebuild=1
+    fi
+elif ((has_nv)); then
+    echo "[initramfs] nvidia module not installed yet: install the AUR packages, then re-run for early KMS"
+elif [[ -f $DROPIN ]] && grep -q 'written by install-gpu' "$DROPIN"; then
+    rm -f "$DROPIN"
+    echo "[initramfs] no NVIDIA GPU, removed $DROPIN"
+    rebuild=1
+fi
+((rebuild)) && mkinitcpio -P
+
+((${#aur[@]})) && echo "[done] still to install from the AUR (install-yay, then yay -S): ${aur[*]}"
+echo "[done] reboot, then check with nvidia-smi or glxinfo -B"
