@@ -84,4 +84,9 @@ working. Dispatcher aliases/group descriptions are a possible next step.
 
 ## License
 
-TBD
+Omunchy is licensed under the [GNU General Public License v3.0](LICENSE).
+
+It includes code adapted from [Omarchy](https://github.com/basecamp/omarchy)
+(MIT, see [LICENSES/Omarchy-MIT.txt](LICENSES/Omarchy-MIT.txt)), and
+`install-gpu` is based on EndeavourOS's
+[eos-hwtool](https://github.com/endeavouros-team/PKGBUILDS/tree/master/eos-hwtool) (GPL-3.0).
