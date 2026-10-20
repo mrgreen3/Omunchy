@@ -4,6 +4,9 @@
 #   install-gpu              detect, show the plan, install
 #   install-gpu --dry-run    detect and show the plan only
 #   install-gpu --classify "GP107 [GeForce GTX 1050 Ti]"
+#
+# Based on eos-hwtool by the EndeavourOS team (GPL-3.0):
+# https://github.com/endeavouros-team/PKGBUILDS/tree/master/eos-hwtool
 
 set -euo pipefail
 
@@ -67,7 +70,8 @@ packages() {
             echo "nvidia-${v}xx-dkms nvidia-${v}xx-utils dkms $kernel-headers" ;;
         intel-xe) echo "mesa vulkan-intel intel-media-driver vpl-gpu-rt" ;;
         intel-i915) echo "mesa vulkan-intel intel-media-driver libva-intel-driver" ;;
-        amdgpu | radeon) echo "mesa vulkan-radeon" ;;
+        amdgpu) echo "mesa vulkan-radeon" ;;
+        radeon) echo "mesa vulkan-swrast" ;; # RADV needs amdgpu
         nouveau) echo "mesa vulkan-nouveau" ;;
         vm-vmware) echo "mesa open-vm-tools vulkan-swrast" ;;
         vm-virtualbox) echo "mesa virtualbox-guest-utils vulkan-swrast" ;;
