@@ -14,14 +14,15 @@ DROPIN=/etc/mkinitcpio.conf.d/90-install-gpu.conf
 NV_MODS=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)
 
 # PCI model prefix -> NVIDIA family; Turing and newer take the open modules.
-# "Device xxxx" means hwdata doesn't know the card yet, so assume a recent one.
+# Pre-Fermi cards only have nouveau; anything unrecognised is assumed to be newer
+# than this list ("Device xxxx" means hwdata doesn't know the card yet).
 family() {
     case ${1^^} in
-        GB* | AD* | GA* | TU* | DEVICE* | "") echo nvidia-open ;;
         GV* | GM* | GP*) echo nvidia-580 ;;
         GK*) echo nvidia-470 ;;
         GF*) echo nvidia-390 ;;
-        *) echo nouveau ;;
+        GT2* | G[0-9]* | NV* | C[0-9]* | MCP*) echo nouveau ;;
+        *) echo nvidia-open ;;
     esac
 }
 
@@ -133,6 +134,8 @@ for f in "${fams[@]}"; do
     [[ $f == nvidia-* ]] && has_nv=1
     [[ $f == nvidia-470 || $f == nvidia-390 ]] && legacy=1
 done
+mapfile -t nv_branches < <(printf '%s\n' "${fams[@]}" | grep '^nvidia-' | sort -u)
+((${#nv_branches[@]} <= 1)) || die "NVIDIA GPUs need different driver branches (${nv_branches[*]}), which can't be installed together: install the driver for your main GPU by hand."
 
 # 2. plan
 all=()
@@ -169,8 +172,12 @@ done
 
 # 5. early KMS: only once the nvidia module exists, else mkinitcpio fails on every rebuild.
 # The kms hook is dropped so nouveau can't claim the card first.
+# the -Syu above may have replaced the running kernel, so look up the installed one
+kver=$(grep -lx "$kernel" /usr/lib/modules/*/pkgbase 2>/dev/null | head -n 1)
+kver=${kver%/pkgbase} kver=${kver##*/}
+[[ -n $kver && $kver != "$(uname -r)" ]] && echo "[initramfs] kernel updated to $kver: reboot before testing"
 rebuild=0
-if ((has_nv)) && modinfo -k "$(uname -r)" nvidia >/dev/null 2>&1; then
+if ((has_nv)) && [[ -n $kver ]] && modinfo -k "$kver" nvidia >/dev/null 2>&1; then
     # shellcheck disable=SC2016 # expanded by mkinitcpio when it sources the drop-in
     want=$(printf '# written by install-gpu\nMODULES+=(%s)\nHOOKS=(${HOOKS[@]/#kms/})' "${NV_MODS[*]}")
     if [[ -f $DROPIN && $(<"$DROPIN") == "$want" ]]; then
@@ -191,4 +198,8 @@ fi
 ((rebuild)) && mkinitcpio -P
 
 ((${#aur[@]})) && echo "[done] still to install from the AUR (install-yay, then yay -S): ${aur[*]}"
-echo "[done] reboot, then check with nvidia-smi or glxinfo -B"
+if ((has_nv)); then
+    echo "[done] reboot, then check with nvidia-smi (part of the nvidia utils package, not a package itself)"
+else
+    echo "[done] reboot, then check with glxinfo -B (pacman -S mesa-utils if missing)"
+fi

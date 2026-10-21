@@ -77,6 +77,9 @@ our_entries() {
 
 field() { sed -n "s/^$1=//p" "$2" | head -n 1; }
 
+# escape a value for a JSON string
+json() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g' | tr -d '\000-\037'; }
+
 # rebuild Firefox's registry from our desktop entries
 write_registry() {
 	mkdir -p "${REGISTRY%/*}"
@@ -87,7 +90,7 @@ write_registry() {
 		for f in $(our_entries); do
 			u=$(field X-Omunchy-WebApp-URL "$f")
 			printf '%s{"id":"%s","scopes":[{"hostname":"%s"}],"userContextId":0,"startUrl":"%s","name":"%s"}' \
-				"$sep" "$(field X-Omunchy-WebApp-Id "$f")" "$(host_of "$u")" "$u" "$(field Name "$f")"
+				"$sep" "$(json "$(field X-Omunchy-WebApp-Id "$f")")" "$(json "$(host_of "$u")")" "$(json "$u")" "$(json "$(field Name "$f")")"
 			sep=,
 		done
 		printf ']}\n'
@@ -226,8 +229,10 @@ cmd_presets() {
 	check_closed
 	fail=0
 	while IFS='|' read -r name url icon || [ -n "$name" ]; do
+		cr=$(printf '\r')
+		name=${name%"$cr"} url=${url%"$cr"} icon=${icon%"$cr"}
 		case $name in '' | '#'*) continue ;; esac
-		id=$(slug "$name")
+		id=$(slug "$name") || { fail=1; continue; }
 		desktop=$APPS/$PREFIX$id.desktop
 		if [ -e "$desktop" ]; then
 			if [ "$(field X-Omunchy-WebApp-URL "$desktop")" = "$url" ]; then
