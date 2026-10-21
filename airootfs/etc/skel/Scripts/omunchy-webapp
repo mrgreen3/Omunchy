@@ -39,6 +39,8 @@ check_url() {
 		http://* | https://*) ;;
 		*) die "url must start with http:// or https://" ;;
 	esac
+	# grep checks line by line, so reject newlines and other control bytes first
+	case $1 in *[[:cntrl:]]*) die "invalid url: control characters" ;; esac
 	# no whitespace, quotes or shell/desktop-entry metacharacters
 	printf '%s' "$1" | grep -Eq '^https?://[A-Za-z0-9.-]+(:[0-9]+)?([/?#][^][:space:]"`$\\<>{}|^]*)?$' ||
 		die "invalid url: $1"
@@ -67,13 +69,8 @@ user_pref("trailhead.firstrun.didSeeAboutWelcome", true);
 EOF
 }
 
-# our desktop entries: only those carrying our marker key
-our_entries() {
-	for f in "$APPS/$PREFIX"*.desktop; do
-		[ -f "$f" ] && grep -q '^X-Omunchy-WebApp-Id=' "$f" && printf '%s\n' "$f"
-	done
-	return 0
-}
+# one of our desktop entries: carries our marker key
+is_ours() { [ -f "$1" ] && grep -q '^X-Omunchy-WebApp-Id=' "$1"; }
 
 field() { sed -n "s/^$1=//p" "$2" | head -n 1; }
 
@@ -87,7 +84,8 @@ write_registry() {
 	{
 		printf '{"version":1,"taskbarTabs":['
 		sep=
-		for f in $(our_entries); do
+		for f in "$APPS/$PREFIX"*.desktop; do
+			is_ours "$f" || continue
 			u=$(field X-Omunchy-WebApp-URL "$f")
 			printf '%s{"id":"%s","scopes":[{"hostname":"%s"}],"userContextId":0,"startUrl":"%s","name":"%s"}' \
 				"$sep" "$(json "$(field X-Omunchy-WebApp-Id "$f")")" "$(json "$(host_of "$u")")" "$(json "$u")" "$(json "$(field Name "$f")")"
@@ -111,7 +109,7 @@ fetch_icon() { # url dest-without-ext -> prints icon path or fallback name
 	command -v curl >/dev/null 2>&1 || { printf '%s' "$FALLBACK_ICON"; return; }
 	origin=$(printf '%s' "$1" | sed -E 's#^(https?://[^/?#]+).*#\1#')
 	tmp=$(mktemp)
-	links=$(curl -fsSL --max-time 10 --max-filesize 2000000 "$1" 2>/dev/null |
+	links=$(curl -fsSL --proto =http,https --max-redirs 3 --max-time 10 --max-filesize 2000000 "$1" 2>/dev/null |
 		tr '\n' ' ' | grep -oiE '<link[^>]+>') || true
 	# prefer apple-touch-icon (usually 180px) over small favicons
 	cands=$( { printf '%s\n' "$links" | grep -iE 'rel="?apple-touch-icon'
@@ -124,7 +122,7 @@ fetch_icon() { # url dest-without-ext -> prints icon path or fallback name
 			http://* | https://*) ;;
 			*) href=$origin/$href ;;
 		esac
-		if curl -fsSL --max-time 10 --max-filesize 2000000 -o "$tmp" "$href" 2>/dev/null && is_image "$tmp"; then
+		if curl -fsSL --proto =http,https --max-redirs 3 --max-time 10 --max-filesize 2000000 -o "$tmp" "$href" 2>/dev/null && is_image "$tmp"; then
 			if head -c 512 "$tmp" | grep -qi '<svg'; then ext=svg
 			else case $(od -An -tx1 -N2 "$tmp" | tr -d ' \n') in
 				8950) ext=png ;; 0000) ext=ico ;; 4749) ext=gif ;; *) ext=jpg ;;
@@ -161,6 +159,7 @@ theme_has() {
 pick_icon() { # url id [icon]
 	if [ -n "${3:-}" ]; then
 		case $3 in
+			*[[:cntrl:]]*) ;;
 			/*) [ -f "$3" ] && { printf '%s' "$3"; return; } ;;
 			*) theme_has "$3" && { printf '%s' "$3"; return; } ;;
 		esac
@@ -216,7 +215,8 @@ cmd_remove() {
 
 cmd_list() {
 	[ $# -eq 0 ] || usage
-	for f in $(our_entries); do
+	for f in "$APPS/$PREFIX"*.desktop; do
+		is_ours "$f" || continue
 		id=${f##*/"$PREFIX"}; id=${id%.desktop}
 		printf '%-20s %s\n' "$id" "$(field X-Omunchy-WebApp-URL "$f")"
 	done
