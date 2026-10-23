@@ -177,6 +177,8 @@ kver=$(grep -lx "$kernel" /usr/lib/modules/*/pkgbase 2>/dev/null | head -n 1)
 kver=${kver%/pkgbase} kver=${kver##*/}
 [[ -n $kver && $kver != "$(uname -r)" ]] && echo "[initramfs] kernel updated to $kver: reboot before testing"
 rebuild=0
+had=0 prev=
+[[ -f $DROPIN ]] && had=1 prev=$(<"$DROPIN")
 if ((has_nv)) && [[ -n $kver ]] && modinfo -k "$kver" nvidia >/dev/null 2>&1; then
     # shellcheck disable=SC2016 # expanded by mkinitcpio when it sources the drop-in
     want=$(printf '# written by install-gpu\nMODULES+=(%s)\nHOOKS=(${HOOKS[@]/#kms/})' "${NV_MODS[*]}")
@@ -195,7 +197,11 @@ elif [[ -f $DROPIN ]] && grep -q 'written by install-gpu' "$DROPIN"; then
     echo "[initramfs] no NVIDIA GPU, removed $DROPIN"
     rebuild=1
 fi
-((rebuild)) && mkinitcpio -P
+# on a failed rebuild put the drop-in back, so a re-run doesn't see it as done and skip the rebuild
+if ((rebuild)) && ! mkinitcpio -P; then
+    if ((had)); then printf '%s\n' "$prev" >"$DROPIN"; else rm -f "$DROPIN"; fi
+    die "[initramfs] mkinitcpio failed: $DROPIN restored, fix the error above and re-run"
+fi
 
 ((${#aur[@]})) && echo "[done] still to install from the AUR (install-yay, then yay -S): ${aur[*]}"
 if ((has_nv)); then
