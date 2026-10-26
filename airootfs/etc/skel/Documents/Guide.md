@@ -346,6 +346,32 @@ Notes:    web apps share one profile, so a login in one is a login in all
           and separate from the main Firefox. Links to other sites open in
           a normal window of that profile.
 
+RADIO
+
+Internet radio player in the terminal (fzf + mpv). Ships with Omunchy;
+nothing to install. Launcher: Super+Space > Radio, or run "radio".
+
+Use (in the app):
+  type          filter the station list
+  enter         play the selected station
+  ctrl-s        stop
+  ctrl-a        add a station: give it a name, then the stream URL
+  ctrl-d        delete the selected station
+  ctrl-f        search the radio-browser.info directory (online); enter
+                adds the station and plays it
+  esc           close the app; the station keeps playing
+Use (command line):
+  radio play "<name>"   radio stop   radio now   radio list
+Add stations by hand: edit ~/.config/radio/stations, one per line as
+  Name|URL
+  e.g. SomaFM Drone Zone|https://somafm.com/dronezone.pls
+  The URL can be a direct stream (http/https), a .pls or a .m3u link —
+  most station websites list one under "listen" or "player links".
+Location: ~/Scripts/radio; stations in ~/.config/radio/stations
+Needs:    network; mpv (installed)
+Verify:   radio list
+Notes:    playback shows in the media controls with the current song.
+
 ADD A NEW APP — use this template; fill only from the tool's official docs:
 
 <APP NAME> (<one line: what it is, when a user wants it>)
