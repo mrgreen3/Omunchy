@@ -85,10 +85,16 @@ find_station() {
   play "$name" "$url"
 }
 
-# pushes refresh-preview to fzf every few seconds; exits when fzf does
+# pushes refresh-preview to fzf every few seconds, and reloads the list when
+# the stations file changes; exits when fzf does
 ticker() {
+  local seen now action
+  seen=$(stat -c %Y "$STATIONS")
   while sleep 3; do
-    curl -fs -m 2 -XPOST "localhost:$1" -d refresh-preview >/dev/null 2>&1 || exit 0
+    action=refresh-preview
+    now=$(stat -c %Y "$STATIONS")
+    [[ $now != "$seen" ]] && { seen=$now; action="reload($SELF list)+refresh-preview"; }
+    curl -fs -m 2 -XPOST "localhost:$1" -d "$action" >/dev/null 2>&1 || exit 0
   done
 }
 
