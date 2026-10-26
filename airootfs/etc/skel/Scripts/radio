@@ -1,0 +1,122 @@
+#!/bin/bash
+# radio — internet radio TUI on fzf + mpv. Stations: ~/.config/radio/stations (Name|URL)
+#   radio                 open the TUI (playback continues after quitting)
+#   radio play <name>     play a saved station      radio stop | now | list
+set -euo pipefail
+STATIONS=${XDG_CONFIG_HOME:-$HOME/.config}/radio/stations
+RUN=${XDG_RUNTIME_DIR:-/tmp}
+SOCK=$RUN/radio.sock
+STATE=$RUN/radio.station
+API_HOSTS=(de1 de2 de1 de2)
+SELF=$(readlink -f "$0")
+
+names() { sed '/^#/d;/^$/d;s/|.*//' "$STATIONS"; }
+url_of() { awk -F'|' -v n="$1" '$1==n{print $2; exit}' "$STATIONS"; }
+playing() { [[ -S $SOCK ]] && pgrep -f -- "--input-ipc-server=$SOCK" >/dev/null; }
+
+mpv_get() {
+  python3 - "$SOCK" "$1" <<'EOF' 2>/dev/null
+import json, socket, sys
+s = socket.socket(socket.AF_UNIX); s.settimeout(1); s.connect(sys.argv[1])
+s.sendall(json.dumps({"command": ["get_property", sys.argv[2]]}).encode() + b"\n")
+for line in s.makefile():
+    r = json.loads(line)
+    if "error" in r:
+        print(r.get("data") or ""); break
+EOF
+}
+
+stop() {
+  pkill -f -- "--input-ipc-server=$SOCK" 2>/dev/null || true
+  rm -f "$STATE"
+}
+
+play() {
+  local name=$1 url=${2:-}
+  [[ -n $url ]] || url=$(url_of "$name")
+  [[ -n $url ]] || { echo "No station: $name" >&2; return 1; }
+  stop
+  printf '%s\n' "$name" > "$STATE"
+  setsid mpv --no-video --no-terminal \
+    --input-ipc-server="$SOCK" "$url" >/dev/null 2>&1 &
+}
+
+now() {
+  if ! playing; then echo "Stopped"; return; fi
+  local title
+  title=$(mpv_get metadata/by-key/icy-title)
+  echo "▶ $(cat "$STATE" 2>/dev/null)"
+  [[ -n $title ]] && echo "  $title"
+  if [[ $(mpv_get paused-for-cache) == true ]]; then echo "  (buffering)"; fi
+}
+
+add() {
+  local name url
+  name=$(gum input --placeholder "Station name") || return 0
+  url=$(gum input --placeholder "Stream URL (http…, .pls, .m3u)") || return 0
+  [[ -n $name && -n $url ]] || return 0
+  name=${name//|/-}
+  printf '%s|%s\n' "$name" "$url" >> "$STATIONS"
+}
+
+del() {
+  gum confirm "Delete $1?" || return 0
+  awk -F'|' -v n="$1" '$1!=n' "$STATIONS" > "$STATIONS.tmp" && mv "$STATIONS.tmp" "$STATIONS"
+}
+
+api() {
+  local h
+  for h in "${API_HOSTS[@]}"; do
+    curl -fsG -m 8 -A radio/1.0 "https://$h.api.radio-browser.info/json/stations/search" \
+      --data-urlencode "name=$1" -d limit=50 -d hidebroken=true -d order=clickcount -d reverse=true \
+      && return
+  done
+  return 1
+}
+
+find_station() {
+  local q pick name url
+  q=$(gum input --placeholder "Search the radio-browser.info directory") || return 0
+  [[ -n $q ]] || return 0
+  pick=$(api "$q" | jq -r '.[] | "\(.name | gsub("[|\t]"; " "))\t\(.codec) \(.bitrate)k \(.countrycode)\t\(.url_resolved)"' |
+    fzf --delimiter '\t' --with-nth 1,2 --prompt 'Add > ' --header 'enter: add + play   esc: back') || return 0
+  name=$(cut -f1 <<<"$pick"); url=$(cut -f3 <<<"$pick")
+  printf '%s|%s\n' "$name" "$url" >> "$STATIONS"
+  play "$name" "$url"
+}
+
+# pushes refresh-preview to fzf every few seconds; exits when fzf does
+ticker() {
+  while sleep 3; do
+    curl -fs -m 2 -XPOST "localhost:$1" -d refresh-preview >/dev/null 2>&1 || exit 0
+  done
+}
+
+tui() {
+  names | fzf --prompt 'Radio > ' --layout reverse --listen \
+    --header 'enter play · ctrl-s stop · ctrl-a add · ctrl-d delete · ctrl-f find · esc quit' \
+    --preview "$SELF now" --preview-window 'right,40%,wrap' \
+    --bind "start:execute-silent(setsid $SELF _ticker \$FZF_PORT >/dev/null 2>&1 &)" \
+    --bind "enter:execute-silent($SELF play {})+refresh-preview" \
+    --bind "ctrl-s:execute-silent($SELF stop)+refresh-preview" \
+    --bind "ctrl-a:execute($SELF _add)+reload($SELF list)" \
+    --bind "ctrl-d:execute($SELF _del {})+reload($SELF list)" \
+    --bind "ctrl-f:execute($SELF _find)+reload($SELF list)+refresh-preview" \
+    >/dev/null || true
+}
+
+mkdir -p "${STATIONS%/*}"
+[[ -f $STATIONS ]] || printf '# Name|URL\n' > "$STATIONS"
+
+case "${1:-}" in
+"") tui ;;
+play) shift; play "$*" ;;
+stop) stop ;;
+now) now ;;
+list) names ;;
+_add) add ;;
+_del) shift; del "$*" ;;
+_find) find_station ;;
+_ticker) ticker "$2" ;;
+*) play "$*" ;;
+esac

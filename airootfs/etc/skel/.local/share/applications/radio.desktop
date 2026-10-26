@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Radio
+GenericName=Internet Radio
+Comment=Internet radio player (fzf + mpv)
+TryExec=foot
+Exec=foot -T Radio bash -c "exec ~/Scripts/radio"
+Icon=multimedia-player
+Terminal=false
+Categories=AudioVideo;Audio;Player;
+Keywords=radio;stream;music;internet;
+StartupNotify=false

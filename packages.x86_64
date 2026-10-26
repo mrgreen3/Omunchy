@@ -93,6 +93,8 @@ fzf
 eza
 
 ## === MEDIA APPLICATIONS ===
+mpv
+mpv-mpris
 firefox
 
 ## === OBINSTALL (gum wizard, jq state file, openssl password hash) ===
