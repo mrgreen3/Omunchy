@@ -373,6 +373,22 @@ Needs:    network; mpv (installed)
 Verify:   radio list
 Notes:    playback shows in the media controls with the current song.
 
+KEW
+
+Local music player in the terminal: album art, visualiser, gapless
+playback. Ships with Omunchy; nothing to install. Plays files only, not
+internet streams (use RADIO for those). Launcher: Super+Space > kew.
+
+Use:
+  kew                   open the library (~/Music)
+  kew <artist|album|song>   play the first match from ~/Music
+  kew all               shuffle the whole library
+In the app: space play/pause, left/right previous/next, +/- volume,
+  F2 playlist, F3 library, F4 track view, F5 search, F6 help, q quit.
+Location: /usr/bin/kew; config in ~/.config/kew/kewrc
+Needs:    music files in ~/Music (change with: kew path <folder>)
+Verify:   kew --version
+
 ADD A NEW APP — use this template; fill only from the tool's official docs:
 
 <APP NAME> (<one line: what it is, when a user wants it>)
