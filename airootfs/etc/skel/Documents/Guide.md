@@ -349,7 +349,8 @@ Notes:    web apps share one profile, so a login in one is a login in all
 RADIO
 
 Internet radio player in the terminal (fzf + mpv). Ships with Omunchy;
-nothing to install. Launcher: Super+Space > Radio, or run "radio".
+nothing to install. Super+M drops it down (again to hide), or
+Super+Space > Radio, or run "radio".
 
 Use (in the app):
   type          filter the station list
