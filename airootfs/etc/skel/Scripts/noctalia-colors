@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# omunchy:summary=Re-render rofi colours from noctalia's active palette (colors_changed hook)
+# omunchy:summary=Re-render rofi and mango colours from noctalia's active palette (colors_changed hook)
 state="$HOME/.local/state/noctalia/settings.toml"
 conf="$HOME/.config/noctalia/config.toml"
 
