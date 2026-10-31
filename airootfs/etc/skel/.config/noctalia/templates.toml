@@ -1,3 +1,8 @@
 [templates.rofi]
 input_path = "~/.config/noctalia/templates/rofi-colors.rasi"
 output_path = "~/.config/rofi/colors.rasi"
+
+[templates.mango]
+input_path = "~/.config/noctalia/templates/mango-colors.conf"
+output_path = "/tmp/omunchy-mango-colors.conf"
+post_hook = "~/Scripts/apply-mango-colors"
