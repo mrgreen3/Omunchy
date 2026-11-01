@@ -90,10 +90,10 @@ phase_prepare_disk() {
 
   if ((ENCRYPT)); then
     info "LUKS2 on $LUKS_PART"
-    ((DRY_RUN)) || {
-      cryptsetup luksFormat --type luks2 --iter-time 2000 --batch-mode "$LUKS_PART" - <"$LUKS_PASS_FILE" >>"$LOG_FILE" 2>&1 || die "luksFormat failed"
-      cryptsetup open "$LUKS_PART" "$ROOT_MAPPER" - <"$LUKS_PASS_FILE" >>"$LOG_FILE" 2>&1 || die "luksOpen failed"
-    }
+    # each step deliberately spends ~2s+ on key derivation; show a spinner so it doesn't look stuck
+    run_spin "Encrypting the disk..." cryptsetup luksFormat --type luks2 --iter-time 2000 --batch-mode \
+      --key-file "$LUKS_PASS_FILE" "$LUKS_PART"
+    run_spin "Unlocking the encrypted disk..." cryptsetup open --key-file "$LUKS_PASS_FILE" "$LUKS_PART" "$ROOT_MAPPER"
     ROOT_DEV=/dev/mapper/$ROOT_MAPPER
   else
     ROOT_DEV=$LUKS_PART
