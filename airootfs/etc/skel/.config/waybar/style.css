@@ -41,7 +41,7 @@ window#waybar {
 /* ---------- Menu ---------- */
 #custom-menu {
     color: @fg;
-    padding: 0 12px 0 8px;
+    padding: 0 2px 0 7px;
 }
 
 #custom-menu:hover {
@@ -124,7 +124,7 @@ window#waybar {
 #custom-power,
 #mpris {
     color: @fg;
-    padding: 0 7px;
+    padding: 0 4px;
 }
 
 #network.disconnected {
@@ -170,4 +170,8 @@ tooltip {
 tooltip label {
     color: @fg;
     font-size: 12px;
+}
+
+#custom-power {
+    padding: 0 7px 0 4px;
 }
