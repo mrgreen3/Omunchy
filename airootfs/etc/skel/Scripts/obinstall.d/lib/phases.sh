@@ -259,7 +259,7 @@ phase_user() {
   info "creating user $USERNAME"
   [[ -d $MNT/home/$LIVE_USER || $DRY_RUN == 1 ]] || die "live user home missing in target"
   # rewrite old home paths in rc files/dot dirs; a bare "live" is prose ("live ISO"), leave it
-  chroot_run /bin/bash -c "grep -rlI -- '/home/$LIVE_USER' /home/$LIVE_USER/.config /home/$LIVE_USER/.local/share/applications /home/$LIVE_USER/.bashrc /home/$LIVE_USER/.bash_profile 2>/dev/null | xargs -r -d '\n' sed -i 's|/home/$LIVE_USER\\b|/home/$USERNAME|g'"
+  chroot_run /bin/bash -c "grep -rlI -- '/home/$LIVE_USER' /home/$LIVE_USER/.config /home/$LIVE_USER/.local/share/applications /home/$LIVE_USER/.local/state /home/$LIVE_USER/.bashrc /home/$LIVE_USER/.bash_profile 2>/dev/null | xargs -r -d '\n' sed -i 's|/home/$LIVE_USER\\b|/home/$USERNAME|g'"
   chroot_run usermod -l "$USERNAME" "$LIVE_USER"
   chroot_run /bin/bash -c "groupmod -n '$USERNAME' '$LIVE_USER' || true"
   chroot_run sed -i "s|/home/$LIVE_USER|/home/$USERNAME|g" /etc/passwd
