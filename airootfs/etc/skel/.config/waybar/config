@@ -36,7 +36,7 @@
     "format": "󰍜",
     "on-click": "noctalia msg panel-toggle launcher",
     "on-click-right": "noctalia msg panel-toggle control-center",
-    "tooltip": false
+    "tooltip-format": "Left click: Launcher\nRight click: Control Center"
   },
 
   // omarchy.workspaces — one pill per tag (mango); click switches tag
