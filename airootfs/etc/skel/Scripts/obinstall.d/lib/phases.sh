@@ -75,16 +75,17 @@ phase_prepare_disk() {
   info "partitioning $DISK"
   run wipefs -af "$DISK"
   run sgdisk --zap-all "$DISK"
-  run sgdisk -n 1:1MiB:+1GiB -t 1:EF00 -c 1:EFI "$DISK"
+  # one sgdisk call: one table write and one kernel re-read, instead of one per partition
   if is_uefi; then
-    run sgdisk -n 2:0:0 -t 2:8300 -c 2:root "$DISK"
+    run sgdisk -n 1:1MiB:+1GiB -t 1:EF00 -c 1:EFI -n 2:0:0 -t 2:8300 -c 2:root "$DISK"
   else
-    run sgdisk -n 2:0:-2MiB -t 2:8300 -c 2:root "$DISK"
-    run sgdisk -n 3:0:0 -t 3:EF02 -c 3:bios_grub "$DISK"
+    run sgdisk -n 1:1MiB:+1GiB -t 1:EF00 -c 1:EFI -n 2:0:-2MiB -t 2:8300 -c 2:root \
+      -n 3:0:0 -t 3:EF02 -c 3:bios_grub "$DISK"
   fi
   reread_partitions
   ESP_DEV=$(part_dev "$DISK" 1); LUKS_PART=$(part_dev "$DISK" 2)
-  ((DRY_RUN)) || for _ in 1 2 3 4 5 6 7 8 9 10; do [[ -b $ESP_DEV && -b $LUKS_PART ]] && break; sleep 1; done
+  # normally already there after settle; poll briefly rather than sleeping whole seconds
+  ((DRY_RUN)) || for _ in {1..50}; do [[ -b $ESP_DEV && -b $LUKS_PART ]] && break; sleep 0.2; done
   run wipefs -af "$ESP_DEV" "$LUKS_PART"
 
   if ((ENCRYPT)); then
@@ -100,7 +101,9 @@ phase_prepare_disk() {
 
   info "filesystems + btrfs subvolumes"
   run mkfs.fat -F32 -n EFI "$ESP_DEV"
-  run mkfs.btrfs -f -L omunchy "$ROOT_DEV"
+  # -K: skip the whole-device TRIM (slow on big or virtual disks); btrfs mounts with
+  # discard=async on SSDs anyway
+  run mkfs.btrfs -f -K -L omunchy "$ROOT_DEV"
   run mkdir -p "$BTRFS_TOP" "$MNT"
   run mount "$ROOT_DEV" "$BTRFS_TOP"
   local sv; for sv in @ @home @log @pkg @snapshots; do run btrfs subvolume create "$BTRFS_TOP/$sv"; done

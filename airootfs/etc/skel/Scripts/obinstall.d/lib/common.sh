@@ -27,7 +27,7 @@ export GUM_FILTER_TEXT_FOREGROUND=$FG GUM_FILTER_CURSOR_TEXT_FOREGROUND=$FG
 export GUM_FILTER_UNSELECTED_PREFIX_FOREGROUND=$FG_DIM GUM_FILTER_PLACEHOLDER_FOREGROUND=$FG_DIM
 export GUM_INPUT_PLACEHOLDER_FOREGROUND=$FG_DIM
 
-info() { printf '\033[1;32m›\033[0m %s\n' "$*" | tee -a "$LOG_FILE" >&2; }
+info() { printf '\033[1;32m›\033[0m %s\n' "$*" >&2; printf '[%4ss] %s\n' "$SECONDS" "$*" >>"$LOG_FILE"; }
 warn() { printf '\033[1;33m!\033[0m %s\n' "$*" | tee -a "$LOG_FILE" >&2; }
 die()  { printf '\033[1;31m✗\033[0m %s\n' "$*" | tee -a "$LOG_FILE" >&2; exit 1; }
 
