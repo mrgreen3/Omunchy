@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Crush
+GenericName=AI Coding Agent
+Comment=Crush (installed with mise; see Guide, MISE)
+TryExec=/home/live/.local/share/mise/shims/crush
+Exec=foot -T "Crush" /home/live/.local/share/mise/shims/crush
+Icon=utilities-terminal
+Terminal=false
+Categories=Development;
+Keywords=ai;agent;coding;terminal;
+StartupNotify=false

@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Goose
+GenericName=AI Agent
+Comment=Goose (installed with mise; see Guide, MISE)
+TryExec=/home/live/.local/share/mise/shims/goose
+Exec=foot -T "Goose" /home/live/.local/share/mise/shims/goose session
+Icon=utilities-terminal
+Terminal=false
+Categories=Development;
+Keywords=ai;agent;coding;terminal;
+StartupNotify=false

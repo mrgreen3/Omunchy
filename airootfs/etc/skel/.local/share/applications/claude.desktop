@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Claude Code
+GenericName=AI Coding Agent
+Comment=Claude Code (installed with mise; see Guide, MISE)
+TryExec=/home/live/.local/share/mise/shims/claude
+Exec=foot -T "Claude Code" /home/live/.local/share/mise/shims/claude
+Icon=utilities-terminal
+Terminal=false
+Categories=Development;
+Keywords=ai;agent;coding;terminal;
+StartupNotify=false

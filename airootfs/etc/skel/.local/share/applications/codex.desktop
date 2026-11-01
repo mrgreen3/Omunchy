@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Codex
+GenericName=AI Coding Agent
+Comment=Codex (installed with mise; see Guide, MISE)
+TryExec=/home/live/.local/share/mise/shims/codex
+Exec=foot -T "Codex" /home/live/.local/share/mise/shims/codex
+Icon=utilities-terminal
+Terminal=false
+Categories=Development;
+Keywords=ai;agent;coding;terminal;
+StartupNotify=false

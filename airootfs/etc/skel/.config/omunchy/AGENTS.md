@@ -18,8 +18,9 @@ whichever agent you are, as does everything in the Guide's AI SETUP section).
 - opencode is not on the ISO: `~/Scripts/install-opencode` installs it from the
   official repos (pacman) and starts it, on the installed system only. The user may install any other
   AI agent they like (pi, Claude Code, Gemini CLI, ...) provided they bring their
-  own API key. Install agents available through mise (pi, ...) with
-  `mise use -g <name>@latest` (user-local, no sudo); other tools (also tuios,
+  own API key. Install AI agents (Claude Code, pi, Codex, Hermes, Crush,
+  Goose, Copilot) with mise exactly as their Guide entry says, user-local, no
+  sudo, installed system only; Gemini CLI uses pacman; other tools (also tuios,
   herdr) with their own official installers into the user's home (`~/.local`).
   No sudo, no npm/nodejs packages, nothing global.
 - pacman: official repos only unless the user explicitly asks for AUR. Having yay

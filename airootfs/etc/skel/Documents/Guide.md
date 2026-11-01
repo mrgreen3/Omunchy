@@ -93,7 +93,7 @@ opencode auth login
   - never runs chained destructive commands; never asks for API keys or
     passwords in chat
   - installers that need a real terminal (they read /dev/tty or ask
-    questions: Pi, Hermes) are NEVER run in OpenCode's own shell, which has
+    questions, e.g. `hermes setup`) are NEVER run in OpenCode's own shell, which has
     no terminal and makes them fail. Download to /tmp first, then open a
     foot window that runs the installer, and tell the user to answer its
     prompts there (see RUNNING AN INTERACTIVE INSTALLER in APPS)
@@ -138,49 +138,119 @@ fails. For any app whose entry below says "Terminal: own foot window":
 If the foot window closes immediately or shows an error, ask the user to read
 the message to you; do not retry blindly.
 
+MISE (AI AGENTS)
+
+The AI coding agents below (Claude Code, Pi, Codex, Hermes, Crush, Goose,
+Copilot) install with mise, which ships with Omunchy. Everything goes into the
+user's home (~/.local/share/mise, list in ~/.config/mise/config.toml): no
+sudo, no system files, no nodejs/npm. Gemini CLI is the exception: pacman.
+
+Installed system only: on the live ISO the installs fill RAM and are lost on
+reboot (check with `[ -d /run/archiso/airootfs ]`; if it exists, say the
+agents are available after installing Omunchy with obinstall, and stop).
+
+- mise puts tools on PATH through the activate line in ~/.bashrc: after an
+  install, the user opens a new terminal (or runs `exec bash`).
+- First run and login (`claude`, `pi`, ... ) need a real terminal: tell the
+  user to run it in a foot window, not in OpenCode's shell.
+- Logins and API keys are entered inside each tool, never in chat. Each tool
+  keeps its own settings (~/.claude, ~/.pi, ~/.codex, ...): leave those unless
+  the user asks to delete them.
+- Launcher: each agent has a launcher entry (Super+Space) that appears by
+  itself once it is installed and opens it in foot.
+- `mise ls` lists what is installed; `mise upgrade` updates them all.
+- Sizes: Codex is the largest (about 200 MB download). After installing, `mise cache clear` frees the download cache.
+
 CLAUDE CODE
 
-Anthropic's coding CLI for AI coding in the terminal. Not in the Arch repos.
+Anthropic's coding CLI for AI coding in the terminal.
 
 What:   "claude" in the terminal; user wants an AI coding agent.
-Install:  official installer — no Node, never with sudo (the script refuses):
-  curl -fsSL https://claude.ai/install.sh -o /tmp/claude-install.sh
-Terminal: own foot window — its setup step can draw a terminal UI, and the
-          first run/login needs a real terminal too, so do not run it in
-          OpenCode's own shell. Run it as in RUNNING AN INTERACTIVE INSTALLER:
-  setsid -f foot -T "Install Claude Code" sh -c 'bash /tmp/claude-install.sh; echo; echo "Finished. Press Enter to close this window."; read _'
-Location: ~/.local/bin/claude (files under ~/.local/share/claude/versions/;
-          the installer downloads to ~/.claude/downloads first)
-Needs:    network; roughly 512 MB of free memory to install (on the live ISO
-          that is RAM: check free -m first and say so); first login inside
-          Claude Code (run `claude` in a terminal, then /login — subscription
-          or API key, entered in the tool, not in chat)
+Install:  mise (installed system only; see MISE):
+  mise use -g claude@latest
+Command:  claude
+Needs:    network; login inside Claude Code (run `claude`, then /login — subscription
+          or API key, entered in the tool)
 Verify:   claude --version
-Update:   claude update
+Update:   mise upgrade claude
 Remove:
-  rm ~/.local/bin/claude
-  rm -r ~/.local/share/claude
-  (~/.claude holds settings, history and credentials: leave it unless the
-  user asks to delete it)
+  mise unuse -g claude
+  mise uninstall claude
 
 PI (PI.DEV)
 
-Pi, the coding agent from pi.dev. Not in the Arch repos; installed with mise.
+Pi, the coding agent from pi.dev.
 
 What:   a second/multi-provider AI coding agent run from the terminal.
-Install:  mise (on the system), user-local, no sudo, no nodejs/npm:
+Install:  mise (installed system only; see MISE):
   mise use -g pi@latest
-Terminal: none needed for the install; first run and /login need a real
-          terminal (run `pi` in foot, not in OpenCode's shell)
-Location: ~/.local/share/mise/installs/pi/ (mise puts it on PATH through the
-          activate line in ~/.bashrc; open a new terminal after installing)
+Command:  pi
 Needs:    network; provider login inside pi (/login)
 Verify:   pi --version
 Update:   mise upgrade pi
 Remove:
   mise unuse -g pi
   mise uninstall pi
-  (pi's own settings stay in ~/.pi: delete only if the user asks)
+
+CODEX
+
+OpenAI's coding agent for the terminal.
+
+What:   ChatGPT/OpenAI-powered coding agent.
+Install:  mise (installed system only; see MISE):
+  mise use -g codex@latest
+Command:  codex
+Needs:    network; ChatGPT sign-in or OpenAI API key, inside codex
+Verify:   codex --version
+Update:   mise upgrade codex
+Remove:
+  mise unuse -g codex
+  mise uninstall codex
+
+CRUSH
+
+Charm's terminal AI coding agent (multi-provider).
+
+What:   a polished TUI coding agent; works with many providers.
+Install:  mise (installed system only; see MISE):
+  mise use -g crush@latest
+Command:  crush
+Needs:    network; provider API key, entered inside crush
+Verify:   crush --version
+Update:   mise upgrade crush
+Remove:
+  mise unuse -g crush
+  mise uninstall crush
+
+GOOSE
+
+Goose, an open-source extensible AI agent (originally from Block).
+
+What:   local-first agent with extensions (MCP); many providers.
+Install:  mise (installed system only; see MISE):
+  mise use -g goose-agent@latest
+Command:  goose
+Needs:    network; provider setup inside goose (`goose configure`)
+Verify:   goose --version
+Update:   mise upgrade goose-agent
+Remove:
+  mise unuse -g goose-agent
+  mise uninstall goose-agent
+
+GITHUB COPILOT CLI
+
+GitHub's Copilot coding agent for the terminal.
+
+What:   Copilot in the terminal; needs a GitHub Copilot plan.
+Install:  mise (installed system only; see MISE):
+  mise use -g copilot@latest
+Command:  copilot
+Needs:    network; GitHub sign-in inside copilot (/login)
+Verify:   copilot --version
+Update:   mise upgrade copilot
+Remove:
+  mise unuse -g copilot
+  mise uninstall copilot
 
 TUIOS
 
@@ -305,24 +375,22 @@ Remove:
 HERMES
 
 A self-hosted agent harness (Nous Research) with memory, scheduled jobs and a
-messaging gateway. It runs background services, so install it on an INSTALLED
-system only. Do not set it up in the live session: everything is lost on
-reboot and the services have nothing persistent to run on.
+messaging gateway. Installed system only (see MISE).
 
 What:   long-running personal agent with tools, memory and a gateway.
-Install:  official installer, user-local, interactive (it asks questions
-          and sets up a gateway service):
-  curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh -o /tmp/hermes-install.sh
-Terminal: own foot window — run it as in RUNNING AN INTERACTIVE INSTALLER:
-  setsid -f foot -T "Install Hermes" sh -c 'bash /tmp/hermes-install.sh; echo; echo "Finished. Press Enter to close this window."; read _'
-Location: ~/.hermes (checkout in ~/.hermes/hermes-agent, config in
-          ~/.hermes/config.yaml, keys in ~/.hermes/.env); command in
-          ~/.local/bin
+Install:  mise, from PyPI (needs uv, also via mise):
+  mise use -g uv@latest
+  mise use -g pipx:hermes-agent@latest
+Setup:    interactive: open a new foot window and run `hermes setup` there
+          (provider key and optional gateway are entered in Hermes, not chat)
+Location: data, config and keys in ~/.hermes (config.yaml, .env)
 Needs:    network; an LLM provider key entered inside Hermes setup
-Verify:   command -v hermes
-Update:   TODO: verify
-Remove:   TODO: verify (do not delete ~/.hermes blindly: it holds your
-          memory, sessions and keys; stop its gateway service first)
+Verify:   hermes --version
+Update:   mise upgrade pipx:hermes-agent
+Remove:   stop its gateway service first if set up; then
+  mise unuse -g pipx:hermes-agent
+  mise uninstall pipx:hermes-agent
+  (do not delete ~/.hermes blindly: it holds memory, sessions and keys)
 
 WEB APPS
 
