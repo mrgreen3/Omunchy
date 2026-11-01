@@ -31,11 +31,11 @@
     "custom/power"
   ],
 
-  // omarchy.menu — noctalia launcher (Super+Space is rofi)
+  // omarchy.menu — click: noctalia launcher, right-click: control center (Super+Space is rofi)
   "custom/menu": {
     "format": "󰍜",
     "on-click": "noctalia msg panel-toggle launcher",
-    "on-click-right": "foot",
+    "on-click-right": "noctalia msg panel-toggle control-center",
     "tooltip": false
   },
 
