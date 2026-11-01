@@ -6,3 +6,12 @@ output_path = "~/.config/rofi/colors.rasi"
 input_path = "~/.config/noctalia/templates/mango-colors.conf"
 output_path = "/tmp/omunchy-mango-colors.conf"
 post_hook = "~/Scripts/apply-mango-colors"
+
+[templates.waybar]
+input_path = "~/.config/noctalia/templates/waybar-colors.css"
+output_path = "~/.config/waybar/colors.css"
+post_hook = "pkill -SIGUSR2 -x waybar"
+
+[templates.foot]
+input_path = "~/.config/noctalia/templates/foot"
+output_path = "~/.config/foot/themes/noctalia"

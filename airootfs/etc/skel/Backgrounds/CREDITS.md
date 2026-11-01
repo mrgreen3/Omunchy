@@ -37,6 +37,7 @@ chain inside omacom/omarchy or a recorded upstream URL below.
 | File | Origin (theme in omarchy @ quattro) | Upstream source | Licence / attribution |
 |---|---|---|---|
 | mountain-moon.jpg | osaka-jade `3-mountain-moon` | "Add extra Osaka Jade background image" (commit af00a902, DHH) | MIT (omarchy) |
+| stars.jpg | — (not from Omarchy) | AI-generated for the Omunchy project; no third-party source material | Free to use; no attribution required |
 
 ### Conversions
 

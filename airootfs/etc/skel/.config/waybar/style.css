@@ -1,20 +1,11 @@
 /* Omunchy bar — Omarchy quattro look.
  *
- * The @define-color lines below are the ONLY place hex colours appear.
+ * Colours come from colors.css, rendered by noctalia from the wallpaper.
  * Layout/spacing follow Omarchy's shell.toml tokens: fg-on-bg pills at
  * 4-8% fill, 1px borders at 40%, fully opaque bar background.
  */
 
-/* ---------- Palette (fixed forest palette) ---------- */
-@define-color bg        #111318;
-@define-color surface   #44474f;
-@define-color fg        #e2e2e9;
-@define-color fg-dim    #c4c6d0;
-@define-color accent    #93d5aa;
-@define-color on-accent #00391f;
-@define-color red       #ffb4ab;
-@define-color green     #ffadc6;
-@define-color yellow    #e6adff;
+@import "colors.css";
 
 /* ---------- Base ---------- */
 * {

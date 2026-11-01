@@ -4,8 +4,8 @@
   // audio, brightness, battery, power profile, media, power. Panels and
   // notifications are noctalia's (DnD on Super+Shift+N).
   //
-  // Colour: all colours live in style.css as @define-color lines, rewritten
-  // — no hex values in this file.
+  // Colour: colors.css, rendered by noctalia from the wallpaper — no hex
+  // values in this file.
   "layer": "top",
   "position": "top",
   "height": 24,

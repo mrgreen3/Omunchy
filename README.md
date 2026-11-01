@@ -21,7 +21,7 @@ This stack was chosen specifically to avoid the RAM overhead of a full shell dae
 Pattern-for-pattern with Omarchy (see `docs/omarchy-parity.md` for the full 42-row analysis):
 
 - **Kept:** the bar/launcher/notification apps as plain configs, noctalia screenshots, the keybind-cheatsheet doc, thunar, fastfetch, adw-gtk theming.
-- **Lean replacements:** one fixed theme and wallpaper, a one-script update (reflector → pacman → yay → orphan prune) instead of the 22-cmd update system with snapper/migrations/channels.
+- **Lean replacements:** colours that follow the wallpaper (noctalia re-themes bar, panels, rofi, borders and foot), a one-script update (reflector → pacman → yay → orphan prune) instead of the 22-cmd update system with snapper/migrations/channels.
 - **Stripped:** Omarchy's branded extras, per-app theming, protocol handlers, first-boot provisioning, limine/snapper, plugin ecosystem, release channels, the CLI dispatcher and TUI installers (web apps are a single script, `omunchy-webapp`).
 
 ## Usage

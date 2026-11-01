@@ -23,9 +23,10 @@ persistent changes require the installer, obinstall.
   ~/.config/omunchy (AGENTS.md and skills, shared by opencode, pi, Gemini CLI and
   Claude Code), ~/Documents (Guide, Keybindings, About), ~/Backgrounds.
 
-- Theme: one fixed theme (omunchy-forest palette) (border colours) in ~/.config/mango/config.conf;
-  wallpaper set in ~/.config/noctalia/config.toml ([wallpaper.default]). There is no
-  theme-switch command in the shipped scripts.
+- Theme: colours follow the wallpaper. Change the wallpaper in noctalia and the
+  bar, panels, rofi, window borders and new foot windows re-colour to match
+  (noctalia [theme] source = "wallpaper" in ~/.config/noctalia/config.toml).
+  Default wallpaper: [wallpaper.default] in the same file; more in ~/Backgrounds.
 
 - Scripts: ~/Scripts is on PATH. obinstall (installer), fix-keys (pacman
   keyring), install-opencode (AI assistant), install-yay (AUR helper), omunchy-welcome (live-session network report), netcheck (is the network up?),

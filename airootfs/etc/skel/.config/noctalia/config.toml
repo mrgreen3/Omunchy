@@ -45,8 +45,8 @@ shadow         = false
 contact_shadow = false
 
 [theme]
-source         = "custom"
-custom_palette = "Omunchy"
+source           = "wallpaper"
+wallpaper_scheme = "m3-tonal-spot"
 
 [dock]
 shadow = false
