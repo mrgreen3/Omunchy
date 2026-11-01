@@ -366,7 +366,7 @@ Use (command line):
   radio play "<name>"   radio stop   radio now   radio list
 Add stations by hand: edit ~/.config/radio/stations, one per line as
   Name|URL
-  e.g. SomaFM Drone Zone|https://somafm.com/dronezone.pls
+  e.g. SomaFM Space Station Soma|https://somafm.com/spacestation.pls
   The URL can be a direct stream (http/https), a .pls or a .m3u link —
   most station websites list one under "listen" or "player links".
 Location: ~/Scripts/radio; stations in ~/.config/radio/stations

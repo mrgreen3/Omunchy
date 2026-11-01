@@ -2,16 +2,22 @@
 # radio — internet radio TUI on fzf + mpv. Stations: ~/.config/radio/stations (Name|URL)
 #   radio                 open the TUI (playback continues after quitting)
 #   radio play <name>     play a saved station      radio stop | now | list
+# Needs: mpv fzf gum jq curl python3 (yt-dlp optional, for YouTube)
 set -euo pipefail
 STATIONS=${XDG_CONFIG_HOME:-$HOME/.config}/radio/stations
 RUN=${XDG_RUNTIME_DIR:-/tmp}
 SOCK=$RUN/radio.sock
 STATE=$RUN/radio.station
-API_HOSTS=(de1 de2 de1 de2)
+# "all" is radio-browser's round-robin name; the rest are fallbacks
+API_HOSTS=(all de1 de2 at1)
 SELF=$(readlink -f "$0")
+SELFQ=$(printf '%q' "$SELF")   # shell-safe, for fzf --preview/--bind strings
 
-names() { sed '/^#/d;/^$/d;s/|.*//' "$STATIONS"; }
-url_of() { awk -F'|' -v n="$1" '$1==n{print $2; exit}' "$STATIONS"; }
+msg() { gum style --foreground 1 "$1"; sleep 2; }
+
+names() { sed '/^[[:space:]]*#/d;/^$/d;s/|.*//' "$STATIONS"; }
+# ENVIRON instead of awk -v: -v would interpret backslashes in the name
+url_of() { N=$1 awk -F'|' '$1==ENVIRON["N"]{print $2; exit}' "$STATIONS"; }
 playing() { [[ -S $SOCK ]] && pgrep -f -- "--input-ipc-server=$SOCK" >/dev/null; }
 
 mpv_get() {
@@ -27,41 +33,65 @@ EOF
 }
 
 stop() {
+  local _
   pkill -f -- "--input-ipc-server=$SOCK" 2>/dev/null || true
-  rm -f "$STATE"
+  pkill -f -- "yt-dlp -q --no-warnings -f bestaudio -o -" 2>/dev/null || true
+  # wait for the old mpv to exit so it can't unlink a new instance's socket
+  for _ in {1..40}; do
+    pgrep -f -- "--input-ipc-server=$SOCK" >/dev/null || break
+    sleep 0.05
+  done
+  rm -f "$STATE" "$SOCK"
 }
 
 play() {
   local name=$1 url=${2:-}
   [[ -n $url ]] || url=$(url_of "$name")
   [[ -n $url ]] || { echo "No station: $name" >&2; return 1; }
+  # URLs can come from radio-browser; never let one start with an option
+  [[ $url =~ ^(https?|ytdl)://[^-] ]] || { echo "Refusing URL: $url" >&2; return 1; }
   stop
   printf '%s\n' "$name" > "$STATE"
-  setsid mpv --no-video --no-terminal \
-    --input-ipc-server="$SOCK" "$url" >/dev/null 2>&1 &
+  if [[ $url =~ ^(https?://([a-z]+\.)?(youtube\.com|youtu\.be)/|ytdl://) ]]; then
+    # YouTube refuses mpv's direct fetch (403), so yt-dlp downloads and pipes
+    # shellcheck disable=SC2016
+    setsid bash -c 'yt-dlp -q --no-warnings -f bestaudio -o - -- "${1#ytdl://}" 2>/dev/null |
+      mpv --no-video --no-terminal --force-media-title="$2" --input-ipc-server="$3" -' \
+      _ "$url" "$name" "$SOCK" >/dev/null 2>&1 &
+  else
+    setsid mpv --no-video --no-terminal --ytdl=no \
+      --input-ipc-server="$SOCK" -- "$url" >/dev/null 2>&1 &
+  fi
 }
 
 now() {
   if ! playing; then echo "Stopped"; return; fi
   local title
-  title=$(mpv_get metadata/by-key/icy-title)
+  title=$(mpv_get metadata/by-key/icy-title) || true
   echo "▶ $(cat "$STATE" 2>/dev/null)"
   [[ -n $title ]] && echo "  $title"
   if [[ $(mpv_get paused-for-cache) == true ]]; then echo "  (buffering)"; fi
+}
+
+# strip pipes (field separator) and leading #/space (would read as a comment)
+clean_name() {
+  local n=${1//|/-}
+  n=${n#"${n%%[![:space:]#]*}"}
+  printf '%s' "$n"
 }
 
 add() {
   local name url
   name=$(gum input --placeholder "Station name") || return 0
   url=$(gum input --placeholder "Stream URL (http…, .pls, .m3u)") || return 0
+  name=$(clean_name "$name")
   [[ -n $name && -n $url ]] || return 0
-  name=${name//|/-}
   printf '%s|%s\n' "$name" "$url" >> "$STATIONS"
 }
 
 del() {
   gum confirm "Delete $1?" || return 0
-  awk -F'|' -v n="$1" '$1!=n' "$STATIONS" > "$STATIONS.tmp" && mv "$STATIONS.tmp" "$STATIONS"
+  N=$1 awk -F'|' '$1!=ENVIRON["N"]' "$STATIONS" > "$STATIONS.tmp" && mv "$STATIONS.tmp" "$STATIONS"
 }
 
 api() {
@@ -75,42 +105,65 @@ api() {
 }
 
 find_station() {
-  local q pick name url
+  local q results rows pick name url
   q=$(gum input --placeholder "Search the radio-browser.info directory") || return 0
   [[ -n $q ]] || return 0
-  pick=$(api "$q" | jq -r '.[] | "\(.name | gsub("[|\t]"; " "))\t\(.codec) \(.bitrate)k \(.countrycode)\t\(.url_resolved)"' |
-    fzf --delimiter '\t' --with-nth 1,2 --prompt 'Add > ' --header 'enter: add + play   esc: back') || return 0
-  name=$(cut -f1 <<<"$pick"); url=$(cut -f3 <<<"$pick")
+  results=$(api "$q") || { msg "Search failed: network or radio-browser API unreachable"; return 0; }
+  rows=$(jq -r '.[] | "\(.name | gsub("[|\t]"; " "))\t\(.codec) \(.bitrate)k \(.countrycode)\t\(.url_resolved)"' <<<"$results")
+  [[ -n $rows ]] || { msg "No stations found for \"$q\""; return 0; }
+  pick=$(fzf --delimiter '\t' --with-nth 1,2 --prompt 'Add > ' \
+    --header 'enter: add + play   esc: back' <<<"$rows") || return 0
+  name=$(clean_name "$(cut -f1 <<<"$pick")"); url=$(cut -f3 <<<"$pick")
+  [[ -n $name && -n $url ]] || return 0
   printf '%s|%s\n' "$name" "$url" >> "$STATIONS"
   play "$name" "$url"
 }
 
-# pushes refresh-preview to fzf every few seconds, and reloads the list when
-# the stations file changes; exits when fzf does
+youtube() {
+  local q pick name url
+  command -v yt-dlp >/dev/null || { msg "YouTube needs yt-dlp: sudo pacman -S yt-dlp"; return 0; }
+  q=$(gum input --placeholder "Search YouTube") || return 0
+  [[ -n $q ]] || return 0
+  pick=$(gum spin --show-output --title "Searching…" -- yt-dlp --flat-playlist --no-warnings \
+      --print '%(title)s	%(duration_string|live)s	%(id)s' "ytsearch20:$q" |
+    fzf --delimiter '\t' --with-nth 1,2 --prompt 'YouTube > ' \
+      --header 'enter play · ctrl-a save as station + play · esc back' \
+      --expect ctrl-a) || return 0
+  [[ $(sed -n 2p <<<"$pick") ]] || return 0
+  name=$(clean_name "$(sed -n 2p <<<"$pick" | cut -f1)")
+  url="https://www.youtube.com/watch?v=$(sed -n 2p <<<"$pick" | cut -f3)"
+  [[ $(head -1 <<<"$pick") == ctrl-a ]] && printf '%s|%s\n' "$name" "$url" >> "$STATIONS"
+  play "$name" "$url"
+}
+
+# pushes refresh-preview to fzf every few seconds; exits when fzf does
+# (tolerates a few slow replies so a busy moment doesn't kill the refresh)
 ticker() {
-  local seen now action
-  seen=$(stat -c %Y "$STATIONS")
+  local fails=0
   while sleep 3; do
-    action=refresh-preview
-    now=$(stat -c %Y "$STATIONS")
-    [[ $now != "$seen" ]] && { seen=$now; action="reload($SELF list)+refresh-preview"; }
-    curl -fs -m 2 -XPOST "localhost:$1" -d "$action" >/dev/null 2>&1 || exit 0
+    if curl -fs -m 2 -XPOST "localhost:$1" -d refresh-preview >/dev/null 2>&1; then
+      fails=0
+    else
+      (( ++fails < 3 )) || exit 0
+    fi
   done
 }
 
 tui() {
   names | fzf --prompt 'Radio > ' --layout reverse --listen \
-    --header 'enter play · ctrl-s stop · ctrl-a add · ctrl-d delete · ctrl-f find · esc quit' \
-    --preview "$SELF now" --preview-window 'right,40%,wrap' \
-    --bind "start:execute-silent(setsid $SELF _ticker \$FZF_PORT >/dev/null 2>&1 &)" \
-    --bind "enter:execute-silent($SELF play {})+refresh-preview" \
-    --bind "ctrl-s:execute-silent($SELF stop)+refresh-preview" \
-    --bind "ctrl-a:execute($SELF _add)+reload($SELF list)" \
-    --bind "ctrl-d:execute($SELF _del {})+reload($SELF list)" \
-    --bind "ctrl-f:execute($SELF _find)+reload($SELF list)+refresh-preview" \
+    --header 'enter play · ctrl-s stop · ctrl-a add · ctrl-d delete · ctrl-f find · ctrl-y youtube · esc quit' \
+    --preview "$SELFQ now" --preview-window 'right,40%,wrap' \
+    --bind "start:execute-silent(setsid $SELFQ _ticker \$FZF_PORT >/dev/null 2>&1 &)" \
+    --bind "enter:execute-silent($SELFQ play {})+refresh-preview" \
+    --bind "ctrl-s:execute-silent($SELFQ stop)+refresh-preview" \
+    --bind "ctrl-a:execute($SELFQ _add)+reload($SELFQ list)" \
+    --bind "ctrl-d:execute($SELFQ _del {})+reload($SELFQ list)" \
+    --bind "ctrl-f:execute($SELFQ _find)+reload($SELFQ list)+refresh-preview" \
+    --bind "ctrl-y:execute($SELFQ _youtube)+reload($SELFQ list)+refresh-preview" \
     >/dev/null || true
 }
 
+command -v mpv >/dev/null || { echo "radio: mpv not found" >&2; exit 1; }
 mkdir -p "${STATIONS%/*}"
 [[ -f $STATIONS ]] || printf '# Name|URL\n' > "$STATIONS"
 
@@ -123,6 +176,7 @@ list) names ;;
 _add) add ;;
 _del) shift; del "$*" ;;
 _find) find_station ;;
+_youtube) youtube ;;
 _ticker) ticker "$2" ;;
 *) play "$*" ;;
 esac
