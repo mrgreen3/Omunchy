@@ -8,18 +8,21 @@ ROOT_MAPPER=cryptroot
 BTRFS_TOP=/tmp/obinstall-btrfs-top
 ROOT_DEV=''; LUKS_PART=''; ESP_DEV=''
 
+# squashfs image on the boot media (copytoram=n), or its RAM copy if booted with copytoram
+live_sfs() { local f; for f in /run/archiso/bootmnt/arch/x86_64/airootfs.sfs /run/archiso/copytoram/airootfs.sfs; do [[ -f $f ]] && { echo "$f"; return 0; }; done; return 1; }
 # the linux package's own copy; the ISO media (bootmnt) is unmounted under copytoram
 live_kernel() { local k; for k in "$LIVE_ROOT"/usr/lib/modules/*/vmlinuz; do [[ -f $k ]] && { echo "$k"; return 0; }; done; return 1; }
 
 # ---------------------------------------------------------------------------
 phase_preflight() {
   ((EUID == 0 || DRY_RUN)) || die "must run as root"
-  local t; for t in genfstab arch-chroot sgdisk wipefs cryptsetup mkfs.btrfs mkfs.fat jq pv rsync tar grub-install; do
+  local t; for t in genfstab arch-chroot sgdisk wipefs cryptsetup mkfs.btrfs mkfs.fat jq rsync unsquashfs grub-install; do
     command -v "$t" >/dev/null || die "missing tool: $t"
   done
   if ((!DRY_RUN)); then
     [[ -d $LIVE_ROOT ]] || die "not running from the live ISO ($LIVE_ROOT missing)"
     live_kernel >/dev/null || die "no kernel found under $LIVE_ROOT/usr/lib/modules"
+    live_sfs >/dev/null || die "airootfs.sfs not found on the install media"
     [[ -b $DISK ]] || die "$DISK is not a block device"
     lsblk -nro MOUNTPOINTS "$DISK" | grep -qE '^(/|/run/archiso.*)$' && die "$DISK holds the running live system"
   fi
@@ -102,7 +105,8 @@ phase_prepare_disk() {
   run mount "$ROOT_DEV" "$BTRFS_TOP"
   local sv; for sv in @ @home @log @pkg @snapshots; do run btrfs subvolume create "$BTRFS_TOP/$sv"; done
   run umount "$BTRFS_TOP"
-  local o=noatime,compress=zstd
+  # level 1: much cheaper to write than the default 3, nearly the same ratio
+  local o=noatime,compress=zstd:1
   run mount -o "$o,subvol=@" "$ROOT_DEV" "$MNT"
   run mkdir -p "$MNT"/{boot,home,var/log,var/cache/pacman/pkg,.snapshots}
   run mount -o "$o,subvol=@home" "$ROOT_DEV" "$MNT/home"
@@ -137,20 +141,18 @@ install_xkb() { [[ -n $XKB_LAYOUT ]] || XKB_LAYOUT=$(xkb_for_keymap "$KEYMAP"); 
 phase_copy_system() {
   info "copying the live system to $MNT"
   if ((DRY_RUN)); then
-    echo "  [dry-run] tar cf - -C $LIVE_ROOT . | pv | tar xpf - -C $MNT" >&2
+    echo "  [dry-run] unsquashfs -f -d $MNT -p $(nproc) $(live_sfs || echo airootfs.sfs)" >&2
     echo "  [dry-run] cp vmlinuz-linux from $LIVE_ROOT/usr/lib/modules, rsync live-session changes, machine-id" >&2
     return 0
   fi
-  local total; total=$(du -sb "$LIVE_ROOT" | awk '{print $1}')
-  printf '  %s to copy\n\n' "$(numfmt --to=iec-i --suffix=B "$total")"
-  # errexit off so PIPESTATUS is always inspected (a failed tar on either side must be caught)
-  local st
-  set +e
-  # the ESP is vfat (no ACLs/xattrs) and already mounted at $MNT/boot; the live /boot is empty
-  tar --acls --xattrs --exclude=./boot -cf - -C "$LIVE_ROOT" . | pv -u block -pterb -s "$total" | tar --acls --xattrs -xpf - -C "$MNT"
-  st=("${PIPESTATUS[@]}")
-  set -e
-  [[ ${st[0]} -eq 0 && ${st[2]} -eq 0 ]] || die "copying system files failed (tar: ${st[0]}/${st[2]})"
+  local sfs; sfs=$(live_sfs) || die "airootfs.sfs not found (is the install media still attached?)"
+  info "unpacking $(numfmt --to=iec-i --suffix=B "$(stat -c %s "$sfs")") system image with $(nproc) threads"
+  # unpack with the ESP unmounted: the image's /boot is empty, and vfat can't take its owner/mode
+  run umount "$MNT/boot"
+  # unsquashfs decompresses on every core (tar through the mounted image was single-threaded);
+  # as root it keeps owners, modes and xattrs (ACLs included)
+  unsquashfs -f -d "$MNT" -p "$(nproc)" "$sfs" || die "unpacking the system image failed"
+  run mount -o umask=0077 "$ESP_DEV" "$MNT/boot"
 
   # archiso strips /boot from the squashfs; the linux package keeps a copy under /usr/lib/modules
   mkdir -p "$MNT/boot"
@@ -185,13 +187,11 @@ phase_configure_system() {
   # archiso mkinitcpio preset -> standard preset
   cat <<'EOT' | write_file "$MNT/etc/mkinitcpio.d/linux.preset"
 # mkinitcpio preset file for the 'linux' package
-PRESETS=('default' 'fallback')
+PRESETS=('default')
 ALL_kver='/boot/vmlinuz-linux'
 ALL_config='/etc/mkinitcpio.conf'
 
 default_image="/boot/initramfs-linux.img"
-fallback_image="/boot/initramfs-linux-fallback.img"
-fallback_options="-S autodetect"
 EOT
 
   # live-only bits
@@ -208,7 +208,14 @@ EOT
     GenuineIntel) ucode=amd-ucode ;;
     AuthenticAMD) ucode=intel-ucode ;;
   esac
-  [[ -n $ucode ]] && chroot_run pacman -R --noconfirm "$ucode"
+  if [[ -n $ucode ]]; then
+    # microcode lives under usr/lib/firmware, which fires mkinitcpio's pacman hook; mask it here,
+    # the initramfs is built once in phase_mkinitcpio
+    run mkdir -p "$MNT/etc/pacman.d/hooks"
+    run ln -sf /dev/null "$MNT/etc/pacman.d/hooks/90-mkinitcpio-install.hook"
+    chroot_run pacman -R --noconfirm "$ucode"
+    run rm -f "$MNT/etc/pacman.d/hooks/90-mkinitcpio-install.hook"
+  fi
   run rm -rf "$MNT/etc/systemd/system/getty@tty1.service.d"
   run rm -f "$MNT/etc/systemd/system/default.target"
   if ((!DRY_RUN)) && [[ -f $MNT/etc/systemd/journald.conf.d/volatile-storage.conf ]]; then
@@ -275,7 +282,7 @@ phase_user() {
 # ---------------------------------------------------------------------------
 phase_mkinitcpio() {
   info "initramfs"
-  # autodetect keeps the default image small; the fallback preset builds without it for other hardware
+  # autodetect keeps the image small; no fallback image (it was the slow half of the build)
   # plymouth sits before sd-encrypt so the LUKS prompt is drawn by the splash
   local hooks="base systemd plymouth autodetect microcode modconf kms keyboard sd-vconsole block filesystems fsck"
   ((ENCRYPT)) && hooks="base systemd plymouth autodetect microcode modconf kms keyboard sd-vconsole sd-encrypt block filesystems fsck"
@@ -359,6 +366,7 @@ phase_validate() {
 
 phase_finish() {
   info "unmounting"
+  ((DRY_RUN)) || cp "$LOG_FILE" "$MNT/var/log/obinstall.log" 2>/dev/null || true
   run sync
   ((DRY_RUN)) || { umount -R "$MNT" 2>/dev/null || true; ((ENCRYPT)) && cryptsetup close "$ROOT_MAPPER" 2>/dev/null || true; }
   info "Installation complete. Remove the install media and reboot."

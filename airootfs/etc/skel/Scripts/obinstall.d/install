@@ -74,6 +74,7 @@ for p in "${phases[@]}"; do
   t0=$SECONDS
   "phase_$p"
   state_update ".phases += [{name: \"$p\", status: \"ok\", elapsed: $((SECONDS - t0))}]"
+  printf 'phase %s: %ss\n' "$p" "$((SECONDS - t0))" >>"$LOG_FILE"
   ((++i))
 done
 state_update '.current_phase="Installation complete" | .finished_at=now'
