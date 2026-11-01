@@ -18,9 +18,10 @@ whichever agent you are, as does everything in the Guide's AI SETUP section).
 - opencode is not on the ISO: `~/Scripts/install-opencode` installs it from the
   official repos (pacman) and starts it, on the installed system only. The user may install any other
   AI agent they like (pi, Claude Code, Gemini CLI, ...) provided they bring their
-  own API key. Install agents and tools (also tuios, herdr) with their own
-  official installers into the user's home (`~/.local`) — no sudo, no npm/nodejs
-  packages, nothing global.
+  own API key. Install agents available through mise (pi, ...) with
+  `mise use -g <name>@latest` (user-local, no sudo); other tools (also tuios,
+  herdr) with their own official installers into the user's home (`~/.local`).
+  No sudo, no npm/nodejs packages, nothing global.
 - pacman: official repos only unless the user explicitly asks for AUR. Having yay
   installed is NOT a request for AUR: install every app the way its Guide entry
   says (its own official installer, or pacman). Use yay only when the user asks

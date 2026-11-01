@@ -165,22 +165,22 @@ Remove:
 
 PI (PI.DEV)
 
-Pi, the coding agent from pi.dev. Not in the Arch repos.
+Pi, the coding agent from pi.dev. Not in the Arch repos; installed with mise.
 
 What:   a second/multi-provider AI coding agent run from the terminal.
-Install:  official installer — it bootstraps its own Node; do NOT install
-          nodejs/npm:
-  curl -fsSL https://pi.dev/install.sh -o /tmp/pi-install.sh
-Terminal: own foot window — it reads /dev/tty, so running it directly in
-          OpenCode fails. Run it as in RUNNING AN INTERACTIVE INSTALLER:
-  setsid -f foot -T "Install Pi" sh -c 'sh /tmp/pi-install.sh; echo; echo "Finished. Press Enter to close this window."; read _'
-Location: launcher on PATH (on Omunchy: ~/.local/bin/pi); package under
-          ~/.pi/agent/install; bundled Node under ~/.local/share/pi-node
+Install:  mise (on the system), user-local, no sudo, no nodejs/npm:
+  mise use -g pi@latest
+Terminal: none needed for the install; first run and /login need a real
+          terminal (run `pi` in foot, not in OpenCode's shell)
+Location: ~/.local/share/mise/installs/pi/ (mise puts it on PATH through the
+          activate line in ~/.bashrc; open a new terminal after installing)
 Needs:    network; provider login inside pi (/login)
 Verify:   pi --version
+Update:   mise upgrade pi
 Remove:
-  rm -f ~/.local/bin/pi
-  rm -r ~/.pi/agent ~/.local/share/pi-node
+  mise unuse -g pi
+  mise uninstall pi
+  (pi's own settings stay in ~/.pi: delete only if the user asks)
 
 TUIOS
 

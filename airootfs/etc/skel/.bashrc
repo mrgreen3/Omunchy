@@ -14,6 +14,9 @@ for d in "$HOME/.local/bin"; do
 done
 unset d
 
+# mise: user-local agent/tool installs (~/.local/share/mise)
+command -v mise >/dev/null && eval "$(mise activate bash)"
+
 alias ls='ls --color=auto'
 
 # Package sizes

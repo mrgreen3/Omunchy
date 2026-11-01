@@ -85,6 +85,7 @@ fontconfig
 kbd
 
 ## === COMMAND-LINE TOOLS ===
+mise
 openssh
 arch-install-scripts
 curl
