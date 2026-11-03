@@ -9,6 +9,7 @@ APPLICATIONS
 
 Super + Return          Terminal (foot)
 Super + Space           Launcher (rofi)
+Super + Alt + Space     Omunchy menu (install, update, setup)
 Super + C               Control centre
 Super + ,               Noctalia settings
 Super + w               Web Browser (firefox)

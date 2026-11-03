@@ -4,7 +4,7 @@
 conf="${XDG_CONFIG_HOME:-$HOME/.config}/mango/config.conf"
 
 # Rows shown first, in this order; everything else follows in config order.
-top="Mango keybinds|Launch apps|Terminal|Browser|File manager|Close window|Full screen|Toggle window floating|Lock screen|Control centre|Power menu"
+top="Mango keybinds|Launch apps|Omunchy menu|Terminal|Browser|File manager|Close window|Full screen|Toggle window floating|Lock screen|Control centre|Power menu"
 
 # One record per row: chord<TAB>description<TAB>function<TAB>args
 records=$(awk -F, -v top="$top" '
