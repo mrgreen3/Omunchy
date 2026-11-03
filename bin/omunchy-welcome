@@ -17,7 +17,7 @@ flock -n 9 || exit 0
 notify() { notify-send -a Omunchy "$@" 2>/dev/null || true; }
 
 have_net() {
-  "$HOME/Scripts/netcheck" -q \
+  "$HOME/.local/share/omunchy/bin/omunchy-netcheck" -q \
     || ping -c1 -W2 1.1.1.1 >/dev/null 2>&1 \
     || ping -c1 -W2 8.8.8.8 >/dev/null 2>&1
 }

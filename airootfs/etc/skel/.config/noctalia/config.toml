@@ -61,4 +61,4 @@ show_icons = true
 compact    = true
 
 [hooks]
-colors_changed = "/home/live/Scripts/noctalia-colors"
+colors_changed = "/home/live/.local/share/omunchy/bin/omunchy-theme-refresh"

@@ -12,7 +12,7 @@
 if [[ -z ${OMUNCHY_INSTALLER_FOOT:-} && -n ${WAYLAND_DISPLAY:-} ]] && command -v foot >/dev/null 2>&1; then
   exec foot --app-id=omunchy.Installer --title="Omunchy Installer" \
     -o colors-dark.alpha=1.0 \
-    -e env OMUNCHY_INSTALLER_FOOT=1 "$HOME/Scripts/obinstall" "$@"
+    -e env OMUNCHY_INSTALLER_FOOT=1 /usr/local/bin/obinstall "$@"
 fi
 
-exec "$HOME/Scripts/obinstall.d/install" "$@"
+exec /usr/local/lib/obinstall/install "$@"

@@ -59,10 +59,10 @@
   // omarchy.system-update — badge only when updates are pending; 6 h poll
   "custom/updates": {
     "format": "{}",
-    "exec": "~/Scripts/updates.sh",
+    "exec": "~/.local/share/omunchy/bin/omunchy-update-available",
     "return-type": "json",
     "interval": 21600,
-    "on-click": "foot -e ~/Scripts/system-update",
+    "on-click": "foot -e ~/.local/share/omunchy/bin/omunchy-update-system",
     "signal": 8
   },
 

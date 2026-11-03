@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# omunchy:summary=Install any of the named packages that are missing (pacman, needs network)
+set -euo pipefail
+missing=()
+for p in "$@"; do pacman -Q "$p" &>/dev/null || missing+=("$p"); done
+((${#missing[@]})) || exit 0
+"$(dirname "$0")/omunchy-netcheck" || exit 1
+sudo pacman -S --needed --noconfirm "${missing[@]}"

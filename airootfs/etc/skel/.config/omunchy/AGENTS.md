@@ -15,7 +15,7 @@ whichever agent you are, as does everything in the Guide's AI SETUP section).
   root commands when the Guide covers the task.
 - Your own shell may have no terminal. Run interactive installers in a separate
   foot window as the Guide describes, never inside your own shell.
-- opencode is not on the ISO: `~/Scripts/install-opencode` installs it from the
+- opencode is not on the ISO: `~/.local/share/omunchy/bin/omunchy-install-opencode` installs it from the
   official repos (pacman) and starts it, on the installed system only. The user may install any other
   AI agent they like (pi, Claude Code, Gemini CLI, ...) provided they bring their
   own API key. Install AI agents (Claude Code, pi, Codex, Hermes, Crush,
@@ -32,7 +32,7 @@ whichever agent you are, as does everything in the Guide's AI SETUP section).
   download the installer to /tmp, then run it.
 - The live system runs from RAM/overlay: warn before large installs, and say
   that changes are lost on reboot unless the system is installed.
-- To test the network run `netcheck` (it says what is wrong). Never use curl or
+- To test the network run `omunchy-netcheck` (it says what is wrong). Never use curl or
   ping against one website such as archlinux.org: one site being down or
   rate-limiting looks like "no network".
 - Never ask the user to paste API keys or passwords into the chat.

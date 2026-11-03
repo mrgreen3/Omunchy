@@ -1,7 +1,7 @@
 #!/bin/sh
-# netcheck: is the network usable? Prints one line and sets the exit code.
-#   netcheck       say what is wrong (or "Network OK")
-#   netcheck -q    silent, exit code only
+# omunchy-netcheck: is the network usable? Prints one line and sets the exit code.
+#   omunchy-netcheck       say what is wrong (or "Network OK")
+#   omunchy-netcheck -q    silent, exit code only
 # Exit: 0 online | 2 no default route | 3 DNS/web failing but reachable by IP |
 #       4 connected, no internet | 5 login page (captive portal) in the way
 # Uses 204-response check endpoints from two different providers, not a single

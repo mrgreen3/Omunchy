@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Install the OpenCode AI assistant (official repos) if missing, then start it.
 # Installed system only: on the live ISO it would be lost on reboot.
-#   install-opencode             install if needed, then open OpenCode
-#   install-opencode --guide     same, opening with the omunchy-guide skill
-#   install-opencode --no-start  install only
+#   omunchy-install-opencode             install if needed, then open OpenCode
+#   omunchy-install-opencode --guide     same, opening with the omunchy-guide skill
+#   omunchy-install-opencode --no-start  install only
 
 set -e
 
@@ -26,7 +26,7 @@ fail() {
 if ! command -v opencode >/dev/null 2>&1; then
     [[ -d /run/archiso/airootfs ]] && fail "OpenCode is available after installing Omunchy (obinstall)."
     echo "Checking network..."
-    "$HOME/Scripts/netcheck" || fail "OpenCode needs a network connection. Connect first and retry."
+    "$HOME/.local/share/omunchy/bin/omunchy-netcheck" || fail "OpenCode needs a network connection. Connect first and retry."
 
     SUDO=(sudo)
     [[ ! -t 0 && -n ${SUDO_ASKPASS:-} ]] && SUDO=(sudo -A)
@@ -34,7 +34,7 @@ if ! command -v opencode >/dev/null 2>&1; then
     echo "Installing OpenCode (about 80 MiB download, 200 MiB installed) with a full system update."
     # no partial upgrades: opencode links icu/glibc, so install it with a full update
     "${SUDO[@]}" pacman -Syu --needed --noconfirm opencode ||
-        fail "Install failed. On signature errors run fix-keys, then retry."
+        fail "Install failed. On signature errors run omunchy-fix-keys, then retry."
     guide=1
 fi
 

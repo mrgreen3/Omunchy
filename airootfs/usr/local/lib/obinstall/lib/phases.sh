@@ -115,7 +115,7 @@ phase_prepare_disk() {
   run mount -o "$o,subvol=@home" "$ROOT_DEV" "$MNT/home"
   run mount -o "$o,subvol=@log" "$ROOT_DEV" "$MNT/var/log"
   run mount -o "$o,subvol=@pkg" "$ROOT_DEV" "$MNT/var/cache/pacman/pkg"
-  # own subvolume so snapshots survive replacing @ on rollback (install-snapper uses it)
+  # own subvolume so snapshots survive replacing @ on rollback (omunchy-install-snapper uses it)
   run mount -o "$o,subvol=@snapshots" "$ROOT_DEV" "$MNT/.snapshots"
   run chmod 750 "$MNT/.snapshots"
   run mount -o umask=0077 "$ESP_DEV" "$MNT/boot"
@@ -198,8 +198,8 @@ default_image="/boot/initramfs-linux.img"
 EOT
 
   # live-only bits
-  run rm -f "$MNT/home/$LIVE_USER/Scripts/obinstall"
-  run rm -rf "$MNT/home/$LIVE_USER/Scripts/obinstall.d"
+  run rm -f "$MNT/usr/local/bin/obinstall"
+  run rm -rf "$MNT/usr/local/lib/obinstall"
   # drop the live-only installer bind/window rule and its keybindings entry
   ((DRY_RUN)) || { sed -i -e '/obinstall/d' -e '/^window_rule=.*Installer/d' "$MNT/home/$LIVE_USER/.config/mango/config.conf" 2>/dev/null || true
     sed -i '/Install Omunchy/d' "$MNT/home/$LIVE_USER/Documents/Keybindings" 2>/dev/null || true
@@ -373,7 +373,7 @@ phase_finish() {
   run sync
   ((DRY_RUN)) || { umount -R "$MNT" 2>/dev/null || true; ((ENCRYPT)) && cryptsetup close "$ROOT_MAPPER" 2>/dev/null || true; }
   info "Installation complete. Remove the install media and reboot."
-  info "If pacman reports signature errors after first boot, connect to a network and run fix-keys."
+  info "If pacman reports signature errors after first boot, connect to a network and run omunchy-fix-keys."
 }
 
 PHASES=(preflight prepare_disk copy_system configure_system user mkinitcpio greeter bootloader validate finish)

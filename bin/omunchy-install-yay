@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Install the yay AUR helper.
-#   install-yay            install yay-bin (prebuilt upstream release, no go)
-#   install-yay --source   build yay from source (also needs go)
+#   omunchy-install-yay            install yay-bin (prebuilt upstream release, no go)
+#   omunchy-install-yay --source   build yay from source (also needs go)
 # Both install base-devel and git: building any AUR package needs them.
 
 set -e
@@ -15,7 +15,7 @@ case "${1:-}" in
 esac
 
 echo "Checking network..."
-if ! "$HOME/Scripts/netcheck"; then
+if ! "$HOME/.local/share/omunchy/bin/omunchy-netcheck"; then
     echo "Connect first and retry."
     exit 1
 fi
@@ -36,7 +36,7 @@ trap 'rm -rf "$TMP"' EXIT
 
 echo "Installing build prerequisites: base-devel git"
 "${SUDO[@]}" pacman -S --noconfirm --needed base-devel git || {
-    echo "Could not install base-devel/git. If the package database is empty, run fix-keys or 'sudo pacman -Syu' first." >&2
+    echo "Could not install base-devel/git. If the package database is empty, run omunchy-fix-keys or 'sudo pacman -Syu' first." >&2
     exit 1
 }
 

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# omunchy:summary=Exit 0 if any named package is not installed
+for p in "$@"; do pacman -Q "$p" &>/dev/null || exit 0; done
+exit 1

@@ -2,7 +2,7 @@
 # Set up pacman keyring post install
 
 echo "Checking network connectivity..."
-if ! "$HOME/Scripts/netcheck"; then
+if ! "$HOME/.local/share/omunchy/bin/omunchy-netcheck"; then
     echo "Exiting: no usable network."
     exit 1
 fi

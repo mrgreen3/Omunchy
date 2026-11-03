@@ -28,9 +28,10 @@ persistent changes require the installer, obinstall.
   (noctalia [theme] source = "wallpaper" in ~/.config/noctalia/config.toml).
   Default wallpaper: [wallpaper.default] in the same file; more in ~/Backgrounds.
 
-- Scripts: ~/Scripts is on PATH. obinstall (installer), fix-keys (pacman
-  keyring), install-opencode (AI assistant), install-yay (AUR helper), agents-menu (AI agents), omunchy-welcome (live-session network report), netcheck (is the network up?),
-  updates.sh.
+- Commands: Omunchy's own commands are omunchy-* in ~/.local/share/omunchy/bin
+  (on PATH, a git checkout updated by omunchy-update). ~/Scripts is also on
+  PATH and is the user's own: put personal scripts there. obinstall (the
+  installer, live only) is in /usr/local/bin.
 
 - Keybindings: full list in ~/Documents/Keybindings; Super+K opens it in the launcher
   from inside the desktop. Super = Windows key.
@@ -61,7 +62,7 @@ The AI setup assistant is OpenCode. It is not on the ISO and is offered on the
 installed system only (installed live, it would be lost on reboot): once
 connected, open "OpenCode" from the launcher (Super+Space) or run:
 
-install-opencode
+omunchy-install-opencode
 
 The first time, it installs OpenCode from the official repos (about 80 MiB
 download, 200 MiB installed) together with a full system update (pacman -Syu),
@@ -101,7 +102,7 @@ opencode auth login
 - With no specific request, or when asked what can be set up, list the APPS
   subsections plus PACKAGES (BASIC PACKAGE USAGE), ask which one the user
   wants, one question at a time, and do nothing until they answer.
-- Before any install: run `netcheck` to confirm the network is up (exit 0 and
+- Before any install: run `omunchy-netcheck` to confirm the network is up (exit 0 and
   "Network OK"; otherwise it says what is wrong: no route, DNS failing, no
   internet, or a login page to sign in to). Never test with curl against one
   site such as archlinux.org. Then say what will be installed,
@@ -156,7 +157,7 @@ agents are available after installing Omunchy with obinstall, and stop).
 - Logins and API keys are entered inside each tool, never in chat. Each tool
   keeps its own settings (~/.claude, ~/.pi, ~/.codex, ...): leave those unless
   the user asks to delete them.
-- Launcher: "AI Agents" in the launcher (Super+Space, or ~/Scripts/agents-menu)
+- Launcher: "AI Agents" in the launcher (Super+Space, or ~/.local/share/omunchy/bin/omunchy-launch-ai)
   lists only the agents installed with mise and opens the chosen one in foot.
 - `mise ls` lists what is installed; `mise upgrade` updates them all.
 - Sizes: Codex is the largest (about 200 MB download). After installing, `mise cache clear` frees the download cache.
@@ -337,12 +338,12 @@ fails, report it and ask, do not fall back to the AUR.
 AUR packages are community-built and unreviewed by Arch: review the PKGBUILD,
 never answer prompts blindly. On the live ISO, installs are lost on reboot.
 
-Install:  ~/Scripts/install-yay   (use the full path). It installs yay-bin, the
+Install:  ~/.local/share/omunchy/bin/omunchy-install-yay   (use the full path). It installs yay-bin, the
           prebuilt upstream release of yay (its checksum is pinned in the AUR
           PKGBUILD). It first installs base-devel and git, which building any
           AUR package needs (a few hundred MiB, mostly gcc); yay itself is not
           compiled, no go.
-          ~/Scripts/install-yay --source builds yay from source instead: it
+          ~/.local/share/omunchy/bin/omunchy-install-yay --source builds yay from source instead: it
           also needs go (about 0.75 GiB of RAM at peak on the live ISO) and
           removes go afterwards only if the script itself added it.
 Needs:    network; sudo. Run without a terminal (as the assistant does), the
@@ -405,7 +406,7 @@ Use:
   omunchy-webapp add <name> <url> [icon]
   omunchy-webapp list
   omunchy-webapp remove <name>
-Location: ~/Scripts/omunchy-webapp; launchers in ~/.local/share/applications/
+Location: ~/.local/share/omunchy/bin/omunchy-webapp; launchers in ~/.local/share/applications/
           (omunchy-webapp-*.desktop), shared profile and icons in
           ~/.local/share/omunchy-webapp/
 Needs:    network for the site and its icon; close all web app windows
@@ -437,7 +438,7 @@ Add stations by hand: edit ~/.config/radio/stations, one per line as
   e.g. SomaFM Space Station Soma|https://somafm.com/spacestation.pls
   The URL can be a direct stream (http/https), a .pls or a .m3u link —
   most station websites list one under "listen" or "player links".
-Location: ~/Scripts/radio; stations in ~/.config/radio/stations
+Location: ~/.local/share/omunchy/bin/omunchy-radio; stations in ~/.config/radio/stations
 Needs:    network; mpv (installed)
 Verify:   radio list
 Notes:    playback shows in the media controls with the current song.
@@ -502,13 +503,13 @@ SUDO FROM OPENCODE
 
 OpenCode's shell has no terminal, so plain sudo cannot ask for the password.
 Use sudo's askpass mode: SUDO_ASKPASS is already set (by ~/.bash_profile) to
-~/Scripts/omunchy-askpass, which opens a password box for the user.
+~/.local/share/omunchy/bin/omunchy-askpass, which opens a password box for the user.
 
   sudo -A pacman -S <package>
 
 If SUDO_ASKPASS is empty in the current shell, give it explicitly:
 
-  SUDO_ASKPASS=~/Scripts/omunchy-askpass sudo -A pacman -S <package>
+  SUDO_ASKPASS=~/.local/share/omunchy/bin/omunchy-askpass sudo -A pacman -S <package>
 
 Rules:
 - State the exact command and why, and get a yes, BEFORE running it. The
@@ -521,7 +522,7 @@ Rules:
 - sudo remembers a successful password for about five minutes: further
   `sudo -A` commands in that window will not prompt. Treat each one as needing
   the same care and say so.
-- Never run ~/Scripts/omunchy-askpass directly (it refuses unless sudo
+- Never run ~/.local/share/omunchy/bin/omunchy-askpass directly (it refuses unless sudo
   calls it) and never try to read, print or work around the password.
 - If the user cancels the box (Esc) or it does not appear, stop and ask; do
   not retry blindly.
@@ -538,7 +539,7 @@ installer builds a fresh keyring on the installed system. If pacman reports
 signature errors (e.g. after a long gap between updates), set up the keys and
 keyring afresh with a network connection:
 
-fix-keys
+omunchy-fix-keys
 
 This recreates keys, refreshes the package cache, and updates archlinux-keyring.
 It is the one exception to the "no `pacman -Sy` alone" rule: it installs
@@ -572,7 +573,7 @@ Update:   sudo pacman -Syu. Review: new kernel (reboot), removed packages,
 Cache:    paccache -d (dry run), sudo paccache -r (keep newest 3),
           sudo pacman -Sc (more aggressive; explain first)
 Log:      less /var/log/pacman.log    grep <term> /var/log/pacman.log
-Keys:     if signature checks fail, run fix-keys (see INITIALIZE PACMAN)
+Keys:     if signature checks fail, run omunchy-fix-keys (see INITIALIZE PACMAN)
 AUR:      only on explicit request; see YAY / AUR.
 
 ---

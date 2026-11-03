@@ -5,7 +5,7 @@ output_path = "~/.config/rofi/colors.rasi"
 [templates.mango]
 input_path = "~/.config/noctalia/templates/mango-colors.conf"
 output_path = "/tmp/omunchy-mango-colors.conf"
-post_hook = "~/Scripts/apply-mango-colors"
+post_hook = "~/.local/share/omunchy/bin/omunchy-theme-mango"
 
 [templates.waybar]
 input_path = "~/.config/noctalia/templates/waybar-colors.css"

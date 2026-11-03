@@ -4,7 +4,7 @@
 # terminal open so the result can be read.
 
 if [[ ! -s /etc/pacman.d/gnupg/pubring.gpg ]]; then
-    echo "Pacman keyring not set up - run fix-keys first."
+    echo "Pacman keyring not set up - run omunchy-fix-keys first."
     read -rp "Press Enter to close..."
     exit 1
 fi

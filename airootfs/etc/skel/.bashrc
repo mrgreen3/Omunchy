@@ -4,9 +4,10 @@ export TERMINAL=foot
 export BROWSER=firefox
 
 # Add scripts path safely
-if [[ ":$PATH:" != *":$HOME/Scripts:"* ]]; then
-    export PATH="$PATH:$HOME/Scripts"
-fi
+for d in "$HOME/.local/share/omunchy/bin" "$HOME/Scripts"; do
+    [[ ":$PATH:" == *":$d:"* ]] || PATH="$PATH:$d"
+done
+export PATH
 
 # User-local tools (claude, tuios, herdr)
 for d in "$HOME/.local/bin"; do

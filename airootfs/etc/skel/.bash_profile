@@ -5,7 +5,7 @@
 . $HOME/.bashrc
 
 # Password helper for `sudo -A` (see ~/Documents/Guide.md)
-export SUDO_ASKPASS=$HOME/Scripts/omunchy-askpass
+export SUDO_ASKPASS=$HOME/.local/share/omunchy/bin/omunchy-askpass
 
 # Environment for the Wayland session: `exec`-ed children (foot, firefox,
 # waybar) inherit this env.

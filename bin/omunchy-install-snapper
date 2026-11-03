@@ -2,7 +2,7 @@
 # Set up snapper on a btrfs root: pre/post snapshots on every pacman
 # transaction (snap-pac), timeline snapshots, and snapshots in the GRUB menu
 # (grub-btrfs). Needs root: re-runs itself with sudo. Safe to re-run.
-#   install-snapper
+#   omunchy-install-snapper
 
 set -euo pipefail
 
@@ -26,7 +26,7 @@ if [[ -d /run/archiso ]]; then
 fi
 
 if ((EUID != 0)); then
-    echo "install-snapper needs root, re-running with sudo..."
+    echo "omunchy-install-snapper needs root, re-running with sudo..."
     SUDO=(sudo)
     [[ ! -t 0 && -n ${SUDO_ASKPASS:-} ]] && SUDO=(sudo -A)
     exec "${SUDO[@]}" "$0" "$@"
@@ -61,7 +61,7 @@ missing=()
 for p in "${want[@]}"; do pacman -Q "$p" >/dev/null 2>&1 || missing+=("$p"); done
 for p in "${missing[@]}"; do
     if ! pacman -Si "$p" >/dev/null 2>&1; then
-        echo "[packages] $p is not in the official repos (or the package db is out of date: run system-update): stopping." >&2
+        echo "[packages] $p is not in the official repos (or the package db is out of date: run omunchy-update-system): stopping." >&2
         exit 1
     fi
 done

@@ -308,6 +308,27 @@ _make_pacman_conf() {
 }
 
 # Prepare working directory and copy custom root file system files.
+# Omunchy: bake a shallow checkout of this profile's committed HEAD into skel
+# as ~/.local/share/omunchy (bin/ on PATH, updated by omunchy-update). Git keeps
+# exec bits, so no file_permissions needed. Uncommitted changes are not included.
+# Migrations already in the tree are marked done.
+_make_omunchy_checkout() {
+    local dest="${pacstrap_dir}/etc/skel/.local/share/omunchy"
+    local state="${pacstrap_dir}/etc/skel/.local/state/omunchy/migrations"
+    local m
+    _msg_info "Baking Omunchy checkout into skel..."
+    [[ -z "$(git -c safe.directory='*' -C "${profile}" status --porcelain -- bin migrations)" ]] ||
+        _msg_warning "Uncommitted changes in bin/ or migrations/ are NOT in the ISO."
+    rm -rf -- "${dest}"
+    git -c safe.directory='*' clone --quiet --depth 1 --no-local \
+        "file://${profile}" "${dest}"
+    git -C "${dest}" remote set-url origin https://github.com/mrgreen3/Omunchy.git
+    install -d -m 0755 -- "${state}"
+    for m in "${dest}"/migrations/*.sh; do
+        [[ -e "${m}" ]] && : >"${state}/${m##*/}"
+    done
+}
+
 _make_custom_airootfs() {
     local passwd=()
     local filename permissions
@@ -317,6 +338,7 @@ _make_custom_airootfs() {
     if [[ -d "${profile}/airootfs" ]]; then
         _msg_info "Copying custom airootfs files..."
         _unshare cp -af --no-preserve=ownership,mode -- "${profile}/airootfs/." "${pacstrap_dir}"
+        _make_omunchy_checkout
         # Set ownership and mode for files and directories
         for filename in "${!file_permissions[@]}"; do
             IFS=':' read -ra permissions <<<"${file_permissions["${filename}"]}"

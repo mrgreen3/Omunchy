@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
-# Update Omunchy's own files from the git repo (not packages; that's system-update).
-#   1. clone or fast-forward ~/.local/share/omunchy
-#   2. copy changed scripts into ~/Scripts (own versions go in ~/.local/bin)
-#      and any new wallpapers into ~/Backgrounds
+# Update Omunchy's own files from the git repo (not packages; that's omunchy-update-system).
+#   1. clone or fast-forward ~/.local/share/omunchy (its bin/ is on PATH)
+#   2. copy any new wallpapers into ~/Backgrounds
 #   3. run new migrations/*.sh once each
 # On first run, migrations already in the repo are marked done: the installed
 # system came from an ISO that had them baked in.
@@ -13,7 +12,6 @@ REPO=${OMUNCHY_REPO:-https://github.com/mrgreen3/Omunchy.git}
 BRANCH=${OMUNCHY_BRANCH:-main}
 SRC=${XDG_DATA_HOME:-$HOME/.local/share}/omunchy
 STATE=${XDG_STATE_HOME:-$HOME/.local/state}/omunchy/migrations
-SCRIPTS=$HOME/Scripts
 
 case "${1:-}" in
     "") ;;
@@ -26,7 +24,7 @@ if [[ -d /run/archiso ]]; then
     exit 1
 fi
 
-if ! "$SCRIPTS/netcheck"; then
+if ! "$(dirname "$0")/omunchy-netcheck"; then
     echo "Connect first and retry."
     exit 1
 fi
@@ -65,20 +63,6 @@ else
     [[ -n $before ]] && git -C "$SRC" log --oneline "$before..$after"
 fi
 
-# Copy via temp + rename so a running script (this one included) keeps its old inode.
-changed=0
-for f in "$SRC"/airootfs/etc/skel/Scripts/*; do
-    [[ -f $f ]] || continue
-    # live-only, removed by obinstall
-    [[ $(basename "$f") == obinstall ]] && continue
-    dest=$SCRIPTS/$(basename "$f")
-    cmp -s "$f" "$dest" && continue
-    cp -p "$f" "$dest.new.$$"
-    mv -f "$dest.new.$$" "$dest"
-    echo "  updated ~/Scripts/$(basename "$f")"
-    changed=$((changed + 1))
-done
-
 # Wallpapers are additive: add new ones, never overwrite or remove.
 added=0
 mkdir -p "$HOME/Backgrounds"
@@ -105,4 +89,4 @@ for m in "$SRC"/migrations/*.sh; do
     ran=$((ran + 1))
 done
 
-echo "Done: $changed script(s) updated, $added wallpaper(s) added, $ran migration(s) run."
+echo "Done: $added wallpaper(s) added, $ran migration(s) run."

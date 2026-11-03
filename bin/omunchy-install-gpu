@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Detect the GPU(s) and install the matching driver packages, with early KMS
 # for NVIDIA. Needs root for installing: re-runs itself with sudo. Safe to re-run.
-#   install-gpu              detect, show the plan, install
-#   install-gpu --dry-run    detect and show the plan only
-#   install-gpu --classify "GP107 [GeForce GTX 1050 Ti]"
+#   omunchy-install-gpu              detect, show the plan, install
+#   omunchy-install-gpu --dry-run    detect and show the plan only
+#   omunchy-install-gpu --classify "GP107 [GeForce GTX 1050 Ti]"
 #
 # Based on eos-hwtool by the EndeavourOS team (GPL-3.0):
 # https://github.com/endeavouros-team/PKGBUILDS/tree/master/eos-hwtool
@@ -181,7 +181,7 @@ had=0 prev=
 [[ -f $DROPIN ]] && had=1 prev=$(<"$DROPIN")
 if ((has_nv)) && [[ -n $kver ]] && modinfo -k "$kver" nvidia >/dev/null 2>&1; then
     # shellcheck disable=SC2016 # expanded by mkinitcpio when it sources the drop-in
-    want=$(printf '# written by install-gpu\nMODULES+=(%s)\nHOOKS=(${HOOKS[@]/#kms/})' "${NV_MODS[*]}")
+    want=$(printf '# written by omunchy-install-gpu\nMODULES+=(%s)\nHOOKS=(${HOOKS[@]/#kms/})' "${NV_MODS[*]}")
     if [[ -f $DROPIN && $(<"$DROPIN") == "$want" ]]; then
         echo "[initramfs] early KMS already set in $DROPIN"
     else
@@ -192,7 +192,7 @@ if ((has_nv)) && [[ -n $kver ]] && modinfo -k "$kver" nvidia >/dev/null 2>&1; th
     fi
 elif ((has_nv)); then
     echo "[initramfs] nvidia module not installed yet: install the AUR packages, then re-run for early KMS"
-elif [[ -f $DROPIN ]] && grep -q 'written by install-gpu' "$DROPIN"; then
+elif [[ -f $DROPIN ]] && grep -q 'written by omunchy-install-gpu' "$DROPIN"; then
     rm -f "$DROPIN"
     echo "[initramfs] no NVIDIA GPU, removed $DROPIN"
     rebuild=1
@@ -203,7 +203,7 @@ if ((rebuild)) && ! mkinitcpio -P; then
     die "[initramfs] mkinitcpio failed: $DROPIN restored, fix the error above and re-run"
 fi
 
-((${#aur[@]})) && echo "[done] still to install from the AUR (install-yay, then yay -S): ${aur[*]}"
+((${#aur[@]})) && echo "[done] still to install from the AUR (omunchy-install-yay, then yay -S): ${aur[*]}"
 if ((has_nv)); then
     echo "[done] reboot, then check with nvidia-smi (part of the nvidia utils package, not a package itself)"
 else

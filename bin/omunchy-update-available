@@ -21,9 +21,9 @@ if [[ ! -s /etc/pacman.d/gnupg/pubring.gpg ]]; then
     flag="${XDG_RUNTIME_DIR:-/tmp}/updates-keyring-warned"
     if [[ ! -e $flag ]] && command -v notify-send >/dev/null 2>&1; then
         notify-send -u normal "Pacman keyring not set up" \
-            "Open a terminal and run fix-keys before updating." && : >"$flag"
+            "Open a terminal and run omunchy-fix-keys before updating." && : >"$flag"
     fi
-    printf '{"text": "󰌆", "tooltip": "Pacman keyring not set up - run fix-keys", "class": "pending"}\n'
+    printf '{"text": "󰌆", "tooltip": "Pacman keyring not set up - run omunchy-fix-keys", "class": "pending"}\n'
     exit 0
 fi
 

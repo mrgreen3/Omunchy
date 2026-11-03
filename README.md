@@ -26,7 +26,8 @@ Pattern-for-pattern with Omarchy (see `docs/omarchy-parity.md` for the full 42-r
 
 ## Usage
 
-Helper scripts live in `~/Scripts` (on PATH):
+Commands live in `bin/` (`~/.local/share/omunchy/bin` on the system, on PATH; the build bakes a
+shallow git checkout of this repo there). `~/Scripts` is left empty for the user. `obinstall` is in `/usr/local/bin`:
 
 ```
 omunchy-welcome            # live-boot network report (started by mango)
@@ -39,16 +40,16 @@ summary screen before anything is touched. It partitions the disk (GPT, 1 GiB ES
 `@ @home @log @pkg @snapshots`), copies the running live system to it
 (tar | pv | tar, kernel from the ISO media, live-session changes synced), then converts the copy
 into an installed system: user rename, mkinitcpio (systemd hooks, `sd-encrypt` for LUKS), greetd,
-GRUB. It re-runs itself through sudo, so no need to prefix it. Source: `airootfs/etc/skel/Scripts/obinstall.d/`.
+GRUB. It re-runs itself through sudo, so no need to prefix it. Source: `airootfs/usr/local/lib/obinstall/`.
 The wizard's one password is used for the user, root and (if enabled) the LUKS disk. Encrypted installs
 auto-login through greetd, so the disk passphrase at boot is the only gate to the session.
 The installer builds a fresh pacman keyring offline (the live one is a tmpfs, so the copy has none).
-If pacman later reports signature errors, run `fix-keys` with a network connection (it also updates `archlinux-keyring`).
+If pacman later reports signature errors, run `omunchy-fix-keys` with a network connection (it also updates `archlinux-keyring`).
 Untested on real hardware: try it in a VM first.
 
 - **AI setup assistant.** `opencode` is not on the ISO and is offered on the installed system
   only (live, it would be lost on reboot; users can still `pacman -S` it themselves).
-  `~/Scripts/install-opencode`, also behind the launcher "OpenCode" entry (hidden on the live ISO,
+  `~/.local/share/omunchy/bin/omunchy-install-opencode`, also behind the launcher "OpenCode" entry (hidden on the live ISO,
   unhidden by obinstall), installs it from the official repos with a full
   `pacman -Syu --noconfirm` and opens it on the guide skill; once installed it just starts it. On the live ISO
   `omunchy-welcome` (started from mango's `config.conf`) shows a Super+K keybinds
@@ -72,7 +73,7 @@ XF86 audio/brightness via noctalia. The full list lives in
 ## Layout
 
 ```
-airootfs/etc/skel/Scripts/omunchy-welcome   live-boot network report via notifications
+bin/                           omunchy-* commands (cloned to ~/.local/share/omunchy at build)
 airootfs/                      archbang-derived archiso skeleton (mango skel config included)
 ```
 
@@ -88,5 +89,5 @@ Omunchy is licensed under the [GNU General Public License v3.0](LICENSE).
 
 It includes code adapted from [Omarchy](https://github.com/basecamp/omarchy)
 (MIT, see [LICENSES/Omarchy-MIT.txt](LICENSES/Omarchy-MIT.txt)), and
-`install-gpu` is based on EndeavourOS's
+`omunchy-install-gpu` is based on EndeavourOS's
 [eos-hwtool](https://github.com/endeavouros-team/PKGBUILDS/tree/master/eos-hwtool) (GPL-3.0).
