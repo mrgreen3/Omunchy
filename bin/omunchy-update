@@ -46,6 +46,10 @@ if [[ $stage == pull ]]; then
         git -C "$SRC" fetch --quiet --depth 1 origin "+$BRANCH:refs/remotes/origin/$BRANCH" ||
             { echo "git fetch of $BRANCH failed."; exit 1; }
         # Shallow checkout: move straight to the new tip (no merge history to walk).
+        if ! git -C "$SRC" cat-file -e "origin/$BRANCH:bin/omunchy-update" 2>/dev/null; then
+            echo "Upstream $BRANCH has no bin/omunchy-update (older layout) - not updating."
+            exit 1
+        fi
         git -C "$SRC" checkout --quiet -B "$BRANCH" "origin/$BRANCH" || { echo "Checkout failed."; exit 1; }
         after=$(git -C "$SRC" rev-parse --short HEAD)
         if [[ $before == "$after" ]]; then
