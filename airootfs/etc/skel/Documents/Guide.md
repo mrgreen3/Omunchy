@@ -20,8 +20,8 @@ persistent changes require the installer, obinstall.
 
 - Configs: ~/.config/mango/config.conf,
   ~/.config/{waybar,noctalia,foot}, ~/.config/opencode (settings),
-  ~/.config/omunchy (AGENTS.md and skills, shared by opencode, pi, Gemini CLI and
-  Claude Code), ~/Documents (Guide, Keybindings, About), ~/Backgrounds.
+  ~/.config/omunchy/skills (the omunchy-guide skill, shared by opencode, pi,
+  Gemini CLI and Claude Code; it points them at this Guide), ~/Documents (Guide, Keybindings, About), ~/Backgrounds.
 
 - Theme: colours follow the wallpaper. Change the wallpaper in noctalia and the
   bar, panels, rofi, window borders and new foot windows re-colour to match
@@ -82,7 +82,8 @@ opencode auth login
 
   (browser login), or set OPENCODE_API_KEY in your own terminal, then retry.
 
-- Rules the assistant follows (shared file: ~/.config/omunchy/AGENTS.md; opencode settings: ~/.config/opencode):
+- Rules every AI assistant follows (opencode, pi, Claude Code, Gemini CLI;
+  this Guide is their only instructions file; opencode settings: ~/.config/opencode):
 
   - runs as `opencode --standalone` on this system
   - pacman: official repos only; never `pacman -Sy` alone (partial upgrade)
@@ -94,7 +95,8 @@ opencode auth login
     with their own installers (no sudo for those)
   - never pipes curl into a shell: downloads to /tmp, then runs
   - installs each app the way its APPS entry says, even when yay is
-    installed (yay/AUR only when the user explicitly asks for the AUR)
+    installed (yay/AUR only when the user explicitly asks for the AUR); if
+    that method fails, says so and asks, never falls back to the AUR
   - never runs chained destructive commands; never asks for API keys or
     passwords in chat
   - installers that need a real terminal (they read /dev/tty or ask

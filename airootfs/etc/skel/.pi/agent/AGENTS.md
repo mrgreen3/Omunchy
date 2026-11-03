@@ -1,1 +1,0 @@
-../../.config/omunchy/AGENTS.md

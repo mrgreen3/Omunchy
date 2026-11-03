@@ -12,7 +12,7 @@ installables, git + migrations for updates.
 - `omunchy-update` = git pull + pending migrations + `pacman -Syu`; idempotent.
 - Each `omunchy-install-ai-*` has a matching `omunchy-remove-ai-*`; launcher
   appears/disappears with it.
-- Skills/AGENTS.md reference commands only.
+- No AGENTS.md/CLAUDE.md/GEMINI.md: Guide.md is the only agent instructions file (reached via the omunchy-guide skill); it references commands only.
 - ISO build + install verified: LUKS UEFI, non-LUKS BIOS; update from a
   pre-rework install migrates cleanly.
 
@@ -88,7 +88,7 @@ Live session: Install/Remove/Update hidden; adds "Install Omunchy" (obinstall).
 2. Menu + keybind.
 3. Agents table, install/remove/launch-ai, launchers.
 4. Git checkout + `omunchy-migrate` + update rewrite + first migration.
-5. Docs: Guide.md, AGENTS.md, omunchy-guide skill.
+5. Docs: Guide.md, omunchy-guide skill.
 6. ISO build + install tests (on Kev's go).
 
 ## Decisions (2026-11-03)
