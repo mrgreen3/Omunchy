@@ -48,9 +48,11 @@
   },
 
 
-  // omarchy.clock — "dddd HH:mm" in Omarchy; click opens the noctalia calendar
+  // time only; right-click toggles date + time; left-click opens the calendar
   "clock": {
-    "format": "{:%a %d %b  %H:%M}",
+    "format": "{:%H:%M}",
+    "format-alt": "{:%a %d %b  %H:%M}",
+    "format-alt-click": "click-right",
     "on-click": "noctalia msg panel-toggle control-center calendar",
     "tooltip": false,
     "interval": 60
