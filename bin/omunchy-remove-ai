@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# omunchy:summary=Remove an AI agent installed with mise (its own settings in ~ are kept)
+#   omunchy-remove-ai <id>
+set -uo pipefail
+bin=$(dirname "$(readlink -f "$0")")
+[[ $# -eq 1 ]] || { echo "usage: omunchy-remove-ai <id>"; "$bin/omunchy-agents" installed | cut -f1,2; exit 2; }
+row=$("$bin/omunchy-agents" get "$1") || { echo "Unknown agent: $1" >&2; exit 1; }
+IFS=$'\t' read -r id label tool cmd args <<<"$row"
+echo "Removing $label ($tool)..."
+mise unuse -g "$tool" || true
+mise uninstall --all "$tool" || { echo "mise uninstall failed." >&2; exit 1; }
+echo "$label removed. Its own settings and logins in your home are kept; delete them yourself if wanted."

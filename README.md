@@ -49,9 +49,8 @@ Untested on real hardware: try it in a VM first.
 
 - **AI setup assistant.** `opencode` is not on the ISO and is offered on the installed system
   only (live, it would be lost on reboot; users can still `pacman -S` it themselves).
-  `~/.local/share/omunchy/bin/omunchy-install-opencode`, also behind the launcher "OpenCode" entry (hidden on the live ISO,
-  unhidden by obinstall), installs it from the official repos with a full
-  `pacman -Syu --noconfirm` and opens it on the guide skill; once installed it just starts it. On the live ISO
+  `omunchy-install-ai opencode` (or the Omunchy menu) installs it with mise (aqua backend), like
+  Claude Code and Pi; `default/agents.tsv` is the agents table. On the live ISO
   `omunchy-welcome` (started from mango's `config.conf`) shows a Super+K keybinds
   hint at login, and a persistent warning with connection hints when offline,
   which closes itself once a connection appears (watched for 30 minutes). OpenCode runs as

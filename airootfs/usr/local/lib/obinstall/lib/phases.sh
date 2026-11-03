@@ -202,8 +202,7 @@ EOT
   run rm -rf "$MNT/usr/local/lib/obinstall"
   # drop the live-only installer bind/window rule and its keybindings entry
   ((DRY_RUN)) || { sed -i -e '/obinstall/d' -e '/^window_rule=.*Installer/d' "$MNT/home/$LIVE_USER/.config/mango/config.conf" 2>/dev/null || true
-    sed -i '/Install Omunchy/d' "$MNT/home/$LIVE_USER/Documents/Keybindings" 2>/dev/null || true
-    sed -i '/^Hidden=true/d' "$MNT/home/$LIVE_USER/.local/share/applications/opencode.desktop" 2>/dev/null || true; }
+    sed -i '/Install Omunchy/d' "$MNT/home/$LIVE_USER/Documents/Keybindings" 2>/dev/null || true; }
   # keep only the microcode for this machine's CPU; unknown vendor keeps both
   local vendor ucode=
   vendor=$(awk -F': ' '/^vendor_id/{print $2; exit}' /proc/cpuinfo)

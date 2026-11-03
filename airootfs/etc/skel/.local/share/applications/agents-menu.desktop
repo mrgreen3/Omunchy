@@ -8,5 +8,5 @@ Exec=bash -c "exec ~/.local/share/omunchy/bin/omunchy-launch-ai"
 Icon=utilities-terminal
 Terminal=false
 Categories=Development;
-Keywords=ai;agent;coding;claude;pi;codex;crush;goose;copilot;hermes;
+Keywords=ai;agent;coding;claude;opencode;pi;
 StartupNotify=false

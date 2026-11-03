@@ -1,27 +1,21 @@
 #!/usr/bin/env bash
 # omunchy:summary=Rofi menu of AI agents installed with mise; picking one opens it in foot
+#   omunchy-launch-ai [id]   open that agent directly
+bin=$(dirname "$(readlink -f "$0")")
 shims="${MISE_DATA_DIR:-$HOME/.local/share/mise}/shims"
+installed=$("$bin/omunchy-agents" installed)
 
-# name<TAB>command<TAB>args
-agents="Claude Code	claude	
-Pi	pi	
-Codex	codex	
-Crush	crush	
-Goose	goose	session
-GitHub Copilot CLI	copilot	
-Hermes	hermes	"
-
-installed=$(while IFS=$'\t' read -r name cmd args; do
-    [[ -x $shims/$cmd ]] && printf '%s\t%s\t%s\n' "$name" "$cmd" "$args"
-done <<<"$agents")
-
-if [[ -z $installed ]]; then
-    rofi -e "No AI agents installed yet. See ~/Documents/Guide.md, MISE (AI AGENTS)."
-    exit 0
+if [[ -n ${1:-} ]]; then
+    row=$(awk -F'\t' -v id="$1" '$1 == id' <<<"$installed")
+else
+    if [[ -z $installed ]]; then
+        rofi -e "No AI agents installed yet. Super+Alt+Space > Install > AI."
+        exit 0
+    fi
+    choice=$(cut -f2 <<<"$installed" | rofi -dmenu -i -p "AI Agents" -format i -no-show-icons)
+    [[ -z $choice ]] && exit 0
+    row=$(sed -n "$((choice + 1))p" <<<"$installed")
 fi
-
-choice=$(cut -f1 <<<"$installed" | rofi -dmenu -i -p "AI Agents" -format i -no-show-icons)
-[[ -z $choice ]] && exit 0
-
-IFS=$'\t' read -r name cmd args < <(sed -n "$((choice + 1))p" <<<"$installed")
-setsid -f foot -T "$name" "$shims/$cmd" $args >/dev/null 2>&1
+[[ -n $row ]] || { echo "Not installed: $1" >&2; exit 1; }
+IFS=$'\t' read -r id label tool cmd args <<<"$row"
+setsid -f foot -T "$label" "$shims/$cmd" $args >/dev/null 2>&1

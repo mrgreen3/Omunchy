@@ -10,8 +10,8 @@ installables, git + migrations for updates.
 - Every user-facing action is an `omunchy-*` command on PATH.
 - `omunchy-menu` reaches every action; install entries hidden on live.
 - `omunchy-update` = git pull + pending migrations + `pacman -Syu`; idempotent.
-- Each `omunchy-install-ai-*` has a matching `omunchy-remove-ai-*`; launcher
-  appears/disappears with it.
+- `omunchy-install-ai <id>` / `omunchy-remove-ai <id>` for every table row; the single
+  "AI Agents" launcher lists only installed ones (no per-agent .desktop files).
 - No AGENTS.md/CLAUDE.md/GEMINI.md: Guide.md is the only agent instructions file (reached via the omunchy-guide skill); it references commands only.
 - ISO build + install verified: LUKS UEFI, non-LUKS BIOS; update from a
   pre-rework install migrates cleanly.
@@ -41,7 +41,7 @@ installables, git + migrations for updates.
 | `omunchy-install-gpu` | `install-gpu` | |
 | `omunchy-install-snapper` | `install-snapper` | |
 | `omunchy-install-yay` | `install-yay` | |
-| `omunchy-install-opencode` | `install-opencode` | stage 1 rename; replaced by install-ai in stage 3 |
+| `omunchy-agents` | new | prints the table (shipped + user rows), `installed`, `get <id>` |
 | `omunchy-install-ai <name>` | `install-opencode`, Guide mise steps | generic: reads `default/agents.tsv` |
 | `omunchy-remove-ai <name>` | new | mise uninstall + drop launcher |
 | `omunchy-launch-ai` | `agents-menu` | rofi of installed agents → foot |
@@ -81,6 +81,9 @@ Live session: Install/Remove/Update hidden; adds "Install Omunchy" (obinstall).
   rewrite config refs, create launchers for already-installed mise agents.
 - Rule: migrations must be idempotent and never touch files the user changed
   (compare to known shipped hash first).
+
+Stage 4 migration TODO: a pacman-installed opencode (old install-opencode) should
+be offered for removal in favour of the mise one; drop stale opencode.desktop.
 
 ## Stages (one branch, `rework-bin`)
 

@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# omunchy:summary=Install an AI agent with mise (user-local, no sudo), installed system only
+#   omunchy-install-ai <id>   e.g. claude, opencode, pi (see omunchy-agents)
+set -uo pipefail
+bin=$(dirname "$(readlink -f "$0")")
+fail() { echo "$1" >&2; exit 1; }
+
+[[ $# -eq 1 ]] || { echo "usage: omunchy-install-ai <id>"; "$bin/omunchy-agents" | cut -f1,2; exit 2; }
+row=$("$bin/omunchy-agents" get "$1") || fail "Unknown agent: $1 (see omunchy-agents)"
+IFS=$'\t' read -r id label tool cmd args <<<"$row"
+
+[[ -d /run/archiso/airootfs ]] && fail "$label is available after installing Omunchy (obinstall)."
+command -v mise >/dev/null || fail "mise is missing: sudo pacman -S mise"
+"$bin/omunchy-netcheck" || fail "$label needs a network connection. Connect first and retry."
+
+echo "Installing $label with mise ($tool)..."
+mise use -g "$tool@latest" || fail "Install failed. Scroll up for mise's output."
+mise cache clear >/dev/null 2>&1 || true
+echo
+echo "$label installed. Open it from the AI agents menu, or run: $cmd${args:+ $args}"
+echo "Log in inside $label itself; never paste keys into a chat."

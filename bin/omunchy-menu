@@ -17,6 +17,14 @@ term() { # term <title> <cmd...>  run in foot, keep open to read output
     run foot -T "$t" -H "$@"
 }
 
+ai_pick() { # ai_pick <verb> <agent rows> <command>
+    local rows=$2 i
+    [[ -n $rows ]] || { rofi -e "No AI agents installed."; return; }
+    i=$(cut -f2 <<<"$rows" | rofi -dmenu -i -p "$1 AI agent" -format i -no-show-icons) || return
+    [[ -n $i ]] || return
+    term "$1 AI agent" "$bin/$3" "$(sed -n "$((i + 1))p" <<<"$rows" | cut -f1)"
+}
+
 s_main() {
     local opts=("Apps")
     ((live)) && opts+=("Install Omunchy") || opts+=("Install" "Remove" "Update")
@@ -41,8 +49,8 @@ s_apps() {
 }
 
 s_install() {
-    case $(pick Install "AI: OpenCode" "GPU drivers" "Snapper snapshots" "yay (AUR helper)" "Web app" "Web app presets") in
-        "AI: OpenCode") term OpenCode "$bin/omunchy-install-opencode" ;;
+    case $(pick Install "AI agent" "GPU drivers" "Snapper snapshots" "yay (AUR helper)" "Web app" "Web app presets") in
+        "AI agent") ai_pick Install "$("$bin/omunchy-agents")" omunchy-install-ai ;;
         "GPU drivers") term "GPU drivers" "$bin/omunchy-install-gpu" ;;
         "Snapper snapshots") term Snapper "$bin/omunchy-install-snapper" ;;
         "yay (AUR helper)") term yay "$bin/omunchy-install-yay" ;;
@@ -60,7 +68,8 @@ s_install() {
 }
 
 s_remove() {
-    case $(pick Remove "Web app") in
+    case $(pick Remove "AI agent" "Web app") in
+        "AI agent") ai_pick Remove "$("$bin/omunchy-agents" installed)" omunchy-remove-ai ;;
         "Web app")
             local apps app
             mapfile -t apps < <("$bin/omunchy-webapp" list 2>/dev/null)

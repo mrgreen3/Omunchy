@@ -63,16 +63,13 @@ Toggle a window between floating and tiling with Super+T.
 AI SETUP (OPENCODE)
 
 The AI setup assistant is OpenCode. It is not on the ISO and is offered on the
-installed system only (installed live, it would be lost on reboot): once
-connected, open "OpenCode" from the launcher (Super+Space) or run:
+installed system only (installed live, it would be lost on reboot). Once
+connected: Super+Alt+Space > Install > AI agent > OpenCode, or run:
 
-omunchy-install-opencode
+omunchy-install-ai opencode
 
-The first time, it installs OpenCode from the official repos (about 80 MiB
-download, 200 MiB installed) together with a full system update (pacman -Syu),
-then opens it with the omunchy-guide skill. After that the same entry, or
-`opencode --standalone`, just starts it. To try it in the live session anyway,
-run `sudo pacman -Syu --ignore linux opencode` yourself (lost on reboot).
+It installs with mise like the other agents (see MISE). Then open it from
+Super+Alt+Space > Apps > AI agents, or run `opencode --standalone`.
 
 On the live ISO, omunchy-welcome shows connection hints when offline.
 
@@ -147,10 +144,16 @@ the message to you; do not retry blindly.
 
 MISE (AI AGENTS)
 
-The AI coding agents below (Claude Code, Pi, Codex, Hermes, Crush, Goose,
-Copilot) install with mise, which ships with Omunchy. Everything goes into the
-user's home (~/.local/share/mise, list in ~/.config/mise/config.toml): no
-sudo, no system files, no nodejs/npm. Gemini CLI is the exception: pacman.
+Claude Code, OpenCode and Pi install with mise, which ships with Omunchy:
+`omunchy-install-ai <claude|opencode|pi>` (or Super+Alt+Space > Install > AI
+agent) and `omunchy-remove-ai <id>`. The table of agents is
+~/.local/share/omunchy/default/agents.tsv; the user can add rows (same
+tab-separated format) in ~/.config/omunchy/agents.tsv. The other agents below
+(Codex, Hermes, Crush, Goose, Copilot) also install with mise, by hand, as
+their entry says. Everything goes into the user's home
+(~/.local/share/mise, list in ~/.config/mise/config.toml): no sudo, no system
+files, no nodejs/npm (OpenCode uses mise's aqua backend, not npm). Gemini CLI
+is the exception: pacman.
 
 Installed system only: on the live ISO the installs fill RAM and are lost on
 reboot (check with `[ -d /run/archiso/airootfs ]`; if it exists, say the
@@ -163,8 +166,9 @@ agents are available after installing Omunchy with obinstall, and stop).
 - Logins and API keys are entered inside each tool, never in chat. Each tool
   keeps its own settings (~/.claude, ~/.pi, ~/.codex, ...): leave those unless
   the user asks to delete them.
-- Launcher: "AI Agents" in the launcher (Super+Space, or ~/.local/share/omunchy/bin/omunchy-launch-ai)
-  lists only the agents installed with mise and opens the chosen one in foot.
+- Launcher: "AI Agents" in the launcher (Super+Space), Super+Alt+Space > Apps
+  > AI agents, or omunchy-launch-ai: lists the table's agents that are
+  installed and opens the chosen one in foot.
 - `mise ls` lists what is installed; `mise upgrade` updates them all.
 - Sizes: Codex is the largest (about 200 MB download). After installing, `mise cache clear` frees the download cache.
 

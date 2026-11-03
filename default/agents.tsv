@@ -1,0 +1,5 @@
+# id	label	mise tool	command	args
+# Users add rows in ~/.config/omunchy/agents.tsv (same format, tab-separated).
+claude	Claude Code	claude	claude	
+opencode	OpenCode	aqua:anomalyco/opencode	opencode	--standalone
+pi	Pi	pi	pi	
