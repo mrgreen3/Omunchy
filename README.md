@@ -1,7 +1,29 @@
 # omunchy
 
-An Omarchy-inspired Arch live ISO built on [ArchBang](https://archbang.org). Boot it, try it from RAM,
-and install it to disk offline with `obinstall`.
+An Arch live ISO built on [ArchBang](https://archbang.org). Boot it, try it from RAM, and install it
+to disk offline with `obinstall`. A lean starting point for your own Arch environment, not a finished
+product to live inside.
+
+## Principles
+
+- **Your system, not ours.** Omunchy gives you a working desktop, then gets out of the way. Your
+  configs are yours: updates never replace your files, and any edit Omunchy makes to them is a
+  small migration that says what it changed.
+- **Nothing you didn't ask for.** The ISO ships a small desktop. Everything else (GPU drivers,
+  snapshots, AUR helper, AI agents, web apps) is offered from the menu and installed only when you
+  pick it.
+- **Official repos first.** Packages come from the official Arch repos. The AUR is used only when you
+  ask for it, never as a fallback. No npm or global language packages; user tools install into your
+  home.
+- **Agents ask before they act.** AI agents are optional tools, not the centre of the desktop. They
+  run with normal permissions, ask before any sudo, and passwords go through a password box, never
+  through chat.
+- **Plain, readable parts.** Shell scripts and plain config files you can open and change. No plugin
+  system, no daemons you didn't choose, and one Guide (`~/Documents/Guide.md`) for people and AI
+  agents alike.
+- **Borrow ideas, keep our own direction.** Omunchy uses some of Omarchy's good mechanisms (a git
+  checkout of its own files, migrations, named commands, one menu) but makes its own choices about
+  what ships and how it behaves.
 
 ## Stack
 
@@ -16,9 +38,9 @@ All from the official Arch repos:
 
 Colours follow the wallpaper: noctalia re-themes the bar, panels, rofi, borders and foot.
 
-## Omarchy-style layout
+## How it fits together
 
-Like Omarchy, the system's own files are a git checkout in the user's home: `~/.local/share/omunchy`,
+Omunchy's own files are a git checkout in the user's home: `~/.local/share/omunchy`,
 a shallow clone of this repo that the ISO build bakes in (no network needed to install). Its `bin/`
 is on PATH and holds every `omunchy-*` command; `~/Scripts` is left empty for the user's own scripts.
 
