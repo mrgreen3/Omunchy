@@ -9,7 +9,7 @@ set -uo pipefail
 
 SRC=${XDG_DATA_HOME:-$HOME/.local/share}/omunchy
 BRANCH=${OMUNCHY_BRANCH:-main}
-REPO=https://github.com/mrgreen3/Omunchy.git
+REPO=${OMUNCHY_REPO:-https://github.com/mrgreen3/Omunchy.git}
 
 packages=1 stage=pull
 for a in "$@"; do

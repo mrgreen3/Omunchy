@@ -47,7 +47,8 @@ while read -r old new; do
     for f in "${files[@]}"; do
         [[ -f $f ]] || continue
         grep -qE "/Scripts/$o\b" "$f" || continue
-        sed -i -E "s#(~|\\\$HOME|/home/[^/\"]+)/Scripts/$o\b#\1/.local/share/omunchy/bin/$new#g" "$f"
+        sed -i -E -e "s#(~|\\\$HOME|/home/[^/\"]+)/Scripts/$o\b#\1/.local/share/omunchy/bin/$new#g" \
+            -e "s#${H//#/\\#}/Scripts/$o\b#$H/.local/share/omunchy/bin/$new#g" "$f"
         echo "  ${f/#$H/\~}: $old -> $new"
     done
 done <<<"$map"
@@ -57,7 +58,7 @@ done <<<"$map"
 
 # 3. Omunchy menu keybind, unless the user already bound Super+Alt+Space.
 mc=$H/.config/mango/config.conf
-if [[ -f $mc ]] && ! grep -q 'omunchy-menu\b' "$mc" && ! grep -qiE '^bind=SUPER\+ALT,space,' "$mc"; then
+if [[ -f $mc ]] && ! grep -qE 'omunchy-menu([^-]|$)' "$mc" && ! grep -qiE '^bind=SUPER\+ALT,space,' "$mc"; then
     printf '\n#: Omunchy menu\nbind=SUPER+Alt,space,spawn,~/.local/share/omunchy/bin/omunchy-menu\n' >>"$mc"
     echo "  mango: added Super+Alt+Space for omunchy-menu"
     command -v mmsg >/dev/null && mmsg dispatch reload_config >/dev/null 2>&1 || true
@@ -93,7 +94,20 @@ if [[ ! -f $apps/agents-menu.desktop ]]; then
     cp "$D/airootfs/etc/skel/.local/share/applications/agents-menu.desktop" "$apps/" && echo "  added AI Agents launcher"
 fi
 
-# 6. OpenCode from pacman (old installer): offer the switch, never remove it ourselves.
+# 6. Agent instruction files are gone: the Guide is the only one (omunchy-guide skill stays).
+for l in .claude/CLAUDE.md .gemini/GEMINI.md .pi/agent/AGENTS.md .config/opencode/AGENTS.md; do
+    [[ -L $H/$l && $(readlink "$H/$l") == *omunchy/AGENTS.md ]] && rm -f "$H/$l" && echo "  removed link ~/$l"
+done
+f=$H/.config/omunchy/AGENTS.md
+if [[ -f $f ]]; then
+    if git -C "$D" cat-file -e "$(git hash-object "$f")" 2>/dev/null; then
+        rm -f "$f" && echo "  removed ~/.config/omunchy/AGENTS.md (rules now live in ~/Documents/Guide.md)"
+    else
+        echo "  kept ~/.config/omunchy/AGENTS.md: you changed it. Omunchy no longer uses it."
+    fi
+fi
+
+# 7. OpenCode from pacman (old installer): offer the switch, never remove it ourselves.
 if pacman -Q opencode >/dev/null 2>&1; then
     echo "  OpenCode is installed with pacman. Omunchy now installs it with mise. To switch:"
     echo "      sudo pacman -Rns opencode && omunchy-install-ai opencode"
