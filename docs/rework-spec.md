@@ -35,7 +35,7 @@ installables, git + migrations for updates.
 | New | From | Notes |
 |---|---|---|
 | `omunchy-menu` | new | rofi hub; sections below |
-| `omunchy-update` | `omunchy-update`, `omunchy-update-system` (renamed `system-update`, merged in stage 4) | pull → migrate → pacman -Syu → yay if present |
+| `omunchy-update` | `omunchy-update`; calls `omunchy-update-system` (kept for the waybar badge) | pull → migrate → pacman -Syu → yay if present |
 | `omunchy-update-available` | `updates.sh` | waybar module |
 | `omunchy-migrate` | new | runs pending migrations; called by update |
 | `omunchy-install-gpu` | `install-gpu` | |
@@ -82,8 +82,14 @@ Live session: Install/Remove/Update hidden; adds "Install Omunchy" (obinstall).
 - Rule: migrations must be idempotent and never touch files the user changed
   (compare to known shipped hash first).
 
-Stage 4 migration TODO: a pacman-installed opencode (old install-opencode) should
-be offered for removal in favour of the mise one; drop stale opencode.desktop.
+Stage 4 as built: shallow fetch + `checkout -B main origin/main` (refuses on
+local edits or an upstream without bin/), re-exec of the pulled script,
+wallpapers, `omunchy-migrate` (markers in ~/.local/state/omunchy/migrated),
+then `omunchy-update-system`. rc-021126 installs reach it through
+`airootfs/etc/skel/Scripts/omunchy-update`, a bridge the old updater copies
+over itself (build strips it from the ISO; the migration deletes it). The
+first migration also drops old AGENTS.md links and offers (never forces) the
+pacman→mise OpenCode switch. No yay step (AUR only on explicit request).
 
 ## Stages (one branch, `rework-bin`)
 

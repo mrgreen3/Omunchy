@@ -28,6 +28,14 @@ persistent changes require the installer, obinstall.
   (noctalia [theme] source = "wallpaper" in ~/.config/noctalia/config.toml).
   Default wallpaper: [wallpaper.default] in the same file; more in ~/Backgrounds.
 
+- Updating: omunchy-update (or Super+Alt+Space > Update > Omunchy) pulls
+  Omunchy's own files from github.com/mrgreen3/Omunchy, runs any one-off
+  migrations, adds new wallpapers, then updates packages (pacman -Syu).
+  Installed system only. Never edit files in ~/.local/share/omunchy: local
+  edits block the update; put your own versions in ~/Scripts.
+  omunchy-update --no-packages skips pacman; the waybar update badge runs
+  only the pacman step.
+
 - Omunchy menu: Super+Alt+Space (or omunchy-menu) reaches every Omunchy
   action: apps, install, remove, update, setup, system. On the live ISO it
   only offers "Install Omunchy".
