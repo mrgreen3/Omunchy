@@ -10,3 +10,4 @@ Terminal=false
 Categories=Development;
 Keywords=ai;agent;coding;claude;opencode;pi;
 StartupNotify=false
+Hidden=true

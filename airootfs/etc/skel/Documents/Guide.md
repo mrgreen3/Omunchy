@@ -38,7 +38,7 @@ persistent changes require the installer, obinstall.
 
 - Omunchy menu: Super+Alt+Space (or omunchy-menu) reaches every Omunchy
   action: apps, install, remove, update, setup, system. On the live ISO it
-  only offers "Install Omunchy".
+  offers "Install Omunchy" and hides installs and AI agents.
 
 - Commands: Omunchy's own commands are omunchy-* in ~/.local/share/omunchy/bin
   (on PATH, a git checkout updated by omunchy-update). ~/Scripts is also on

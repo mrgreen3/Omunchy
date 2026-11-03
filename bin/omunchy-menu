@@ -41,7 +41,9 @@ s_main() {
 }
 
 s_apps() {
-    case $(pick Apps "AI agents" "Radio") in
+    local opts=("Radio")
+    ((live)) || opts=("AI agents" "Radio")
+    case $(pick Apps "${opts[@]}") in
         "AI agents") run "$bin/omunchy-launch-ai" ;;
         Radio) run foot -T Radio "$bin/omunchy-radio" ;;
         "") s_main ;;

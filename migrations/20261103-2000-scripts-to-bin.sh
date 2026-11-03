@@ -91,7 +91,8 @@ f=$apps/opencode.desktop
 [[ -f $f ]] && grep -q 'install-opencode' "$f" && rm -f "$f" && echo "  removed launcher opencode.desktop"
 if [[ ! -f $apps/agents-menu.desktop ]]; then
     mkdir -p "$apps"
-    cp "$D/airootfs/etc/skel/.local/share/applications/agents-menu.desktop" "$apps/" && echo "  added AI Agents launcher"
+    grep -v '^Hidden=true' "$D/airootfs/etc/skel/.local/share/applications/agents-menu.desktop" >"$apps/agents-menu.desktop" &&
+        echo "  added AI Agents launcher"
 fi
 
 # 6. Agent instruction files are gone: the Guide is the only one (omunchy-guide skill stays).
