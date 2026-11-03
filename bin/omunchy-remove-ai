@@ -9,4 +9,5 @@ IFS=$'\t' read -r id label tool cmd args <<<"$row"
 echo "Removing $label ($tool)..."
 mise unuse -g "$tool" || true
 mise uninstall --all "$tool" || { echo "mise uninstall failed." >&2; exit 1; }
+rm -f "${XDG_DATA_HOME:-$HOME/.local/share}/applications/omunchy-ai-$id.desktop"
 echo "$label removed. Its own settings and logins in your home are kept; delete them yourself if wanted."

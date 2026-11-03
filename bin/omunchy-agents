@@ -2,6 +2,7 @@
 # omunchy:summary=Print the AI agents table (shipped rows, then ~/.config/omunchy/agents.tsv)
 #   omunchy-agents            id<TAB>label<TAB>mise tool<TAB>command<TAB>args
 #   omunchy-agents installed  only rows whose command is installed via mise
+#   omunchy-agents available  only rows not installed yet
 #   omunchy-agents get <id>   one row
 dir=$(dirname "$(readlink -f "$0")")/..
 shims="${MISE_DATA_DIR:-$HOME/.local/share/mise}/shims"
@@ -11,6 +12,9 @@ case ${1:-} in
     installed) rows | while IFS=$'\t' read -r id label tool cmd args; do
             [[ -x $shims/$cmd ]] && printf '%s\t%s\t%s\t%s\t%s\n' "$id" "$label" "$tool" "$cmd" "$args"
         done ;;
+    available) rows | while IFS=$'\t' read -r id label tool cmd args; do
+            [[ -x $shims/$cmd ]] || printf '%s\t%s\t%s\t%s\t%s\n' "$id" "$label" "$tool" "$cmd" "$args"
+        done ;;
     get) rows | awk -F'\t' -v id="$2" '$1 == id { print; f = 1 } END { exit !f }' ;;
-    *) sed -n '2,5s/^# \{0,1\}//p' "$0"; exit 2 ;;
+    *) sed -n '2,6s/^# \{0,1\}//p' "$0"; exit 2 ;;
 esac

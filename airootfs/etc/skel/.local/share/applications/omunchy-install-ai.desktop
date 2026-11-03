@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Install AI Agent
+GenericName=AI Coding Agents
+Comment=Install Claude Code, OpenCode or Pi; each then gets its own launcher entry
+Exec=bash -c "exec ~/.local/share/omunchy/bin/omunchy-menu install-ai"
+Icon=utilities-terminal
+Terminal=false
+Categories=Development;
+Keywords=ai;agent;coding;claude;opencode;pi;install;
+StartupNotify=false
+Hidden=true

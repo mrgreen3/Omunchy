@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # omunchy:summary=Omunchy menu (Super+Alt+Space): apps, install, remove, update, setup, system
-#   omunchy-menu [section]   open straight at a section (e.g. omunchy-menu install)
+#   omunchy-menu [section]   open straight at a section (e.g. omunchy-menu install, install-ai)
 # Esc in a section goes back; Esc at the top closes.
 bin=$(dirname "$(readlink -f "$0")")
 live=0; [[ -d /run/archiso ]] && live=1
@@ -19,7 +19,7 @@ term() { # term <title> <cmd...>  run in foot, wait for a key so the output can 
 
 ai_pick() { # ai_pick <verb> <agent rows> <command>
     local rows=$2 i
-    [[ -n $rows ]] || { rofi -e "No AI agents installed."; return; }
+    [[ -n $rows ]] || { rofi -e "No AI agents to $1."; return; }
     i=$(cut -f2 <<<"$rows" | rofi -dmenu -i -p "$1 AI agent" -format i -no-show-icons) || return
     [[ -n $i ]] || return
     term "$1 AI agent" "$bin/$3" "$(sed -n "$((i + 1))p" <<<"$rows" | cut -f1)"
@@ -41,10 +41,7 @@ s_main() {
 }
 
 s_apps() {
-    local opts=("Radio")
-    ((live)) || opts=("AI agents" "Radio")
-    case $(pick Apps "${opts[@]}") in
-        "AI agents") run "$bin/omunchy-launch-ai" ;;
+    case $(pick Apps "Radio") in
         Radio) run foot -T Radio "$bin/omunchy-radio" ;;
         "") s_main ;;
     esac
@@ -52,7 +49,7 @@ s_apps() {
 
 s_install() {
     case $(pick Install "AI agent" "GPU drivers" "Snapper snapshots" "yay (AUR helper)" "Web app" "Web app presets") in
-        "AI agent") ai_pick Install "$("$bin/omunchy-agents")" omunchy-install-ai ;;
+        "AI agent") ai_pick Install "$("$bin/omunchy-agents" available)" omunchy-install-ai ;;
         "GPU drivers") term "GPU drivers" "$bin/omunchy-install-gpu" ;;
         "Snapper snapshots") term Snapper "$bin/omunchy-install-snapper" ;;
         "yay (AUR helper)") term yay "$bin/omunchy-install-yay" ;;
@@ -112,6 +109,8 @@ s_system() {
 pkill -x rofi && exit 0
 case ${1:-} in
     "") s_main ;;
+    install-ai) ((live)) && { rofi -e "AI agents are available after installing Omunchy."; exit 1; }
+        ai_pick Install "$("$bin/omunchy-agents" available)" omunchy-install-ai ;;
     install | remove | update) ((live)) && { rofi -e "Install Omunchy first."; exit 1; }; "s_$1" ;;
     apps | setup | system) "s_$1" ;;
     -h | --help) sed -n '2,4s/^# \{0,1\}//p' "$0" ;;

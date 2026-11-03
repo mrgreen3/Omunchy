@@ -50,8 +50,9 @@ is on PATH and holds every `omunchy-*` command; `~/Scripts` is left empty for th
   (`omunchy-migrate`), adds new wallpapers, then updates packages (`omunchy-update-system`).
   Local edits in the checkout block it; it never touches them.
 - `omunchy-install-*`: `gpu`, `snapper`, `yay`, and `ai <id>` for AI agents.
-- `omunchy-install-ai` / `omunchy-remove-ai` / `omunchy-launch-ai`: AI agents from
-  `default/agents.tsv` (Claude Code, OpenCode, Pi), installed user-local with mise, no npm.
+- `omunchy-install-ai` / `omunchy-remove-ai`: AI agents from `default/agents.tsv` (Claude Code,
+  OpenCode, Pi), installed user-local with mise, no npm. Each installed agent gets its own launcher
+  entry; "Install AI Agent" in the launcher offers the rest.
   Users add rows in `~/.config/omunchy/agents.tsv`.
 - `omunchy-pkg-add` / `-missing` / `-present`: pacman helpers for scripts.
 

@@ -6,7 +6,7 @@ H=$HOME
 apps=$H/.local/share/applications
 
 # old name -> new name
-map="agents-menu omunchy-launch-ai
+map="agents-menu omunchy-install-ai
 apply-mango-colors omunchy-theme-mango
 noctalia-colors omunchy-theme-refresh
 fix-keys omunchy-fix-keys
@@ -40,7 +40,7 @@ fi
 # 2. Config references to ~/Scripts/<old>.
 files=("$H/.config/mango/config.conf" "$H/.config/waybar/config" "$H/.config/noctalia/config.toml"
     "$H/.config/noctalia/templates.toml" "$H/.bash_profile" "$H/.config/opencode/opencode.json"
-    "$apps/radio.desktop" "$apps/agents-menu.desktop")
+    "$apps/radio.desktop")
 while read -r old new; do
     [[ $old == install-opencode ]] && continue
     o=${old//./\\.}
@@ -82,17 +82,23 @@ while read -r old new; do
     fi
 done <<<"$map"
 
-# 5. Launchers: one "AI Agents" entry replaces per-agent ones and the old OpenCode installer.
+# 5. Launchers: each installed agent gets its own entry; "Install AI Agent" adds more.
 for id in claude codex copilot crush goose hermes pi; do
     f=$apps/$id.desktop
-    [[ -f $f ]] && grep -q 'installed with mise; see Guide' "$f" && rm -f "$f" && echo "  removed launcher $id.desktop"
+    [[ -f $f ]] && grep -q 'installed with mise; see Guide' "$f" && rm -f "$f" && echo "  removed old launcher $id.desktop"
 done
 f=$apps/opencode.desktop
-[[ -f $f ]] && grep -q 'install-opencode' "$f" && rm -f "$f" && echo "  removed launcher opencode.desktop"
-if [[ ! -f $apps/agents-menu.desktop ]]; then
+[[ -f $f ]] && grep -q 'install-opencode' "$f" && rm -f "$f" && echo "  removed old launcher opencode.desktop"
+f=$apps/agents-menu.desktop
+[[ -f $f ]] && grep -qE 'agents-menu|omunchy-launch-ai' "$f" && rm -f "$f" && echo "  removed AI Agents picker launcher"
+while IFS=$'\t' read -r id label _; do
+    [[ -n $id && ! -f $apps/omunchy-ai-$id.desktop ]] || continue
+    "$D/bin/omunchy-install-ai" --launcher "$id" && echo "  added launcher for $label"
+done < <("$D/bin/omunchy-agents" installed)
+if [[ ! -f $apps/omunchy-install-ai.desktop ]]; then
     mkdir -p "$apps"
-    grep -v '^Hidden=true' "$D/airootfs/etc/skel/.local/share/applications/agents-menu.desktop" >"$apps/agents-menu.desktop" &&
-        echo "  added AI Agents launcher"
+    grep -v '^Hidden=true' "$D/airootfs/etc/skel/.local/share/applications/omunchy-install-ai.desktop" >"$apps/omunchy-install-ai.desktop" &&
+        echo "  added Install AI Agent launcher"
 fi
 
 # 6. Agent instruction files are gone: the Guide is the only one (omunchy-guide skill stays).

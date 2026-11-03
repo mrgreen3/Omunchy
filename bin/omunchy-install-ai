@@ -1,13 +1,44 @@
 #!/usr/bin/env bash
-# omunchy:summary=Install an AI agent with mise (user-local, no sudo), installed system only
-#   omunchy-install-ai <id>   e.g. claude, opencode, pi (see omunchy-agents)
+# omunchy:summary=Install an AI agent with mise (user-local, no sudo) and add its launcher entry
+#   omunchy-install-ai <id>              e.g. claude, opencode, pi (see omunchy-agents)
+#   omunchy-install-ai --launcher <id>   only (re)write its launcher entry
 set -uo pipefail
 bin=$(dirname "$(readlink -f "$0")")
+apps=${XDG_DATA_HOME:-$HOME/.local/share}/applications
+shims=${MISE_DATA_DIR:-$HOME/.local/share/mise}/shims
 fail() { echo "$1" >&2; exit 1; }
 
-[[ $# -eq 1 ]] || { echo "usage: omunchy-install-ai <id>"; "$bin/omunchy-agents" | cut -f1,2; exit 2; }
+launcher_only=0
+[[ ${1:-} == --launcher ]] && { launcher_only=1; shift; }
+[[ $# -eq 1 ]] || { echo "usage: omunchy-install-ai [--launcher] <id>"; "$bin/omunchy-agents" | cut -f1,2; exit 2; }
 row=$("$bin/omunchy-agents" get "$1") || fail "Unknown agent: $1 (see omunchy-agents)"
 IFS=$'\t' read -r id label tool cmd args <<<"$row"
+
+write_launcher() {
+    mkdir -p "$apps"
+    cat >"$apps/omunchy-ai-$id.desktop" <<DESKTOP
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=$label
+GenericName=AI Coding Agent
+Comment=$label in a terminal (installed with omunchy-install-ai)
+TryExec=$shims/$cmd
+Exec=foot -T "$label" $shims/$cmd${args:+ $args}
+Icon=utilities-terminal
+Terminal=false
+Categories=Development;
+Keywords=ai;agent;coding;$id;
+StartupNotify=false
+X-Omunchy-AI=$id
+DESKTOP
+}
+
+if ((launcher_only)); then
+    [[ -x $shims/$cmd ]] || fail "$label is not installed."
+    write_launcher
+    exit 0
+fi
 
 [[ -d /run/archiso/airootfs ]] && fail "$label is available after installing Omunchy (obinstall)."
 command -v mise >/dev/null || fail "mise is missing: sudo pacman -S mise"
@@ -16,6 +47,7 @@ command -v mise >/dev/null || fail "mise is missing: sudo pacman -S mise"
 echo "Installing $label with mise ($tool)..."
 mise use -g "$tool@latest" || fail "Install failed. Scroll up for mise's output."
 mise cache clear >/dev/null 2>&1 || true
+write_launcher
 echo
-echo "$label installed. Open it from the AI agents menu, or run: $cmd${args:+ $args}"
+echo "$label installed. Open it from the launcher (Super+Space > $label), or run: $cmd${args:+ $args}"
 echo "Log in inside $label itself; never paste keys into a chat."

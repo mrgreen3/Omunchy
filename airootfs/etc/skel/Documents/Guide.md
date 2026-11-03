@@ -72,12 +72,13 @@ AI SETUP (OPENCODE)
 
 The AI setup assistant is OpenCode. It is not on the ISO and is offered on the
 installed system only (installed live, it would be lost on reboot). Once
-connected: Super+Alt+Space > Install > AI agent > OpenCode, or run:
+connected: "Install AI Agent" in the launcher (Super+Space), or
+Super+Alt+Space > Install > AI agent, or run:
 
 omunchy-install-ai opencode
 
-It installs with mise like the other agents (see MISE). Then open it from
-Super+Alt+Space > Apps > AI agents, or run `opencode --standalone`.
+It installs with mise like the other agents (see MISE) and adds an "OpenCode"
+entry to the launcher (Super+Space), or run `opencode --standalone`.
 
 On the live ISO, omunchy-welcome shows connection hints when offline.
 
@@ -153,8 +154,8 @@ the message to you; do not retry blindly.
 MISE (AI AGENTS)
 
 Claude Code, OpenCode and Pi install with mise, which ships with Omunchy:
-`omunchy-install-ai <claude|opencode|pi>` (or Super+Alt+Space > Install > AI
-agent) and `omunchy-remove-ai <id>`. The table of agents is
+`omunchy-install-ai <claude|opencode|pi>` (or "Install AI Agent" in the
+launcher, or Super+Alt+Space > Install > AI agent) and `omunchy-remove-ai <id>`. The table of agents is
 ~/.local/share/omunchy/default/agents.tsv; the user can add rows (same
 tab-separated format) in ~/.config/omunchy/agents.tsv. The other agents below
 (Codex, Hermes, Crush, Goose, Copilot) also install with mise, by hand, as
@@ -174,9 +175,10 @@ agents are available after installing Omunchy with obinstall, and stop).
 - Logins and API keys are entered inside each tool, never in chat. Each tool
   keeps its own settings (~/.claude, ~/.pi, ~/.codex, ...): leave those unless
   the user asks to delete them.
-- Launcher: "AI Agents" in the launcher (Super+Space), Super+Alt+Space > Apps
-  > AI agents, or omunchy-launch-ai: lists the table's agents that are
-  installed and opens the chosen one in foot.
+- Launcher: each agent installed with omunchy-install-ai gets its own entry in
+  the launcher (Super+Space), named after it (omunchy-ai-<id>.desktop);
+  omunchy-remove-ai removes it. "Install AI Agent" in the launcher lists the
+  agents not installed yet.
 - `mise ls` lists what is installed; `mise upgrade` updates them all.
 - Sizes: Codex is the largest (about 200 MB download). After installing, `mise cache clear` frees the download cache.
 
