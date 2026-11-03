@@ -185,31 +185,27 @@ CLAUDE CODE
 Anthropic's coding CLI for AI coding in the terminal.
 
 What:   "claude" in the terminal; user wants an AI coding agent.
-Install:  mise (installed system only; see MISE):
-  mise use -g claude@latest
+Install:  omunchy-install-ai claude (mise, installed system only; see MISE;
+          same as: mise use -g claude@latest)
 Command:  claude
 Needs:    network; login inside Claude Code (run `claude`, then /login — subscription
           or API key, entered in the tool)
 Verify:   claude --version
 Update:   mise upgrade claude
-Remove:
-  mise unuse -g claude
-  mise uninstall claude
+Remove:   omunchy-remove-ai claude (keeps its own settings)
 
 PI (PI.DEV)
 
 Pi, the coding agent from pi.dev.
 
 What:   a second/multi-provider AI coding agent run from the terminal.
-Install:  mise (installed system only; see MISE):
-  mise use -g pi@latest
+Install:  omunchy-install-ai pi (mise, installed system only; see MISE;
+          same as: mise use -g pi@latest)
 Command:  pi
 Needs:    network; provider login inside pi (/login)
 Verify:   pi --version
 Update:   mise upgrade pi
-Remove:
-  mise unuse -g pi
-  mise uninstall pi
+Remove:   omunchy-remove-ai pi (keeps its own settings)
 
 CODEX
 
@@ -450,7 +446,7 @@ Use (in the app):
                 adds the station and plays it
   esc           close the app; the station keeps playing
 Use (command line):
-  radio play "<name>"   radio stop   radio now   radio list
+  omunchy-radio play "<name>"   omunchy-radio stop | now | list
 Add stations by hand: edit ~/.config/radio/stations, one per line as
   Name|URL
   e.g. SomaFM Space Station Soma|https://somafm.com/spacestation.pls
@@ -458,7 +454,7 @@ Add stations by hand: edit ~/.config/radio/stations, one per line as
   most station websites list one under "listen" or "player links".
 Location: ~/.local/share/omunchy/bin/omunchy-radio; stations in ~/.config/radio/stations
 Needs:    network; mpv (installed)
-Verify:   radio list
+Verify:   omunchy-radio list
 Notes:    playback shows in the media controls with the current song.
 
 KEW
@@ -496,7 +492,8 @@ Fields without a verified official source stay marked TODO: verify.
 INSTALLATION
 
 The installer (obinstall) is a step-by-step wizard and shows a summary before
-it touches anything. Open a terminal (foot) and run:
+it touches anything. Press Super+I, pick "Install Omunchy" in the Omunchy
+menu (Super+Alt+Space), or open a terminal (foot) and run:
 
 obinstall
 

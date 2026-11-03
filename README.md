@@ -1,33 +1,41 @@
 # omunchy
 
-A lightweight, Omarchy-inspired desktop installer for [ArchBang](https://archbang.org).
-
-Omunchy is an all-in installer script — not a standalone distro — that layers a lean Wayland desktop and app-launching setup on top of an existing ArchBang install.
+An Omarchy-inspired Arch live ISO built on [ArchBang](https://archbang.org). Boot it, try it from RAM,
+and install it to disk offline with `obinstall`.
 
 ## Stack
 
-- **Compositor:** [mango](https://github.com/mangowm/mango) (`mangowm`) — from the official Arch repos (dwl-based Wayland; whole stack official-repo)
-- **Tiling:** mango's built-in dwindle layout (Hyprland dwindle parity), `Super+V` toggles the split direction
+All from the official Arch repos:
+
+- **Compositor:** [mango](https://github.com/mangowm/mango) (dwl-based Wayland), dwindle tiling, `Super+V` toggles split
 - **Bar:** Waybar
-- **Launcher:** Rofi
-- **Notifications:** Mako
+- **Shell services:** noctalia (notifications, launcher, control centre, lock, wallpaper and theme)
+- **Menus:** Rofi (Omunchy menu, keybinds, AI agents, radio picker)
 - **Terminal:** foot
 - **Browser / web apps:** Firefox (web apps via `omunchy-webapp`, Firefox's built-in Taskbar Tabs)
 
-This stack was chosen specifically to avoid the RAM overhead of a full shell daemon (e.g. quickshell) on constrained hardware such as Chromebooks. mango is among the leanest full Wayland compositors (idle desktop within ~tens of MB of a bare compositor); everything else stays file-configured with no daemons. Animations, blur and shadows are disabled.
+Colours follow the wallpaper: noctalia re-themes the bar, panels, rofi, borders and foot.
 
-## Features
+## Omarchy-style layout
 
-Pattern-for-pattern with Omarchy (see `docs/omarchy-parity.md` for the full 42-row analysis):
+Like Omarchy, the system's own files are a git checkout in the user's home: `~/.local/share/omunchy`,
+a shallow clone of this repo that the ISO build bakes in (no network needed to install). Its `bin/`
+is on PATH and holds every `omunchy-*` command; `~/Scripts` is left empty for the user's own scripts.
 
-- **Kept:** the bar/launcher/notification apps as plain configs, noctalia screenshots, the keybind-cheatsheet doc, thunar, fastfetch, adw-gtk theming.
-- **Lean replacements:** colours that follow the wallpaper (noctalia re-themes bar, panels, rofi, borders and foot), a one-script update (reflector → pacman → yay → orphan prune) instead of the 22-cmd update system with snapper/migrations/channels.
-- **Stripped:** Omarchy's branded extras, per-app theming, protocol handlers, first-boot provisioning, limine/snapper, plugin ecosystem, release channels, the CLI dispatcher and TUI installers (web apps are a single script, `omunchy-webapp`).
+- `omunchy-menu` (`Super+Alt+Space`): apps, install, remove, update, setup, system. On the live ISO it
+  offers "Install Omunchy" instead of install/remove/update.
+- `omunchy-update`: pulls `main` from GitHub, runs new `migrations/*.sh` once each
+  (`omunchy-migrate`), adds new wallpapers, then updates packages (`omunchy-update-system`).
+  Local edits in the checkout block it; it never touches them.
+- `omunchy-install-*`: `gpu`, `snapper`, `yay`, and `ai <id>` for AI agents.
+- `omunchy-install-ai` / `omunchy-remove-ai` / `omunchy-launch-ai`: AI agents from
+  `default/agents.tsv` (Claude Code, OpenCode, Pi), installed user-local with mise, no npm.
+  Users add rows in `~/.config/omunchy/agents.tsv`.
+- `omunchy-pkg-add` / `-missing` / `-present`: pacman helpers for scripts.
 
 ## Usage
 
-Commands live in `bin/` (`~/.local/share/omunchy/bin` on the system, on PATH; the build bakes a
-shallow git checkout of this repo there). `~/Scripts` is left empty for the user. `obinstall` is in `/usr/local/bin`:
+`obinstall` (in `/usr/local/bin`, live only) installs the running system:
 
 ```
 omunchy-welcome            # live-boot network report (started by mango)
@@ -45,42 +53,39 @@ The wizard's one password is used for the user, root and (if enabled) the LUKS d
 auto-login through greetd, so the disk passphrase at boot is the only gate to the session.
 The installer builds a fresh pacman keyring offline (the live one is a tmpfs, so the copy has none).
 If pacman later reports signature errors, run `omunchy-fix-keys` with a network connection (it also updates `archlinux-keyring`).
-Untested on real hardware: try it in a VM first.
 
-- **AI setup assistant.** `opencode` is not on the ISO and is offered on the installed system
-  only (live, it would be lost on reboot; users can still `pacman -S` it themselves).
-  `omunchy-install-ai opencode` (or the Omunchy menu) installs it with mise (aqua backend), like
-  Claude Code and Pi; `default/agents.tsv` is the agents table. On the live ISO
-  `omunchy-welcome` (started from mango's `config.conf`) shows a Super+K keybinds
-  hint at login, and a persistent warning with connection hints when offline,
-  which closes itself once a connection appears (watched for 30 minutes). OpenCode runs as
-  `opencode --standalone` (cloud-only, but free models work with no login) on the single `omunchy-guide` skill, which reads
-  `~/Documents/Guide.md` (the human Guide doubles as the assistant's reference: ABOUT, AI SETUP, APPS, packages). The skill lives in
-  `~/.config/omunchy/skills` (no AGENTS.md/CLAUDE.md: the Guide is the only instructions file), linked into the paths opencode, pi, Gemini CLI and
-  Claude Code each scan (`~/.agents/skills`, `~/.claude/skills`, `~/.config/opencode/skills`), so any of them can load it; the user-local tools in the Guide use each tool's own installer into `~/.local`, so no
-  nodejs/npm packages and nothing global.
+- **AI.** No agent is on the ISO: they install on the installed system only
+  (`omunchy-install-ai opencode|claude|pi`, or the menu). `~/Documents/Guide.md` is the only
+  instructions file for every agent (no AGENTS.md/CLAUDE.md); the `omunchy-guide` skill in
+  `~/.config/omunchy/skills`, linked into `~/.agents/skills`, `~/.claude/skills` and
+  `~/.config/opencode/skills`, points opencode, pi, Gemini CLI and Claude Code at it.
+- **Live session.** `omunchy-welcome` (started by mango) shows a Super+K keybinds hint at login and a
+  persistent warning with connection hints when offline, closing itself once a connection appears.
 
 ## Keybindings
 
 The shipped `~/.config/mango/config.conf` mirrors Omarchy's bindings:
 `Super+Return` foot, `Super+Space` launcher, `Super+Q` close,
 `Super+Shift+F` fullscreen, `Super+T` float, `Super+V` toggle split, `Super+P` screenshot, `Super+L` lock,
-`Super+Shift+E` power menu, `Super+1..5` tags (workspaces),
+`Super+Shift+E` power menu, `Super+Alt+Space` Omunchy menu, `Super+1..5` tags (workspaces),
 XF86 audio/brightness via noctalia. The full list lives in
 `Documents/Keybindings` (`Super+K` shows it in the launcher).
 
-## Layout
+## Repo layout
 
 ```
-bin/                           omunchy-* commands (cloned to ~/.local/share/omunchy at build)
-airootfs/                      archbang-derived archiso skeleton (mango skel config included)
+bin/            omunchy-* commands (become ~/.local/share/omunchy/bin)
+default/        shipped data, e.g. agents.tsv
+migrations/     one-off upgrade steps run by omunchy-update (YYYYMMDD-HHMM-what.sh, rerun-safe)
+airootfs/       archiso skeleton: skel configs, /usr/local/{bin,lib}/obinstall
+build           vendored mkarchiso; bakes the bin/ checkout into skel (committed HEAD only)
+docs/           design notes (rework-spec.md)
 ```
 
 ## Status
 
-Entry generation, interactive installers, removal, sync, the mango session,
-theme/wallpaper switching, the update flow, and the base-stack installer are
-working. Dispatcher aliases/group descriptions are a possible next step.
+Release candidate. Installer verified in VMs (LUKS on BIOS and UEFI, non-LUKS UEFI); untested on real
+hardware, so try it in a VM first.
 
 ## License
 

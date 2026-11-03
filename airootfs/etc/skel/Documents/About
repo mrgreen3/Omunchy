@@ -29,7 +29,7 @@ Design Philosophy
 
   * Lightweight - Minimal base, runs well on modest hardware
   * Wayland-first - mango compositor, no Xorg
-  * Coherent - Warm brown/yellow palette throughout (waybar, mako, rofi)
+  * Coherent - Colours follow the wallpaper (waybar, noctalia, rofi, borders, foot)
   * Arch underneath - Full pacman access, rolling release
 
 
@@ -48,9 +48,16 @@ Desktop
   - mango Wayland compositor
   - waybar panel with workspace indicators
   - foot terminal
-  - noctalia launcher (Super+Space)
+  - rofi launcher (Super+Space)
   - noctalia notifications
   - noctalia wallpaper
+
+Omunchy tools
+  - Omunchy menu (Super+Alt+Space): apps, install, remove, update, setup
+  - omunchy-update: Omunchy's own files from git, one-off migrations,
+    then packages
+  - Optional installers: GPU drivers, snapper, yay, AI agents (Claude Code,
+    OpenCode, Pi via mise)
 
 Installation
   - Guided installer (obinstall) with a review screen before install

@@ -1,7 +1,7 @@
 #!/bin/bash
-# radio — internet radio TUI on fzf + mpv. Stations: ~/.config/radio/stations (Name|URL)
-#   radio                 open the TUI (playback continues after quitting)
-#   radio play <name>     play a saved station      radio stop | now | list
+# omunchy-radio — internet radio TUI on fzf + mpv. Stations: ~/.config/radio/stations (Name|URL)
+#   omunchy-radio         open the TUI (playback continues after quitting)
+#   omunchy-radio play <name>   play a saved station   omunchy-radio stop | now | list
 # Needs: mpv fzf gum jq curl python3 (yt-dlp optional, for YouTube)
 set -euo pipefail
 STATIONS=${XDG_CONFIG_HOME:-$HOME/.config}/radio/stations

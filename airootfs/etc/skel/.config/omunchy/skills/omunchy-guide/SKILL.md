@@ -1,6 +1,6 @@
 ---
 name: omunchy-guide
-description: Omunchy context and setup. Use at session start, when the user asks what you can do or set up, about Omunchy, packages or pacman, or before installing or configuring any app (Claude Code, pi.dev, tuios, herdr, cliamp, dev environment, yay/AUR, Gemini CLI, Hermes, Codex, Crush, Goose, Copilot, mise).
+description: Omunchy context and setup. Use at session start, when the user asks what you can do or set up, about Omunchy, packages or pacman, about omunchy-* commands, the Omunchy menu or omunchy-update, or before installing or configuring any app (OpenCode, Claude Code, pi.dev, tuios, herdr, cliamp, dev environment, yay/AUR, Gemini CLI, Hermes, Codex, Crush, Goose, Copilot, mise).
 ---
 
 # omunchy-guide
