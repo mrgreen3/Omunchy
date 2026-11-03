@@ -118,3 +118,14 @@ needed for `bin/`. Only committed HEAD is baked (warns on dirty bin/migrations).
 Existing migrations get done-markers in skel `.local/state`. profiledef keeps
 755 for `/usr/local/bin/obinstall` and `/usr/local/lib/obinstall/`; the
 `/etc/skel/Scripts/` entry is gone and `~/Scripts` ships with a `.keep`.
+
+## To think about: agent launchers (noted 2026-11-03)
+
+mise installs give no .desktop entry, so OpenCode (and Claude/Pi) don't show in
+the main launcher (Super+Space), only under "AI Agents" / the Omunchy menu.
+Seen in VM test of rc-031126. Options, undecided:
+- `omunchy-install-ai` writes a per-agent .desktop on install, removes it on
+  remove (Exec = foot + mise shim; icon from default/ or a generic one).
+- OpenCode back to pacman (it is in the official repos, ships its own entry),
+  mise only for agents not packaged.
+- Keep one "AI Agents" entry but make it obvious (name/keywords per agent).
