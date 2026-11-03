@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=AI Agents
+GenericName=AI Coding Agents
+Comment=Open an AI agent installed with mise
+Exec=bash -c "exec ~/Scripts/agents-menu"
+Icon=utilities-terminal
+Terminal=false
+Categories=Development;
+Keywords=ai;agent;coding;claude;pi;codex;crush;goose;copilot;hermes;
+StartupNotify=false

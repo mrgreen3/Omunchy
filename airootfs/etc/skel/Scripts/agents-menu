@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# omunchy:summary=Rofi menu of AI agents installed with mise; picking one opens it in foot
+shims="${MISE_DATA_DIR:-$HOME/.local/share/mise}/shims"
+
+# name<TAB>command<TAB>args
+agents="Claude Code	claude	
+Pi	pi	
+Codex	codex	
+Crush	crush	
+Goose	goose	session
+GitHub Copilot CLI	copilot	
+Hermes	hermes	"
+
+installed=$(while IFS=$'\t' read -r name cmd args; do
+    [[ -x $shims/$cmd ]] && printf '%s\t%s\t%s\n' "$name" "$cmd" "$args"
+done <<<"$agents")
+
+if [[ -z $installed ]]; then
+    rofi -e "No AI agents installed yet. See ~/Documents/Guide.md, MISE (AI AGENTS)."
+    exit 0
+fi
+
+choice=$(cut -f1 <<<"$installed" | rofi -dmenu -i -p "AI Agents" -format i -no-show-icons)
+[[ -z $choice ]] && exit 0
+
+IFS=$'\t' read -r name cmd args < <(sed -n "$((choice + 1))p" <<<"$installed")
+setsid -f foot -T "$name" "$shims/$cmd" $args >/dev/null 2>&1

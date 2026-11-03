@@ -29,7 +29,7 @@ persistent changes require the installer, obinstall.
   Default wallpaper: [wallpaper.default] in the same file; more in ~/Backgrounds.
 
 - Scripts: ~/Scripts is on PATH. obinstall (installer), fix-keys (pacman
-  keyring), install-opencode (AI assistant), install-yay (AUR helper), omunchy-welcome (live-session network report), netcheck (is the network up?),
+  keyring), install-opencode (AI assistant), install-yay (AUR helper), agents-menu (AI agents), omunchy-welcome (live-session network report), netcheck (is the network up?),
   updates.sh.
 
 - Keybindings: full list in ~/Documents/Keybindings; Super+K opens it in the launcher
@@ -156,8 +156,8 @@ agents are available after installing Omunchy with obinstall, and stop).
 - Logins and API keys are entered inside each tool, never in chat. Each tool
   keeps its own settings (~/.claude, ~/.pi, ~/.codex, ...): leave those unless
   the user asks to delete them.
-- Launcher: each agent has a launcher entry (Super+Space) that appears by
-  itself once it is installed and opens it in foot.
+- Launcher: "AI Agents" in the launcher (Super+Space, or ~/Scripts/agents-menu)
+  lists only the agents installed with mise and opens the chosen one in foot.
 - `mise ls` lists what is installed; `mise upgrade` updates them all.
 - Sizes: Codex is the largest (about 200 MB download). After installing, `mise cache clear` frees the download cache.
 
