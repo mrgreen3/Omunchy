@@ -12,9 +12,9 @@ pick() { # pick <prompt> <options...>  -> chosen text
 }
 ask() { rofi -dmenu -p "$1" -theme-str 'listview { lines: 0; }' </dev/null; }
 run() { setsid -f "$@" >/dev/null 2>&1; }
-term() { # term <title> <cmd...>  run in foot, keep open to read output
+term() { # term <title> <cmd...>  run in foot, wait for a key so the output can be read
     local t=$1; shift
-    run foot -T "$t" -H "$@"
+    run foot -T "$t" bash -c '"$@"; echo; read -rsn1 -p "Finished. Press any key to close."' _ "$@"
 }
 
 ai_pick() { # ai_pick <verb> <agent rows> <command>
