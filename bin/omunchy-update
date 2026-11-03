@@ -1,92 +1,74 @@
 #!/usr/bin/env bash
-# Update Omunchy's own files from the git repo (not packages; that's omunchy-update-system).
-#   1. clone or fast-forward ~/.local/share/omunchy (its bin/ is on PATH)
-#   2. copy any new wallpapers into ~/Backgrounds
-#   3. run new migrations/*.sh once each
-# On first run, migrations already in the repo are marked done: the installed
-# system came from an ISO that had them baked in.
+# omunchy:summary=Update Omunchy: pull its files, run migrations, then update packages
+#   omunchy-update             all three steps
+#   omunchy-update --no-packages   skip the pacman step
+# ~/.local/share/omunchy is a git checkout of github.com/mrgreen3/Omunchy (bin/
+# is on PATH). Local edits there block the update: keep your own scripts in ~/Scripts.
 
-set -euo pipefail
+set -uo pipefail
 
-REPO=${OMUNCHY_REPO:-https://github.com/mrgreen3/Omunchy.git}
-BRANCH=${OMUNCHY_BRANCH:-main}
 SRC=${XDG_DATA_HOME:-$HOME/.local/share}/omunchy
-STATE=${XDG_STATE_HOME:-$HOME/.local/state}/omunchy/migrations
+BRANCH=${OMUNCHY_BRANCH:-main}
+REPO=https://github.com/mrgreen3/Omunchy.git
 
-case "${1:-}" in
-    "") ;;
-    -h | --help) sed -n '2,8p' "$0"; exit 0 ;;
-    *) echo "unknown option: $1" >&2; exit 2 ;;
-esac
+packages=1 stage=pull
+for a in "$@"; do
+    case $a in
+        --no-packages) packages=0 ;;
+        --after-pull) stage=after ;;
+        -h | --help) sed -n '2,6s/^# \{0,1\}//p' "$0"; exit 0 ;;
+        *) echo "unknown option: $a" >&2; exit 2 ;;
+    esac
+done
+args=(); ((packages)) || args+=(--no-packages)
 
 if [[ -d /run/archiso ]]; then
     echo "Running live - install Omunchy first."
     exit 1
 fi
 
-if ! "$(dirname "$0")/omunchy-netcheck"; then
-    echo "Connect first and retry."
-    exit 1
-fi
+if [[ $stage == pull ]]; then
+    "$(dirname "$(readlink -f "$0")")/omunchy-netcheck" || { echo "Connect first and retry."; exit 1; }
 
-mkdir -p "$STATE"
-
-if [[ ! -d $SRC/.git ]]; then
-    echo "Fetching Omunchy source..."
-    git clone --quiet --branch "$BRANCH" "$REPO" "$SRC"
-    for m in "$SRC"/migrations/*.sh; do
-        [[ -e $m ]] && touch "$STATE/$(basename "$m")"
-    done
-    before=
-else
-    echo "Updating Omunchy source..."
-    before=$(git -C "$SRC" rev-parse HEAD)
-    if ! git -C "$SRC" fetch --quiet origin "+$BRANCH:refs/remotes/origin/$BRANCH"; then
-        echo "git fetch of $BRANCH failed."
-        exit 1
+    if [[ ! -d $SRC/.git ]]; then
+        echo "Fetching Omunchy..."
+        git clone --quiet --depth 1 --branch "$BRANCH" "$REPO" "$SRC" || { echo "git clone failed."; exit 1; }
+    else
+        if [[ -n $(git -C "$SRC" status --porcelain --untracked-files=no) ]]; then
+            echo "Local changes in $SRC block the update:"
+            git -C "$SRC" status --short --untracked-files=no
+            echo "Move your own versions to ~/Scripts, then: git -C $SRC checkout -- ."
+            exit 1
+        fi
+        before=$(git -C "$SRC" rev-parse --short HEAD)
+        echo "Updating Omunchy..."
+        git -C "$SRC" remote set-url origin "$REPO"
+        git -C "$SRC" fetch --quiet --depth 1 origin "+$BRANCH:refs/remotes/origin/$BRANCH" ||
+            { echo "git fetch of $BRANCH failed."; exit 1; }
+        # Shallow checkout: move straight to the new tip (no merge history to walk).
+        git -C "$SRC" checkout --quiet -B "$BRANCH" "origin/$BRANCH" || { echo "Checkout failed."; exit 1; }
+        after=$(git -C "$SRC" rev-parse --short HEAD)
+        if [[ $before == "$after" ]]; then
+            echo "Omunchy already up to date ($after)."
+        else
+            echo "Omunchy $before -> $(git -C "$SRC" log -1 --format='%h %s')"
+        fi
     fi
-    if [[ $(git -C "$SRC" branch --show-current) != "$BRANCH" ]] &&
-        ! git -C "$SRC" switch --quiet "$BRANCH"; then
-        echo "Can't switch to $BRANCH. Local changes in $SRC? Check: git -C $SRC status"
-        exit 1
-    fi
-    if ! git -C "$SRC" merge --quiet --ff-only "origin/$BRANCH"; then
-        echo "Update failed. Local changes in $SRC? Check: git -C $SRC status"
-        exit 1
-    fi
-fi
-after=$(git -C "$SRC" rev-parse HEAD)
-
-if [[ $before == "$after" ]]; then
-    echo "Already up to date ($(git -C "$SRC" log -1 --format='%h %s'))."
-else
-    [[ -n $before ]] && git -C "$SRC" log --oneline "$before..$after"
+    # Continue in the freshly pulled copy of this script.
+    exec "$SRC/bin/omunchy-update" --after-pull "${args[@]}"
 fi
 
 # Wallpapers are additive: add new ones, never overwrite or remove.
-added=0
 mkdir -p "$HOME/Backgrounds"
 for f in "$SRC"/airootfs/etc/skel/Backgrounds/*; do
     [[ -f $f && ${f,,} =~ \.(jpe?g|png|webp)$ ]] || continue
-    dest=$HOME/Backgrounds/$(basename "$f")
+    dest=$HOME/Backgrounds/${f##*/}
     [[ -e $dest ]] && continue
-    cp -p "$f" "$dest"
-    echo "  new wallpaper ~/Backgrounds/$(basename "$f")"
-    added=$((added + 1))
+    cp -p "$f" "$dest" && echo "  new wallpaper ~/Backgrounds/${f##*/}"
 done
 
-ran=0
-for m in "$SRC"/migrations/*.sh; do
-    [[ -e $m ]] || continue
-    name=$(basename "$m")
-    [[ -e $STATE/$name ]] && continue
-    echo "Running migration $name"
-    if ! OMUNCHY_DIR=$SRC bash "$m"; then
-        echo "Migration $name failed - stopping. Fix and rerun omunchy-update."
-        exit 1
-    fi
-    touch "$STATE/$name"
-    ran=$((ran + 1))
-done
+"$SRC/bin/omunchy-migrate" || exit 1
 
-echo "Done: $added wallpaper(s) added, $ran migration(s) run."
+((packages)) || exit 0
+echo
+OMUNCHY_NO_PAUSE=1 "$SRC/bin/omunchy-update-system"

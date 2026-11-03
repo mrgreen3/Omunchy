@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Bridge for installs from before bin/ (rc-021126): the old ~/Scripts/omunchy-update
+# copies this over itself; it hands over to the new one. Not shipped on the ISO
+# (build removes it); the first migration deletes it.
+exec "$HOME/.local/share/omunchy/bin/omunchy-update" "$@"

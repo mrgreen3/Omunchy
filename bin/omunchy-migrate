@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# omunchy:summary=Run Omunchy migrations not yet applied (called by omunchy-update)
+#   omunchy-migrate          run pending migrations/*.sh in name order
+#   omunchy-migrate --list   show each migration and whether it has run
+# Done markers: ~/.local/state/omunchy/migrated/<name>. A failed migration stops
+# the run and is retried next time; migrations must be safe to rerun.
+set -uo pipefail
+SRC=$(dirname "$(readlink -f "$0")")/..
+SRC=$(cd "$SRC" && pwd)
+STATE=${XDG_STATE_HOME:-$HOME/.local/state}/omunchy/migrated
+mkdir -p "$STATE"
+
+ran=0
+for m in "$SRC"/migrations/*.sh; do
+    [[ -e $m ]] || continue
+    name=${m##*/}
+    if [[ ${1:-} == --list ]]; then
+        [[ -e $STATE/$name ]] && echo "done     $name" || echo "pending  $name"
+        continue
+    fi
+    [[ -e $STATE/$name ]] && continue
+    echo "Running migration $name"
+    if ! OMUNCHY_DIR=$SRC bash "$m"; then
+        echo "Migration $name failed - stopping. Fix it and rerun omunchy-update."
+        exit 1
+    fi
+    : >"$STATE/$name"
+    ran=$((ran + 1))
+done
+[[ ${1:-} == --list ]] || echo "Migrations: $ran run."

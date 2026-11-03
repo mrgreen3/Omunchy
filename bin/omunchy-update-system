@@ -3,9 +3,11 @@
 # Shows what's pending, runs the update, refreshes the badge, keeps the
 # terminal open so the result can be read.
 
+pause() { [[ -n ${OMUNCHY_NO_PAUSE:-} ]] || read -rp "Press Enter to close..."; }
+
 if [[ ! -s /etc/pacman.d/gnupg/pubring.gpg ]]; then
     echo "Pacman keyring not set up - run omunchy-fix-keys first."
-    read -rp "Press Enter to close..."
+    pause
     exit 1
 fi
 
@@ -13,7 +15,7 @@ echo "Checking for updates..."
 pending=$(checkupdates 2>/dev/null)
 if [[ -z $pending ]]; then
     echo "System is up to date."
-    read -rp "Press Enter to close..."
+    pause
     exit 0
 fi
 
@@ -33,4 +35,4 @@ else
 fi
 
 pkill -RTMIN+8 waybar 2>/dev/null
-read -rp "Press Enter to close..."
+pause

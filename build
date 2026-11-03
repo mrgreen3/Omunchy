@@ -314,12 +314,14 @@ _make_pacman_conf() {
 # Migrations already in the tree are marked done.
 _make_omunchy_checkout() {
     local dest="${pacstrap_dir}/etc/skel/.local/share/omunchy"
-    local state="${pacstrap_dir}/etc/skel/.local/state/omunchy/migrations"
+    local state="${pacstrap_dir}/etc/skel/.local/state/omunchy/migrated"
     local m
     _msg_info "Baking Omunchy checkout into skel..."
     [[ -z "$(git -c safe.directory='*' -C "${profile}" status --porcelain -- bin migrations)" ]] ||
         _msg_warning "Uncommitted changes in bin/ or migrations/ are NOT in the ISO."
     rm -rf -- "${dest}"
+    # bridge for old installs' updater, not wanted on fresh systems
+    rm -f -- "${pacstrap_dir}/etc/skel/Scripts/omunchy-update"
     git -c safe.directory='*' clone --quiet --depth 1 --no-local \
         "file://${profile}" "${dest}"
     git -C "${dest}" remote set-url origin https://github.com/mrgreen3/Omunchy.git
