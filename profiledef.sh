@@ -23,5 +23,8 @@ file_permissions=(
   ["/root"]="0:0:750"
   ["/usr/local/bin/obinstall"]="0:0:755"
   ["/usr/local/lib/obinstall/"]="0:0:755"
+  ["/usr/share/pacman/keyrings/omarchy.gpg"]="0:0:644"
+  ["/usr/share/pacman/keyrings/omarchy-trusted"]="0:0:644"
+  ["/usr/share/pacman/keyrings/omarchy-revoked"]="0:0:644"
 )
 #bootstrap_tarball_compression=(gzip -cn9)

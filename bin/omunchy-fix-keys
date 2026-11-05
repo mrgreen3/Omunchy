@@ -13,6 +13,12 @@ sudo pacman-key --init
 echo "Populating archlinux keyring..."
 sudo pacman-key --populate archlinux
 
+# omunchy-extras packages are signed by Omarchy's key (baked in the ISO).
+if [[ -f /usr/share/pacman/keyrings/omarchy.gpg ]]; then
+    echo "Populating omarchy keyring..."
+    sudo pacman-key --populate omarchy
+fi
+
 # Now that pacman can trust packages, update the keyring package
 echo "Updating archlinux-keyring package..."
 sudo pacman -Sy --noconfirm archlinux-keyring

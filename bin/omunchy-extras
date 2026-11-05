@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# omunchy:summary=Print the extras packages table (default/extras.tsv)
+#   omunchy-extras            id<TAB>label<TAB>note
+#   omunchy-extras installed  only rows installed via pacman
+#   omunchy-extras available  only rows not installed yet
+#   omunchy-extras get <id>   one row
+dir=$(dirname "$(readlink -f "$0")")/..
+rows() { awk -F'\t' '!/^[[:space:]]*#/ && NF >= 2 && $1 !~ /^[[:space:]]*$/ {print}' "$dir/default/extras.tsv" 2>/dev/null; }
+case ${1:-} in
+    "") rows ;;
+    installed) rows | while IFS=$'\t' read -r id label note; do
+            pacman -Q "$id" >/dev/null 2>&1 && printf '%s\t%s\t%s\n' "$id" "$label" "$note"
+        done ;;
+    available) rows | while IFS=$'\t' read -r id label note; do
+            pacman -Q "$id" >/dev/null 2>&1 || printf '%s\t%s\t%s\n' "$id" "$label" "$note"
+        done ;;
+    get) rows | awk -F'\t' -v id="$2" '$1 == id { print; f = 1 } END { exit !f }' ;;
+    *) sed -n '2,6s/^# \{0,1\}//p' "$0"; exit 2 ;;
+esac

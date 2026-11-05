@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+# omunchy:summary=Regenerate the omunchy-extras pacman DB from Omarchy's repo (allowlist: default/extras.tsv)
+#   omunchy-extras-db [output-dir]   writes omunchy-extras.db (default /var/lib/omunchy/extras)
+# The DB is a filtered copy of Omarchy's omarchy.db: only the allowlisted packages'
+# metadata. The packages themselves download from pkgs.omarchy.org and are verified
+# against the baked omarchy keyring. Installed systems only (the live ISO has no
+# omunchy-extras repo section).
+set -euo pipefail
+dir=$(dirname "$(readlink -f "$0")")/..
+allow=$dir/default/extras.tsv
+out=${1:-/var/lib/omunchy/extras}
+arch=${OMUNCHY_EXTRAS_ARCH:-$(uname -m)}
+repo=${OMUNCHY_EXTRAS_REPO:-https://pkgs.omarchy.org/stable/$arch}
+tmp=$(mktemp -d)
+trap 'rm -rf -- "$tmp"' EXIT
+
+place_db() {
+    if mkdir -p "$out" 2>/dev/null && [[ -w $out ]]; then
+        install -Dm644 "$tmp/omunchy-extras.db" "$out/omunchy-extras.db"
+    else
+        sudo install -D -m0644 -o root -g root "$tmp/omunchy-extras.db" "$out/omunchy-extras.db"
+    fi
+    echo "Wrote $out/omunchy-extras.db ($(wc -c <"$tmp/omunchy-extras.db") bytes)"
+}
+
+[[ -f $allow ]] || { echo "omunchy-extras-db: $allow not found" >&2; exit 1; }
+mapfile -t names < <(awk -F'\t' '!/^[[:space:]]*#/ && NF >= 2 && $1 !~ /^[[:space:]]*$/ {print $1}' "$allow")
+((${#names[@]})) || { echo "omunchy-extras-db: no packages in $allow" >&2; exit 1; }
+
+echo "Fetching $repo/omarchy.db..."
+curl -fsSL "$repo/omarchy.db" -o "$tmp/omarchy.db" || { echo "omunchy-extras-db: failed to fetch Omarchy db" >&2; exit 1; }
+
+mkdir -p "$tmp/db" "$tmp/out"
+bsdtar -xf "$tmp/omarchy.db" -C "$tmp/db"
+
+# keep the desc dirs of allowlisted names; match on %NAME% (dir names are
+# name-version, and a prefix match would also grab herdr-app, herdr-core, ...)
+for d in "$tmp/db"/*/; do
+    [[ -f ${d}desc ]] || continue
+    name=$(awk '/^%NAME%/{getline; print; exit}' "${d}desc")
+    for n in "${names[@]}"; do
+        if [[ $name == "$n" ]]; then
+            cp -a "$d" "$tmp/out/"
+            break
+        fi
+    done
+done
+
+shopt -s nullglob
+dirs=("$tmp"/out/*/)
+shopt -u nullglob
+if ((${#dirs[@]} == 0)); then
+    echo "omunchy-extras-db: none of the allowlisted packages are in Omarchy's repo; writing an empty DB" >&2
+    ( cd "$tmp/out" && tar -czf "$tmp/omunchy-extras.db" . )
+    place_db
+    exit 0
+fi
+for n in "${names[@]}"; do
+    found=0
+    for d in "${dirs[@]}"; do
+        [[ $(awk '/^%NAME%/{getline; print; exit}' "${d}desc") == "$n" ]] && { found=1; break; }
+    done
+    ((found)) || echo "omunchy-extras-db: allowlisted package not in Omarchy repo: $n" >&2
+done
+
+pkgs=()
+for d in "${dirs[@]}"; do
+    base=${d%/}
+    pkgs+=("${base##*/}")
+done
+( cd "$tmp/out" && tar -czf "$tmp/omunchy-extras.db" -- "${pkgs[@]}" )
+
+place_db

@@ -75,4 +75,9 @@ done
 
 ((packages)) || exit 0
 echo
+# Refresh the omunchy-extras repo DB from the allowlist (default/extras.tsv) so
+# extras upgrades stay current. Non-fatal: a failed refresh leaves the existing DB.
+if [[ -x $SRC/bin/omunchy-extras-db ]] && [[ -f $SRC/default/extras.tsv ]]; then
+    "$SRC/bin/omunchy-extras-db" || echo "warning: omunchy-extras DB refresh failed" >&2
+fi
 OMUNCHY_NO_PAUSE=1 "$SRC/bin/omunchy-update-system"

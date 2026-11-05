@@ -331,6 +331,26 @@ _make_omunchy_checkout() {
     done
 }
 
+# Omunchy: bake the filtered omunchy-extras pacman DB so an offline install can
+# install extras before its first omunchy-update. Metadata only; packages still
+# download from pkgs.omarchy.org. Non-fatal: if the fetch fails, an empty DB is
+# written and omunchy-update regenerates it after install.
+_make_omunchy_extras_db() {
+    local allow="${profile}/default/extras.tsv" out="${pacstrap_dir}/var/lib/omunchy/extras"
+    local empty_dir
+    [[ -f "${allow}" ]] || return 0
+    _msg_info "Baking omunchy-extras DB from Omarchy repo..."
+    if bash "${profile}/bin/omunchy-extras-db" "${out}"; then
+        return 0
+    fi
+    _msg_warning "Could not bake omunchy-extras DB; writing an empty one (omunchy-update will refresh it)."
+    empty_dir="$(mktemp -d)"
+    ( cd "${empty_dir}" && tar -czf "${empty_dir}/omunchy-extras.db" . )
+    _unshare install -d -m 0755 -o 0 -g 0 -- "${out}"
+    _unshare install -m 0644 -o 0 -g 0 -- "${empty_dir}/omunchy-extras.db" "${out}/omunchy-extras.db"
+    rm -rf -- "${empty_dir}"
+}
+
 _make_custom_airootfs() {
     local passwd=()
     local filename permissions
@@ -341,6 +361,7 @@ _make_custom_airootfs() {
         _msg_info "Copying custom airootfs files..."
         _unshare cp -af --no-preserve=ownership,mode -- "${profile}/airootfs/." "${pacstrap_dir}"
         _make_omunchy_checkout
+        _make_omunchy_extras_db
         # Set ownership and mode for files and directories
         for filename in "${!file_permissions[@]}"; do
             IFS=':' read -ra permissions <<<"${file_permissions["${filename}"]}"

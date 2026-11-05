@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# omunchy:summary=Install an extras package from the omunchy-extras repo (see omunchy-extras)
+#   omunchy-install-extras <id>
+set -uo pipefail
+bin=$(dirname "$(readlink -f "$0")")
+fail() { echo "$1" >&2; exit 1; }
+[[ $# -eq 1 ]] || { echo "usage: omunchy-install-extras <id>"; "$bin/omunchy-extras" | cut -f1,2; exit 2; }
+row=$("$bin/omunchy-extras" get "$1") || fail "Unknown extras package: $1 (see omunchy-extras)"
+IFS=$'\t' read -r id label note <<<"$row"
+[[ -d /run/archiso/airootfs ]] && fail "$label is available after installing Omunchy (obinstall)."
+pacman -Q "$id" >/dev/null 2>&1 && { echo "$label is already installed."; exit 0; }
+"$bin/omunchy-netcheck" || fail "$label needs a network connection. Connect first and retry."
+echo "Refreshing the omunchy-extras package database..."
+sudo "$bin/omunchy-extras-db" || fail "Could not refresh the omunchy-extras database."
+echo "Installing $label..."
+sudo pacman -S --needed --noconfirm "$id" || fail "Install failed. Scroll up for pacman's output."
+echo
+echo "$label installed."

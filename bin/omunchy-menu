@@ -25,6 +25,14 @@ ai_pick() { # ai_pick <verb> <agent rows> <command>
     term "$1 AI agent" "$bin/$3" "$(sed -n "$((i + 1))p" <<<"$rows" | cut -f1)"
 }
 
+extras_pick() { # extras_pick <verb> <extras rows> <command>
+    local rows=$2 i
+    [[ -n $rows ]] || { rofi -e "No extras packages to $1."; return; }
+    i=$(cut -f2 <<<"$rows" | rofi -dmenu -i -p "$1 extras" -format i -no-show-icons) || return
+    [[ -n $i ]] || return
+    term "$1 extras" "$bin/$3" "$(sed -n "$((i + 1))p" <<<"$rows" | cut -f1)"
+}
+
 s_main() {
     local opts=("Apps")
     ((live)) && opts+=("Install Omunchy") || opts+=("Install" "Remove" "Update")
@@ -48,8 +56,9 @@ s_apps() {
 }
 
 s_install() {
-    case $(pick Install "AI agent" "GPU drivers" "Snapper snapshots" "yay (AUR helper)" "Web app" "Web app presets") in
+    case $(pick Install "AI agent" "Extras" "GPU drivers" "Snapper snapshots" "yay (AUR helper)" "Web app" "Web app presets") in
         "AI agent") ai_pick Install "$("$bin/omunchy-agents" available)" omunchy-install-ai ;;
+        "Extras") extras_pick Install "$("$bin/omunchy-extras" available)" omunchy-install-extras ;;
         "GPU drivers") term "GPU drivers" "$bin/omunchy-install-gpu" ;;
         "Snapper snapshots") term Snapper "$bin/omunchy-install-snapper" ;;
         "yay (AUR helper)") term yay "$bin/omunchy-install-yay" ;;
@@ -67,8 +76,9 @@ s_install() {
 }
 
 s_remove() {
-    case $(pick Remove "AI agent" "Web app") in
+    case $(pick Remove "AI agent" "Extras" "Web app") in
         "AI agent") ai_pick Remove "$("$bin/omunchy-agents" installed)" omunchy-remove-ai ;;
+        "Extras") extras_pick Remove "$("$bin/omunchy-extras" installed)" omunchy-remove-extras ;;
         "Web app")
             local apps app
             mapfile -t apps < <("$bin/omunchy-webapp" list 2>/dev/null)

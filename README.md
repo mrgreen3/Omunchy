@@ -14,7 +14,9 @@ product to live inside.
   pick it.
 - **Official repos first.** Packages come from the official Arch repos. The AUR is used only when you
   ask for it, never as a fallback. No npm or global language packages; user tools install into your
-  home.
+  home. The one exception is `omunchy-extras`: a small, curated set of tools Omarchy publishes that
+  Arch doesn't (currently `herdr`), served from a filtered view of Omarchy's repo — never used for
+  upgrades, never a fallback for anything Arch ships.
 - **Agents ask before they act.** AI agents are optional tools, not the centre of the desktop. They
   run with normal permissions, ask before any sudo, and passwords go through a password box, never
   through chat.
@@ -47,9 +49,14 @@ is on PATH and holds every `omunchy-*` command; `~/Scripts` is left empty for th
 - `omunchy-menu` (`Super+Alt+Space`): apps, install, remove, update, setup, system. On the live ISO it
   offers "Install Omunchy" instead of install/remove/update.
 - `omunchy-update`: pulls `main` from GitHub, runs new `migrations/*.sh` once each
-  (`omunchy-migrate`), adds new wallpapers, then updates packages (`omunchy-update-system`).
+  (`omunchy-migrate`), adds new wallpapers, refreshes the extras package database, then updates
+  packages (`omunchy-update-system`).
   Local edits in the checkout block it; it never touches them.
-- `omunchy-install-*`: `gpu`, `snapper`, `yay`, and `ai <id>` for AI agents.
+- `omunchy-install-*`: `gpu`, `snapper`, `yay`, `extras <id>`, and `ai <id>` for AI agents.
+- `omunchy-extras` / `omunchy-install-extras` / `omunchy-remove-extras`: a curated allowlist
+  (`default/extras.tsv`) of tools Omarchy publishes that Arch doesn't. `omunchy-extras-db` rebuilds a
+  filtered pacman database from Omarchy's repo (metadata only); the packages download from
+  `pkgs.omarchy.org` and are verified by the baked Omarchy keyring. Installed systems only.
 - `omunchy-install-ai` / `omunchy-remove-ai`: AI agents from `default/agents.tsv` (Claude Code,
   OpenCode, Pi), installed user-local with mise, no npm. Each installed agent gets its own launcher
   entry; "Install AI Agent" in the launcher offers the rest.
@@ -98,9 +105,9 @@ XF86 audio/brightness via noctalia. The full list lives in
 
 ```
 bin/            omunchy-* commands (become ~/.local/share/omunchy/bin)
-default/        shipped data, e.g. agents.tsv
+default/        shipped data, e.g. agents.tsv, extras.tsv
 migrations/     one-off upgrade steps run by omunchy-update (YYYYMMDD-HHMM-what.sh, rerun-safe)
-airootfs/       archiso skeleton: skel configs, /usr/local/{bin,lib}/obinstall
+airootfs/       archiso skeleton: skel configs, /usr/local/{bin,lib}/obinstall, Omarchy keyring
 build           vendored mkarchiso; bakes the bin/ checkout into skel (committed HEAD only)
 docs/           design notes (rework-spec.md)
 ```

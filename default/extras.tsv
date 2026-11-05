@@ -1,0 +1,10 @@
+# id	label	note
+# Omunchy extras: tools Omarchy publishes that Arch does not ship. Installed from
+# the omunchy-extras repo (a filtered view of pkgs.omarchy.org), not from Arch.
+# Only the packages listed here are reachable; omunchy-extras-db regenerates the
+# repo database from this list. Keep it small and deliberate.
+herdr	Herdr	terminal workspace manager for coding agents
+# Examples of other Omarchy-only packages, ready to enable:
+# aether	Aether	extract colours from wallpapers and apply cohesive themes (webkit2gtk/gtk3)
+# superwhisper-bin	Superwhisper	local and cloud voice dictation (large GTK4/pipewire stack)
+# omafeed	Omafeed	native Rust RSS reader (gtk4/libadwaita)

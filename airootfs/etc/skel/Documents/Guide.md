@@ -30,11 +30,18 @@ persistent changes require the installer, obinstall.
 
 - Updating: omunchy-update (or Super+Alt+Space > Update > Omunchy) pulls
   Omunchy's own files from github.com/mrgreen3/Omunchy, runs any one-off
-  migrations, adds new wallpapers, then updates packages (pacman -Syu).
+  migrations, adds new wallpapers, refreshes the extras package database, then
+  updates packages (pacman -Syu).
   Installed system only. Never edit files in ~/.local/share/omunchy: local
   edits block the update; put your own versions in ~/Scripts.
   omunchy-update --no-packages skips pacman; the waybar update badge runs
   only the pacman step.
+
+- Extras: a handful of tools Omarchy publishes that Arch doesn't (currently
+  herdr). Installed from the omunchy-extras repo — a filtered view of
+  pkgs.omarchy.org that only exposes the packages in ~/.local/share/omunchy/default/extras.tsv.
+  Super+Alt+Space > Install > Extras, or: omunchy-install-extras <id>
+  (list: omunchy-extras; remove: omunchy-remove-extras <id>).
 
 - Omunchy menu: Super+Alt+Space (or omunchy-menu) reaches every Omunchy
   action: apps, install, remove, update, setup, system. On the live ISO it
