@@ -255,7 +255,11 @@ EOT
   run rm -f "$MNT/etc/polkit-1/rules.d/50-default.rules"
   ((DRY_RUN)) || { sed -i '/^Hidden=true/d' "$MNT/usr/share/applications/gparted.desktop" 2>/dev/null || true
     sed -i 's/^# %wheel ALL=(ALL:ALL) ALL$/%wheel ALL=(ALL:ALL) ALL/' "$MNT/etc/sudoers"
-    grep -q '^%wheel ALL=(ALL:ALL) ALL$' "$MNT/etc/sudoers" || die "sudoers: wheel rule not found after edit"; }
+    sed -i -e 's/^[[:space:]]*%wheel ALL=(ALL:ALL) NOPASSWD: ALL$/# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/' \
+      -e 's|^#[[:space:]]*@includedir /etc/sudoers.d$|@includedir /etc/sudoers.d|' "$MNT/etc/sudoers"
+    grep -q '^%wheel ALL=(ALL:ALL) ALL$' "$MNT/etc/sudoers" || die "sudoers: wheel rule not found after edit"
+    grep -Eq '^[[:space:]]*[^#].*NOPASSWD' "$MNT/etc/sudoers" && die "sudoers: NOPASSWD rule still active"
+    visudo -cqf "$MNT/etc/sudoers" || die "sudoers: syntax check failed"; }
 
   info "fstab, locale, time, keyboard, hostname"
   ((DRY_RUN)) || { genfstab -U "$MNT" >"$MNT/etc/fstab"; grep -q 'subvol=' "$MNT/etc/fstab" || die "fstab has no btrfs subvolumes"
