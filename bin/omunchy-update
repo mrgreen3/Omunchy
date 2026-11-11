@@ -8,7 +8,7 @@
 set -uo pipefail
 
 SRC=${XDG_DATA_HOME:-$HOME/.local/share}/omunchy
-BRANCH=${OMUNCHY_BRANCH:-main}
+BRANCH=${OMUNCHY_BRANCH:-$(git -C "$SRC" symbolic-ref --short -q HEAD 2>/dev/null || echo main)}
 REPO=${OMUNCHY_REPO:-https://github.com/mrgreen3/Omunchy.git}
 
 packages=1 stage=pull

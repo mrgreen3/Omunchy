@@ -1,0 +1,3 @@
+#!/bin/bash
+# Started by greetd: run mango from a login shell so ~/.bash_profile sets the session env.
+exec bash -lc 'exec mango'
