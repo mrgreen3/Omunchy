@@ -1,46 +1,128 @@
 #!/usr/bin/env bash
-# omunchy:summary=Switch the desktop theme (noctalia palette; mango, waybar, rofi, foot follow)
+# omunchy:summary=Switch, try and make desktop themes (noctalia palette; mango, waybar, rofi, foot follow)
 #   omunchy-theme list | current | set <name> | pick
+#   omunchy-theme try <name>                    apply, then keep it or go back
+#   omunchy-theme tour [seconds]                show every theme in turn, then go back
+#   omunchy-theme new <name> <image> [scheme] [dark|light]   theme from an image, then try it
 # Themes: default/themes.tsv, then ~/.config/omunchy/themes.tsv (same format).
+# A theme's wallpaper (5th column, in ~/Backgrounds) is applied with it; --no-wallpaper skips that.
 set -euo pipefail
 dir=$(dirname "$(readlink -f "$0")")/..
 cfg=${XDG_CONFIG_HOME:-$HOME/.config}
 state=$cfg/omunchy/theme
+walls=$HOME/Backgrounds
+setwall=1
 
 rows() {
     local f
     for f in "$dir/default/themes.tsv" "$cfg/omunchy/themes.tsv"; do if [[ -f $f ]]; then cat "$f"; fi; done |
         awk -F'\t' '!/^#/ && NF >= 4 && !seen[$1]++'
 }
+die() { echo "omunchy-theme: $*" >&2; exit 1; }
 
 set_theme() {
-    local row name src scheme mode
+    local row name src scheme mode wall
     row=$(rows | awk -F'\t' -v n="$1" 'tolower($1) == tolower(n) && !f { print; f = 1 }')
-    [[ -n $row ]] || { echo "omunchy-theme: no theme '$1' (see: omunchy-theme list)" >&2; exit 1; }
-    IFS=$'\t' read -r name src scheme mode <<<"$row"
+    [[ -n $row ]] || die "no theme '$1' (see: omunchy-theme list)"
+    IFS=$'\t' read -r name src scheme mode wall <<<"$row"
     if [[ $src == custom ]]; then
-        [[ $scheme != */* ]] || { echo "omunchy-theme: bad palette name '$scheme'" >&2; exit 1; }
+        [[ $scheme != */* ]] || die "bad palette name '$scheme'"
         if [[ -f $dir/default/palettes/$scheme.json ]]; then
             mkdir -p "$cfg/noctalia/palettes"
             cp -f "$dir/default/palettes/$scheme.json" "$cfg/noctalia/palettes/$scheme.json"
         fi
-        [[ -f $cfg/noctalia/palettes/$scheme.json ]] ||
-            { echo "omunchy-theme: palette $cfg/noctalia/palettes/$scheme.json not found" >&2; exit 1; }
+        [[ -f $cfg/noctalia/palettes/$scheme.json ]] || die "palette $cfg/noctalia/palettes/$scheme.json not found"
     fi
     noctalia msg theme-mode-set "$mode" >/dev/null
     noctalia msg color-scheme-set "$src" "$scheme" >/dev/null
+    # after the palette: with a builtin/custom palette the wallpaper no longer recolours anything
+    if ((setwall)) && [[ -n ${wall:-} && $src != wallpaper && -f $walls/$wall ]]; then
+        noctalia msg wallpaper-set "$walls/$wall" >/dev/null
+    fi
     mkdir -p "${state%/*}"; printf '%s\n' "$name" >"$state"
     echo "Theme: $name"
 }
 
+# what is on screen now, to go back to: label, palette source+name, mode, wallpaper
+save_current() {
+    old_label=$("$0" current)
+    read -r old_src old_scheme < <(noctalia msg color-scheme-get)
+    old_mode=$(noctalia msg theme-mode-get)
+    old_wall=$(noctalia msg wallpaper-get 2>/dev/null || true)
+}
+restore_current() {
+    [[ -n ${old_wall:-} && -f $old_wall ]] && noctalia msg wallpaper-set "$old_wall" >/dev/null
+    noctalia msg theme-mode-set "$old_mode" >/dev/null
+    noctalia msg color-scheme-set "$old_src" "$old_scheme" >/dev/null
+    printf '%s\n' "$old_label" >"$state"
+}
+
+try_theme() {
+    save_current
+    set_theme "$1" >/dev/null
+    local new; new=$("$0" current)
+    case $(printf '%s\n' "Keep $new" "Go back to $old_label" | rofi -dmenu -i -p "Theme" -no-show-icons) in
+        "Keep $new") echo "Theme: $new" ;;
+        *) restore_current; echo "Theme: $old_label (unchanged)" ;;
+    esac
+}
+
+tour() {
+    local secs=${1:-4} t
+    [[ $secs =~ ^[0-9]+$ ]] || die "seconds must be a number"
+    save_current
+    trap 'restore_current' EXIT INT TERM
+    while read -r t; do
+        set_theme "$t" >/dev/null
+        notify-send -a Omunchy -t $((secs * 1000)) "Theme tour" "$t" 2>/dev/null || true
+        sleep "$secs"
+    done < <(rows | cut -f1)
+}
+
+new_theme() {
+    local name=${1:-} img=${2:-} scheme=${3:-m3-tonal-spot} mode=${4:-dark} file user=$cfg/omunchy/themes.tsv
+    [[ -n $name && -f $img ]] || die "usage: omunchy-theme new <name> <image> [scheme] [dark|light]"
+    [[ $name =~ ^[A-Za-z0-9][A-Za-z0-9\ _-]*$ ]] || die "name: letters, digits, space, - and _ only"
+    [[ $mode == dark || $mode == light ]] || die "mode is dark or light"
+    rows | cut -f1 | grep -qixF "$name" && die "a theme called '$name' exists"
+    file=${name// /-}
+    mkdir -p "$cfg/noctalia/palettes" "$walls" "${user%/*}"
+    local raw; raw=$(mktemp); trap 'rm -f "$raw"' RETURN
+    noctalia theme "$img" --scheme "$scheme" --both -o "$raw" ||
+        die "noctalia could not make a palette (schemes: noctalia theme --help)"
+    # generator tokens -> the palette format noctalia loads for source=custom
+    jq 'map_values({
+        mPrimary: .primary, mOnPrimary: .on_primary, mSecondary: .secondary, mOnSecondary: .on_secondary,
+        mTertiary: .tertiary, mOnTertiary: .on_tertiary, mError: .error, mOnError: .on_error,
+        mSurface: .surface, mOnSurface: .on_surface, mSurfaceVariant: .surface_container,
+        mOnSurfaceVariant: .on_surface_variant, mOutline: .outline_variant, mShadow: .shadow,
+        mHover: .hover, mOnHover: .on_hover,
+        terminal: {
+            background: .terminal_background, foreground: .terminal_foreground,
+            cursor: .terminal_cursor, cursorText: .terminal_cursor_text,
+            selectionBg: .terminal_selection_bg, selectionFg: .terminal_selection_fg,
+            normal: (. as $p | reduce ("black","red","green","yellow","blue","magenta","cyan","white") as $c ({}; .[$c] = $p["terminal_normal_" + $c])),
+            bright: (. as $p | reduce ("black","red","green","yellow","blue","magenta","cyan","white") as $c ({}; .[$c] = $p["terminal_bright_" + $c]))
+        }})' "$raw" >"$cfg/noctalia/palettes/$file.json" || die "palette conversion failed"
+    # keep the image with the theme so it travels with it
+    [[ $(readlink -f "$img") == "$(readlink -f "$walls/${img##*/}")" ]] || cp -n "$img" "$walls/"
+    printf '%s\tcustom\t%s\t%s\t%s\n' "$name" "$file" "$mode" "${img##*/}" >>"$user"
+    echo "Added '$name' to $user"
+    try_theme "$name"
+}
+
+[[ ${1:-} == --no-wallpaper ]] && { setwall=0; shift; }
 case ${1:-} in
     list) rows | cut -f1 ;;
     current) cat "$state" 2>/dev/null || echo Wallpaper ;;
-    set) [[ -n ${2:-} ]] || { echo "usage: omunchy-theme set <name>" >&2; exit 2; }; set_theme "$2" ;;
+    set) [[ -n ${2:-} ]] || die "usage: omunchy-theme set <name>"; set_theme "$2" ;;
+    try) [[ -n ${2:-} ]] || die "usage: omunchy-theme try <name>"; try_theme "$2" ;;
+    tour) tour "${2:-}" ;;
+    new) shift; new_theme "$@" ;;
     pick)
         cur=$("$0" current)
         t=$(rows | cut -f1 | rofi -dmenu -i -p "Theme ($cur)" -no-show-icons) || exit 0
-        [[ -z $t ]] || set_theme "$t" >/dev/null
+        [[ -z $t ]] || try_theme "$t" >/dev/null
         ;;
-    *) sed -n '2,4s/^# \{0,1\}//p' "$0"; exit 2 ;;
+    *) sed -n '2,8s/^# \{0,1\}//p' "$0"; exit 2 ;;
 esac

@@ -145,10 +145,17 @@ s_update() {
 }
 
 s_setup() {
-    local o=("Theme" "Keybindings" "Wallpaper" "Control centre")
+    local o=("Theme" "Theme tour" "New theme from wallpaper" "Keybindings" "Wallpaper" "Control centre")
     ((live)) || o+=("Security")
     case $(pick Setup "${o[@]}") in
         Theme) "$bin/omunchy-theme" pick ;;
+        "Theme tour") run "$bin/omunchy-theme" tour 4 ;;
+        "New theme from wallpaper")
+            local n w; w=$(noctalia msg wallpaper-get 2>/dev/null)
+            [[ -f $w ]] || { rofi -e "No wallpaper set."; return; }
+            n=$(ask "Name for the new theme") || return
+            [[ -n $n ]] && term "New theme" "$bin/omunchy-theme" new "$n" "$w"
+            ;;
         Security) s_security ;;
         Keybindings) run "$bin/omunchy-menu-keybinds" ;;
         Wallpaper) noctalia msg panel-toggle wallpaper ;;
