@@ -70,8 +70,8 @@ CAPTURE & TOGGLES
 ───────────────────────
 
 Print                   Screenshot (region)
-Alt + Print             Record region (again to stop)
-Alt + Shift + Print     Record whole screen (again to stop)
+Ctrl + Print            Record region (again to stop)
+Ctrl + Shift + Print    Record whole screen (again to stop)
 Super + Ctrl + Print    Copy text from screen (OCR)
 Super + Print           Colour picker
 Super + Ctrl + t        Theme picker

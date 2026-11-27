@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # omunchy:summary=Screen recording, OCR text, QR codes and colour picking (screenshots: noctalia)
-#   omunchy-capture record [region|screen]   start, or stop if running (Alt+Print)
+#   omunchy-capture record [region|screen]   start, or stop if running (Ctrl+Print)
 #   omunchy-capture text | qr | colour       region to clipboard (OCR installs tesseract on first use)
 #   omunchy-capture status                   exit 0 while recording
 set -uo pipefail
@@ -51,7 +51,7 @@ record() {
     # clear the bar dot however wf-recorder ends (stopped, crashed, output gone)
     ( while kill -0 "$p" 2>/dev/null; do sleep 1; done; pkill -RTMIN+9 waybar ) 9>&- >/dev/null 2>&1 &
     pkill -RTMIN+9 waybar 2>/dev/null
-    note "Recording" "Alt+Print again to stop"
+    note "Recording" "Ctrl+Print again to stop"
 }
 
 text() {

@@ -32,8 +32,8 @@ persistent changes require the installer, obinstall.
   ~/.config/omunchy/themes.tsv. Default wallpaper: [wallpaper.default] in the
   same file; more in ~/Backgrounds.
 
-- Capture: Print = region screenshot (noctalia), Alt+Print starts/stops a
-  region recording (Alt+Shift+Print whole screen) into ~/Videos, a red dot in
+- Capture: Print = region screenshot (noctalia), Ctrl+Print starts/stops a
+  region recording (Ctrl+Shift+Print whole screen) into ~/Videos, a red dot in
   the bar while recording. Super+Ctrl+Print copies text from a region (OCR;
   installs tesseract on first use), Super+Print picks a colour. QR codes:
   Super+Alt+Space > Capture. Command: omunchy-capture.
