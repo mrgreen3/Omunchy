@@ -11,8 +11,11 @@ IFS=$'\t' read -r id label note <<<"$row"
 pacman -Q "$id" >/dev/null 2>&1 && { echo "$label is already installed."; exit 0; }
 "$bin/omunchy-netcheck" || fail "$label needs a network connection. Connect first and retry."
 echo "Refreshing the omunchy-extras package database..."
-sudo "$bin/omunchy-extras-db" || fail "Could not refresh the omunchy-extras database."
+SUDO=(sudo)
+[[ ! -t 0 && -n ${SUDO_ASKPASS:-} ]] && SUDO=(sudo -A)
+
+"${SUDO[@]}" "$bin/omunchy-extras-db" || fail "Could not refresh the omunchy-extras database."
 echo "Installing $label..."
-sudo pacman -S --needed --noconfirm "$id" || fail "Install failed. Scroll up for pacman's output."
+"${SUDO[@]}" pacman -S --needed --noconfirm "$id" || fail "Install failed. Scroll up for pacman's output."
 echo
 echo "$label installed."

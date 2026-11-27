@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# omunchy:summary=Countdown reminders as user systemd timers (a notification when due)
+#   omunchy-reminder <minutes> [message]   e.g. omunchy-reminder 25 Tea
+#   omunchy-reminder list | clear
+set -euo pipefail
+prefix=omunchy-reminder
+
+case ${1:-} in
+    list)
+        systemctl --user list-timers --all --no-legend "$prefix-*" 2>/dev/null |
+            awk '{ for (i = 1; i <= NF; i++) if ($i ~ /^omunchy-reminder-.*\.timer$/) { print $1, $2, $3, $4, "-", $i } }'
+        ;;
+    clear)
+        systemctl --user stop "$prefix-*.timer" 2>/dev/null || true
+        echo "Reminders cleared."
+        ;;
+    "" | -h | --help) sed -n '2,4s/^# \{0,1\}//p' "$0"; exit 2 ;;
+    *)
+        [[ $1 =~ ^[0-9]{1,4}$ && $((10#$1)) -gt 0 ]] || { echo "omunchy-reminder: minutes must be a positive number" >&2; exit 2; }
+        min=$((10#$1)); shift
+        msg=${*:-Reminder}
+        unit=$prefix-$(date +%s%N)
+        systemd-run --user --quiet --unit="$unit" --on-active="${min}min" --timer-property=AccuracySec=1s \
+            notify-send -a Omunchy -u critical -i alarm-symbolic "Reminder" "$msg"
+        echo "Reminder in $min min: $msg (at $(date -d "+$min min" +%H:%M))"
+        ;;
+esac

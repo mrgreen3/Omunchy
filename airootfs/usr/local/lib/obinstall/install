@@ -25,6 +25,23 @@ if ((DRY_RUN)); then LOG_FILE=${LOG_FILE:-/tmp/obinstall-dryrun.log}; STATE_DIR=
 . "$INSTALLER_DIR/lib/phases.sh"
 mkdir -p "$(dirname "$LOG_FILE")"; : >>"$LOG_FILE"
 
+cleanup() {
+  local rc=$?
+  # shred wizard-generated secrets; leave user-supplied --config files alone but say so
+  local f
+  # CONFIG/LUKS_PASS_FILE may not be set yet if we exit early
+  for f in "${LUKS_PASS_FILE:-}" "$CONFIG"; do
+    [[ -n $f && -e $f ]] || continue
+    if [[ $f == "$STATE_DIR"/* ]]; then shred -u "$f" 2>/dev/null || true
+    else warn "left in place (contains secrets, shred it when done): $f"; fi
+  done
+  ((rc)) && warn "install failed (exit $rc) — see $LOG_FILE"
+  # keep the installer window open until acknowledged
+  if [[ -t 0 ]]; then echo; read -rsn1 -p "Press any key to exit..." || true; echo; fi
+  return $rc
+}
+trap cleanup EXIT
+
 CONF_DIR=$STATE_DIR
 if [[ -z $CONFIG ]]; then
   mkdir -p "$CONF_DIR"; chmod 700 "$CONF_DIR"
@@ -46,22 +63,6 @@ if ((!ASSUME_YES && !DRY_RUN)); then
   gum confirm --default=no "Erase $DISK and install Omunchy?" || die "aborted"
 fi
 screen "Installing Omunchy"
-
-cleanup() {
-  local rc=$?
-  # shred wizard-generated secrets; leave user-supplied --config files alone but say so
-  local f
-  for f in "${LUKS_PASS_FILE:-}" "$CONFIG"; do
-    [[ -n $f && -e $f ]] || continue
-    if [[ $f == "$STATE_DIR"/* ]]; then shred -u "$f" 2>/dev/null || true
-    else warn "left in place (contains secrets, shred it when done): $f"; fi
-  done
-  ((rc)) && warn "install failed (exit $rc) — see $LOG_FILE"
-  # keep the installer window open until acknowledged
-  if [[ -t 0 ]]; then echo; read -rsn1 -p "Press any key to exit..." || true; echo; fi
-  return $rc
-}
-trap cleanup EXIT
 
 phases=("${PHASES[@]}")
 # --only still runs preflight: it is the check that refuses to wipe the live media

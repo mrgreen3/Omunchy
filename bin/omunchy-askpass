@@ -9,14 +9,18 @@ import os
 import re
 import sys
 
-MAX = 120
+MAX = 2000
 ppid = os.getppid()
 
+# Any program can be named "sudo", so also require a root uid (real, effective
+# or saved) in the parent: only the real setuid sudo has one. /proc/<ppid>/exe is not
+# readable for a setuid process, so it cannot be used here.
 try:
     parent = open(f"/proc/{ppid}/comm").read().strip()
-except OSError:
-    parent = ""
-if parent not in ("sudo", "sudo-rs"):
+    uids = next(l.split()[1:] for l in open(f"/proc/{ppid}/status") if l.startswith("Uid:"))
+except (OSError, StopIteration, ValueError, IndexError):
+    parent, uids = "", []
+if parent not in ("sudo", "sudo-rs") or "0" not in uids:
     sys.exit("omunchy-askpass: only sudo may call this")
 
 # sudo's argv minus sudo itself and its own options: just the command to run.
@@ -45,7 +49,8 @@ cmd = re.sub(r"[\x01-\x08\x0b-\x1f\x7f]", "", cmd)
 if not cmd:
     cmd = "(could not read the command: cancel unless you expect this)"
 elif len(cmd) > MAX:
-    cmd = f"{cmd[:MAX]}… (+{len(cmd) - MAX} more)"
+    # never show part of a command: the hidden rest could be anything
+    sys.exit(f"omunchy-askpass: command over {MAX} characters, refusing")
 
 prompt = sys.argv[1] if len(sys.argv) > 1 else "Password:"
 

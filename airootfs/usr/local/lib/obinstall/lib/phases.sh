@@ -40,7 +40,7 @@ cleanup_disk() {
   for dev in "${devs[@]}"; do swapoff "$dev" 2>/dev/null || true; done
   while read -r mp; do
     [[ -n $mp ]] || continue
-    case $mp in /|/usr|/etc|/home|/var|/boot|/run|/run/*|/proc|/sys|/dev|/dev/*) die "$DISK is in use by the running system ($mp); refusing to wipe it" ;; esac
+    case $mp in /|/usr|/etc|/home|/var|/boot|/run|/run/archiso|/run/archiso/*|/proc|/sys|/dev|/dev/*) die "$DISK is in use by the running system ($mp); refusing to wipe it" ;; esac
     umount "$mp" 2>/dev/null && continue
     # busy: stop what is using it (e.g. a stray gpg-agent from a previous run), then unmount
     fuser -km "$mp" >/dev/null 2>&1 || true
@@ -255,7 +255,11 @@ EOT
   run rm -f "$MNT/etc/polkit-1/rules.d/50-default.rules"
   ((DRY_RUN)) || { sed -i '/^Hidden=true/d' "$MNT/usr/share/applications/gparted.desktop" 2>/dev/null || true
     sed -i 's/^# %wheel ALL=(ALL:ALL) ALL$/%wheel ALL=(ALL:ALL) ALL/' "$MNT/etc/sudoers"
-    grep -q '^%wheel ALL=(ALL:ALL) ALL$' "$MNT/etc/sudoers" || die "sudoers: wheel rule not found after edit"; }
+    sed -i -e 's/^[[:space:]]*%wheel ALL=(ALL:ALL) NOPASSWD: ALL$/# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/' \
+      -e 's|^#[[:space:]]*@includedir /etc/sudoers.d$|@includedir /etc/sudoers.d|' "$MNT/etc/sudoers"
+    grep -q '^%wheel ALL=(ALL:ALL) ALL$' "$MNT/etc/sudoers" || die "sudoers: wheel rule not found after edit"
+    grep -Eq '^[[:space:]]*[^#].*NOPASSWD' "$MNT/etc/sudoers" && die "sudoers: NOPASSWD rule still active"
+    visudo -cqf "$MNT/etc/sudoers" || die "sudoers: syntax check failed"; }
 
   info "fstab, locale, time, keyboard, hostname"
   ((DRY_RUN)) || { genfstab -U "$MNT" >"$MNT/etc/fstab"; grep -q 'subvol=' "$MNT/etc/fstab" || die "fstab has no btrfs subvolumes"
@@ -329,13 +333,21 @@ service = "greetd"
 EOT
   # LUKS passphrase is the login: start the session once at boot; logout falls back to gtkgreet
   if ((ENCRYPT)) && ! ((DRY_RUN)); then
-    printf '\n[initial_session]\ncommand = "mango"\nuser = "%s"\n' "$USERNAME" >>"$MNT/etc/greetd/config.toml"
+    printf '\n[initial_session]\ncommand = "omunchy-session"\nuser = "%s"\n' "$USERNAME" >>"$MNT/etc/greetd/config.toml"
   fi
-  echo mango | write_file "$MNT/etc/greetd/environments"
+  echo omunchy-session | write_file "$MNT/etc/greetd/environments"
   # let the splash hand over vt1 before cage grabs it
   printf '[Unit]\nAfter=plymouth-quit-wait.service\n' | write_file "$MNT/etc/systemd/system/greetd.service.d/plymouth.conf"
   ((DRY_RUN)) || echo "GTK_THEME=adw-gtk3-dark" >>"$MNT/etc/environment"
   chroot_run systemctl enable greetd.service bluetooth.service power-profiles-daemon.service
+  # firewall: deny incoming, allow outgoing (ufw defaults); `ufw enable` would
+  # touch the host's netfilter from the chroot, so flip ENABLED and the unit
+  if [[ -f $MNT/etc/ufw/ufw.conf ]]; then
+    run sed -i 's/^ENABLED=.*/ENABLED=yes/' "$MNT/etc/ufw/ufw.conf"
+    chroot_run systemctl enable ufw.service
+  else
+    warn "ufw not installed: no firewall"
+  fi
   chroot_run systemctl set-default graphical.target
 }
 

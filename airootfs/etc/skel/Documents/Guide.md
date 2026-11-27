@@ -23,15 +23,44 @@ persistent changes require the installer, obinstall.
   ~/.config/omunchy/skills (the omunchy-guide skill, shared by opencode, pi,
   Gemini CLI and Claude Code; it points them at this Guide), ~/Documents (Guide, Keybindings, About), ~/Backgrounds.
 
-- Theme: colours follow the wallpaper. Change the wallpaper in noctalia and the
-  bar, panels, rofi, window borders and new foot windows re-colour to match
-  (noctalia [theme] source = "wallpaper" in ~/.config/noctalia/config.toml).
-  Default wallpaper: [wallpaper.default] in the same file; more in ~/Backgrounds.
+- Theme: Super+Ctrl+T (or omunchy-theme pick / set <name> / list) switches
+  between named themes (Catppuccin, Gruvbox, Nord, Tokyo Night, Everforest,
+  Rose Pine, Matte Black, light ones...) or "Wallpaper", where colours follow
+  the wallpaper. The bar, panels, rofi, window borders and new foot windows
+  re-colour to match (noctalia's [theme.templates.user.*] in
+  ~/.config/noctalia/config.toml). Add your own rows in
+  ~/.config/omunchy/themes.tsv. Default wallpaper: [wallpaper.default] in the
+  same file; more in ~/Backgrounds.
+
+- Capture: Print = region screenshot (noctalia), Ctrl+Print starts/stops a
+  region recording (Ctrl+Shift+Print whole screen) into ~/Videos, a red dot in
+  the bar while recording. Super+Ctrl+Print copies text from a region (OCR;
+  installs tesseract on first use), Super+Print picks a colour. QR codes:
+  Super+Alt+Space > Capture. Command: omunchy-capture.
+
+- Toggles: Super+Ctrl+I stay awake (no idle lock), Super+Ctrl+N night light,
+  Super+Shift+N do not disturb; also Super+Alt+Space > Toggles.
+
+- Reminders: omunchy-reminder 25 Tea (minutes, then text) pops a
+  notification when due; omunchy-reminder list / clear. Also Apps > Reminder.
+
+- Snapshots (after Install > Snapper snapshots): every pacman update takes a
+  before/after snapshot. omunchy-snapshot list / create / restore <n>, or
+  System > Snapshots. Restore puts the system (not /home) back to snapshot n
+  on the next reboot, kernel included; the replaced system is kept until
+  omunchy-snapshot clean.
+
+- Security: new installs have the firewall on (incoming blocked) and no SSH
+  server. omunchy-security status; firewall on|off; ssh on|off (key login
+  only: put your other machine's public key in ~/.ssh/authorized_keys first);
+  drive-password changes the disk encryption password. Also Setup > Security.
 
 - Updating: omunchy-update (or Super+Alt+Space > Update > Omunchy) pulls
   Omunchy's own files from github.com/mrgreen3/Omunchy, runs any one-off
   migrations, adds new wallpapers, refreshes the extras package database, then
-  updates packages (pacman -Syu).
+  updates packages (keyring first, then pacman -Syu). One run at a time, no
+  suspend mid-update, log in ~/.local/state/omunchy/update.log; it says when
+  a reboot is needed after a kernel update. The alias `update` runs it.
   Installed system only. Never edit files in ~/.local/share/omunchy: local
   edits block the update; put your own versions in ~/Scripts.
   omunchy-update --no-packages skips pacman; the waybar update badge runs
@@ -44,7 +73,7 @@ persistent changes require the installer, obinstall.
   (list: omunchy-extras; remove: omunchy-remove-extras <id>).
 
 - Omunchy menu: Super+Alt+Space (or omunchy-menu) reaches every Omunchy
-  action: apps, install, remove, update, setup, system. On the live ISO it
+  action: apps, capture, toggles, install, remove, update, setup, system. On the live ISO it
   offers "Install Omunchy" and hides installs and AI agents.
 
 - Commands: Omunchy's own commands are omunchy-* in ~/.local/share/omunchy/bin
@@ -77,15 +106,19 @@ Toggle a window between floating and tiling with Super+T.
 
 AI SETUP (OPENCODE)
 
-The AI setup assistant is OpenCode. It is not on the ISO and is offered on the
-installed system only (installed live, it would be lost on reboot). Once
-connected: "Install AI Agent" in the launcher (Super+Space), or
-Super+Alt+Space > Install > AI agent, or run:
+The AI setup assistant is OpenCode. It is not on the ISO; it downloads on
+demand. On the installed system: "Install AI Agent" in the launcher
+(Super+Space), or Super+Alt+Space > Install > AI agent. On the live ISO:
+Super+Alt+Space > AI help (OpenCode). Live it is read-only (no file edits,
+sudo blocked by the kernel's no_new_privs flag) and lost on reboot; it is for
+troubleshooting before install. Or run:
 
 omunchy-install-ai opencode
 
 It installs with mise like the other agents (see MISE) and adds an "OpenCode"
-entry to the launcher (Super+Space), or run `opencode --standalone`.
+entry plus "OpenCode (browser)" to the launcher (Super+Space). Run
+`omunchy-opencode` (terminal) or `omunchy-opencode --web` (browser, local
+only, one-off password; close its terminal window to stop it).
 
 On the live ISO, omunchy-welcome shows connection hints when offline.
 
@@ -96,13 +129,13 @@ opencode auth login
   (browser login), or set OPENCODE_API_KEY in your own terminal, then retry.
 
 - Rules every AI assistant follows (opencode, pi, Claude Code, Gemini CLI;
-  this Guide is their only instructions file; opencode settings: ~/.config/opencode):
+  short rules in ~/.config/omunchy/AGENTS.md, this Guide for detail; opencode settings: ~/.config/opencode):
 
   - runs as `opencode --standalone` on this system
   - pacman: official repos only; never `pacman -Sy` alone (partial upgrade)
   - explains every command and asks before any sudo use
   - sudo has no terminal to ask on, so it is always written `sudo -A <cmd>`:
-    a themed password box (rofi) opens for the user and the password goes
+    a password box (GTK) opens for the user and the password goes
     straight to sudo, never through chat. See SUDO FROM OPENCODE below
   - no global npm/nodejs; user-local tools install under ~/.local or ~/.pi
     with their own installers (no sudo for those)

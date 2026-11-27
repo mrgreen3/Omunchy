@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+# omunchy:summary=Screen recording, OCR text, QR codes and colour picking (screenshots: noctalia)
+#   omunchy-capture record [region|screen]   start, or stop if running (Ctrl+Print)
+#   omunchy-capture text | qr | colour       region to clipboard (OCR installs tesseract on first use)
+#   omunchy-capture status                   exit 0 while recording
+set -uo pipefail
+bin=$(dirname "$(readlink -f "$0")")
+[[ -n ${XDG_RUNTIME_DIR:-} && -d $XDG_RUNTIME_DIR ]] || { echo "omunchy-capture: XDG_RUNTIME_DIR not set" >&2; exit 1; }
+run=$XDG_RUNTIME_DIR/omunchy-record
+dir=$(xdg-user-dir VIDEOS 2>/dev/null || echo "$HOME/Videos")
+
+note() { notify-send -a Omunchy -t 4000 "$@"; }
+need() { # need <pkg...>: install missing packages (older installs, OCR on first use)
+    "$bin/omunchy-pkg-present" "$@" && return
+    note "Installing $*"
+    "$bin/omunchy-pkg-add" "$@" || { note -u critical "Install failed: $*" "Run omunchy-update, then try again"; return 1; }
+}
+recording() { # pid file must name a live wf-recorder; stale files are removed
+    local p
+    [[ -f $run.pid ]] && p=$(<"$run.pid") || return 1
+    [[ $(ps -o comm= -p "$p" 2>/dev/null) == wf-recorder ]] && return 0
+    rm -f "$run.pid"; return 1
+}
+region() { slurp -d 2>/dev/null; }
+
+record() {
+    exec 9>"$run.lock"; flock -n 9 || return 0   # a second press while starting/stopping
+    if recording; then
+        local p i; p=$(<"$run.pid")
+        kill -INT "$p"
+        for ((i = 0; i < 50; i++)); do recording || break; sleep 0.2; done
+        if recording; then kill -TERM "$p"; note -u critical "Recording stopped" "may be truncated: $(<"$run.file")"
+        else note "Recording saved" "$(<"$run.file")"; fi
+        rm -f "$run.pid"
+        pkill -RTMIN+9 waybar 2>/dev/null
+        return
+    fi
+    need wf-recorder slurp || return 1
+    local geom=() out
+    if [[ ${1:-region} == region ]]; then
+        local g; g=$(region) || return 0
+        geom=(-g "$g")
+    fi
+    mkdir -p "$dir"
+    out=$dir/recording-$(date +%Y%m%d-%H%M%S).mp4
+    setsid wf-recorder "${geom[@]}" -f "$out" >/dev/null 2>&1 9>&- &
+    local p=$!
+    echo "$p" >"$run.pid"; printf '%s\n' "$out" >"$run.file"
+    sleep 0.5
+    recording || { note -u critical "Recording failed to start"; return 1; }
+    # clear the bar dot however wf-recorder ends (stopped, crashed, output gone)
+    ( while kill -0 "$p" 2>/dev/null; do sleep 1; done; pkill -RTMIN+9 waybar ) 9>&- >/dev/null 2>&1 &
+    pkill -RTMIN+9 waybar 2>/dev/null
+    note "Recording" "Ctrl+Print again to stop"
+}
+
+text() {
+    need grim slurp tesseract tesseract-data-eng || return 1
+    local g t; g=$(region) || return 0
+    t=$(grim -g "$g" - | tesseract stdin stdout --psm 6 -l "${OMUNCHY_OCR_LANGS:-eng}" 2>/dev/null)
+    [[ -n ${t//[[:space:]]/} ]] || { note "No text found"; return; }
+    # count only: the text may be a password or recovery code
+    if printf '%s' "$t" | wl-copy --sensitive; then note "Text copied" "${#t} characters"; else note -u critical "Copy failed"; fi
+}
+
+qr() {
+    need grim slurp zbar || return 1
+    local g v; g=$(region) || return 0
+    v=$(grim -g "$g" - | zbarimg -q --raw -Sdisable -Sqrcode.enable - 2>/dev/null)
+    [[ -n $v ]] || { note "No QR code found"; return; }
+    # may hold a 2FA secret: keep it out of clipboard history and the journal
+    if printf '%s' "$v" | wl-copy --sensitive; then note "QR code copied"; else note -u critical "Copy failed"; fi
+}
+
+colour() {
+    need hyprpicker || return 1
+    local c; c=$(hyprpicker -a -f hex 2>/dev/null) || return 0
+    [[ -n $c ]] && note "Colour copied" "$c"
+}
+
+case ${1:-} in
+    record) record "${2:-region}" ;;
+    text) text ;;
+    qr) qr ;;
+    colour | color) colour ;;
+    status) recording ;;
+    *) sed -n '2,5s/^# \{0,1\}//p' "$0"; exit 2 ;;
+esac

@@ -319,6 +319,10 @@ _make_omunchy_checkout() {
     _msg_info "Baking Omunchy checkout into skel..."
     [[ -z "$(git -c safe.directory='*' -C "${profile}" status --porcelain -- bin migrations)" ]] ||
         _msg_warning "Uncommitted changes in bin/ or migrations/ are NOT in the ISO."
+    local branch
+    branch="$(git -c safe.directory='*' -C "${profile}" symbolic-ref --short -q HEAD || true)"
+    [[ "${branch}" == main ]] ||
+        _msg_warning "Building from branch '${branch:-detached}': omunchy-update on this ISO will follow it, not main."
     rm -rf -- "${dest}"
     # bridge for old installs' updater, not wanted on fresh systems
     rm -f -- "${pacstrap_dir}/etc/skel/Scripts/omunchy-update"

@@ -11,6 +11,20 @@ if [[ ! -s /etc/pacman.d/gnupg/pubring.gpg ]]; then
     exit 1
 fi
 
+if [[ -e /run/omunchy-restore-pending ]]; then
+    echo "A snapshot restore is waiting for a reboot: reboot first, then update."
+    pause; exit 1
+fi
+
+# pacman needs room to download and unpack; a full disk mid-upgrade is hard to recover
+avail=$(df --output=avail -k / | tail -1)
+if ((avail < 2 * 1024 * 1024)); then
+    echo "Only $((avail / 1024)) MiB free on /: free at least 2 GiB before updating"
+    echo "(pacman -Sc clears old cached packages; omunchy-snapshot clean frees old roots)."
+    pause
+    exit 1
+fi
+
 echo "Checking for updates..."
 pending=$(checkupdates 2>/dev/null)
 if [[ -z $pending ]]; then
@@ -25,13 +39,28 @@ echo
 echo "$(wc -l <<<"$pending") updates pending. Running: sudo pacman -Syu"
 echo
 
-sudo pacman -Syu
+SUDO=(sudo); [[ ! -t 0 && -n ${SUDO_ASKPASS:-} ]] && SUDO=(sudo -A)
+# old cached package versions out first (keeps 2 per package), small disks fill up
+command -v paccache >/dev/null && "${SUDO[@]}" paccache -rqk2
+# pacman in its own systemd scope: a systemd re-exec mid-upgrade can't take it down.
+# keyring first: avoids signature errors from new packager keys
+scope=(); [[ -d /run/systemd/system ]] && scope=(systemd-run --scope --quiet --collect)
+"${SUDO[@]}" "${scope[@]}" pacman -Sy --needed --noconfirm archlinux-keyring &&
+    "${SUDO[@]}" "${scope[@]}" pacman -Su
 rc=$?
 echo
 if ((rc == 0)); then
     echo "Update complete."
+    snapper -c root get-config >/dev/null 2>&1 && echo "Snapshots before/after were taken (omunchy-snapshot list)."
+    orphans=$(pacman -Qdtq 2>/dev/null | wc -l)
+    ((orphans)) && echo "$orphans packages are no longer needed by anything (see: pacman -Qdt)."
+    if [[ ! -d /usr/lib/modules/$(uname -r) ]]; then
+        echo "The kernel was updated: reboot soon (new drivers and modules load only after a reboot)."
+        notify-send -a Omunchy "Reboot recommended" "The kernel was updated" 2>/dev/null || true
+    fi
 else
-    echo "Update failed (exit $rc). Scroll up for pacman's output."
+    echo "Update failed or cancelled (exit $rc). Scroll up for pacman's output."
+    echo "The package lists are refreshed now: run the update again before installing anything."
 fi
 
 pkill -RTMIN+8 waybar 2>/dev/null

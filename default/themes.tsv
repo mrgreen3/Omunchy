@@ -1,0 +1,18 @@
+# name	source	scheme	mode	wallpaper (optional, in ~/Backgrounds)
+# source: builtin (noctalia's own), custom (default/palettes/<scheme>.json), wallpaper (generated)
+# Users add rows in ~/.config/omunchy/themes.tsv; custom palettes go in ~/.config/noctalia/palettes.
+Wallpaper	wallpaper	m3-tonal-spot	dark
+Omunchy	custom	Omunchy	dark	mountain-moon.jpg
+Catppuccin	builtin	Catppuccin	dark	catppuccin-waves.webp
+Catppuccin Latte	builtin	Catppuccin	light	catppuccin-latte-color-fade.webp
+Dracula	builtin	Dracula	dark
+Eldritch	builtin	Eldritch	dark
+Everforest	custom	Everforest	dark	everforest-tree-tops.webp
+Flexoki Light	custom	Flexoki	light	flexoki-orb.webp
+Gruvbox	builtin	Gruvbox	dark
+Kanagawa	builtin	Kanagawa	dark	kanagawa-wave.webp
+Matte Black	custom	Matte-Black	dark	matte-black-dark-waters.webp
+Noctalia	builtin	Noctalia	dark
+Nord	builtin	Nord	dark	nord-city-view.webp
+Rose Pine	builtin	Rosé Pine	dark	rose-pine-funky-shapes.webp
+Tokyo Night	builtin	Tokyo-Night	dark

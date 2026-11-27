@@ -16,6 +16,8 @@ IFS=$'\t' read -r id label tool cmd args <<<"$row"
 
 write_launcher() {
     mkdir -p "$apps"
+    exec="$shims/$cmd${args:+ $args}"
+    [[ $id == opencode ]] && exec="$bin/omunchy-opencode"
     cat >"$apps/omunchy-ai-$id.desktop" <<DESKTOP
 [Desktop Entry]
 Type=Application
@@ -24,11 +26,28 @@ Name=$label
 GenericName=AI Coding Agent
 Comment=$label in a terminal (installed with omunchy-install-ai)
 TryExec=$shims/$cmd
-Exec=foot -T "$label" $shims/$cmd${args:+ $args}
+Exec=foot -T "$label" $exec
 Icon=utilities-terminal
 Terminal=false
 Categories=Development;
 Keywords=ai;agent;coding;$id;
+StartupNotify=false
+X-Omunchy-AI=$id
+DESKTOP
+    [[ $id == opencode ]] || return 0
+    cat >"$apps/omunchy-ai-$id-web.desktop" <<DESKTOP
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=$label (browser)
+GenericName=AI Coding Agent
+Comment=$label in the browser; close its terminal window to stop it
+TryExec=$shims/$cmd
+Exec=foot -T "$label (browser)" $bin/omunchy-opencode --web
+Icon=web-browser
+Terminal=false
+Categories=Development;
+Keywords=ai;agent;coding;$id;web;browser;
 StartupNotify=false
 X-Omunchy-AI=$id
 DESKTOP
@@ -40,7 +59,8 @@ if ((launcher_only)); then
     exit 0
 fi
 
-[[ -d /run/archiso/airootfs ]] && fail "$label is available after installing Omunchy (obinstall)."
+live=0; [[ -d /run/archiso/airootfs ]] && live=1
+((live)) && [[ $id != opencode ]] && fail "$label is available after installing Omunchy (obinstall)."
 command -v mise >/dev/null || fail "mise is missing: sudo pacman -S mise"
 "$bin/omunchy-netcheck" || fail "$label needs a network connection. Connect first and retry."
 
@@ -51,3 +71,4 @@ write_launcher
 echo
 echo "$label installed. Open it from the launcher (Super+Space > $label), or run: $cmd${args:+ $args}"
 echo "Log in inside $label itself; never paste keys into a chat."
+((live)) && echo "Live session: read-only (no edits, no sudo) and lost on reboot."

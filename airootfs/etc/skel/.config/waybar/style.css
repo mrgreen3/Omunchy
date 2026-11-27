@@ -92,6 +92,12 @@ window#waybar {
     color: @accent;
 }
 
+/* ---------- Recording ---------- */
+#custom-recording {
+    color: @red;
+    padding: 0 6px;
+}
+
 /* ---------- Tray ---------- */
 #tray {
     padding: 0 6px;

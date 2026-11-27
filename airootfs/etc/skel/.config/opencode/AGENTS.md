@@ -1,0 +1,1 @@
+../omunchy/AGENTS.md

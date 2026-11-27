@@ -22,6 +22,7 @@ file_permissions=(
   ["/etc/sudoers.d/10-live-nopasswd"]="0:0:440"
   ["/root"]="0:0:750"
   ["/usr/local/bin/obinstall"]="0:0:755"
+  ["/usr/local/bin/omunchy-session"]="0:0:755"
   ["/usr/local/lib/obinstall/"]="0:0:755"
   ["/usr/share/pacman/keyrings/omarchy.gpg"]="0:0:644"
   ["/usr/share/pacman/keyrings/omarchy-trusted"]="0:0:644"

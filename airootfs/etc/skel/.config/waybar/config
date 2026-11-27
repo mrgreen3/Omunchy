@@ -20,6 +20,7 @@
     "custom/updates"
   ],
   "modules-right": [
+    "custom/recording",
     "tray",
     "bluetooth",
     "network",
@@ -66,6 +67,16 @@
     "interval": 21600,
     "on-click": "foot -e ~/.local/share/omunchy/bin/omunchy-update-system",
     "signal": 8
+  },
+
+  // recording indicator, only while omunchy-capture is recording; click stops
+  "custom/recording": {
+    "format": "{}",
+    "exec": "~/.local/share/omunchy/bin/omunchy-capture status && echo '󰑊'",
+    "interval": "once",
+    "signal": 9,
+    "on-click": "~/.local/share/omunchy/bin/omunchy-capture record",
+    "tooltip-format": "Recording: click to stop"
   },
 
   // omarchy.tray

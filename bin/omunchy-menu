@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# omunchy:summary=Omunchy menu (Super+Alt+Space): apps, install, remove, update, setup, system
+# omunchy:summary=Omunchy menu (Super+Alt+Space): apps, capture, toggles, install, remove, update, setup, system
 #   omunchy-menu [section]   open straight at a section (e.g. omunchy-menu install, install-ai)
 # Esc in a section goes back; Esc at the top closes.
 bin=$(dirname "$(readlink -f "$0")")
@@ -10,6 +10,7 @@ pick() { # pick <prompt> <options...>  -> chosen text
     printf '%s\n' "$@" | rofi -dmenu -i -p "$p" -no-show-icons \
         -theme-str 'listview { lines: 10; }'
 }
+confirm() { [[ $(pick "$1" "No" "Yes") == Yes ]]; }
 ask() { rofi -dmenu -p "$1" -theme-str 'listview { lines: 0; }' </dev/null; }
 run() { setsid -f "$@" >/dev/null 2>&1; }
 term() { # term <title> <cmd...>  run in foot, wait for a key so the output can be read
@@ -33,24 +34,68 @@ extras_pick() { # extras_pick <verb> <extras rows> <command>
     term "$1 extras" "$bin/$3" "$(sed -n "$((i + 1))p" <<<"$rows" | cut -f1)"
 }
 
+# Live: OpenCode only (read-only, lost on reboot); installed: every agent not yet installed.
+live_ai() {
+    if ((live)); then "$bin/omunchy-agents" available | awk -F'\t' '$1 == "opencode"'
+    else "$bin/omunchy-agents" available; fi
+}
+
 s_main() {
     local opts=("Apps")
-    ((live)) && opts+=("Install Omunchy") || opts+=("Install" "Remove" "Update")
-    opts+=("Setup" "System")
+    ((live)) && opts+=("Install Omunchy" "AI help (OpenCode)") || opts+=("Install" "Remove" "Update")
+    opts+=("Capture" "Toggles" "Setup" "System")
     case $(pick Omunchy "${opts[@]}") in
         Apps) s_apps ;;
         "Install Omunchy") run obinstall ;;
+        "AI help (OpenCode)")
+            if [[ -n $(live_ai) ]]; then ai_pick Install "$(live_ai)" omunchy-install-ai
+            else run foot -T "OpenCode (browser)" "$bin/omunchy-opencode" --web; fi ;;
         Install) s_install ;;
         Remove) s_remove ;;
         Update) s_update ;;
+        Capture) s_capture ;;
+        Toggles) s_toggles ;;
         Setup) s_setup ;;
         System) s_system ;;
     esac
 }
 
+s_capture() {
+    local cap=$bin/omunchy-capture opts=("Screenshot (region)" "Screenshot (screen)")
+    if "$cap" status; then opts+=("Stop recording"); else opts+=("Record region" "Record screen"); fi
+    opts+=("Copy text (OCR)" "Read QR code" "Colour picker")
+    case $(pick Capture "${opts[@]}") in
+        "Screenshot (region)") noctalia msg screenshot-region ;;
+        "Screenshot (screen)") noctalia msg screenshot-fullscreen ;;
+        "Stop recording") "$cap" record ;;
+        "Record region") run "$cap" record region ;;
+        "Record screen") run "$cap" record screen ;;
+        "Copy text (OCR)") run "$cap" text ;;
+        "Read QR code") run "$cap" qr ;;
+        "Colour picker") run "$cap" colour ;;
+        "") s_main ;;
+    esac
+}
+
+s_toggles() {
+    case $(pick Toggles "Stay awake" "Night light" "Do not disturb") in
+        "Stay awake") noctalia msg caffeine-toggle ;;
+        "Night light") noctalia msg nightlight-force-toggle ;;
+        "Do not disturb") noctalia msg notification-dnd-toggle ;;
+        "") s_main ;;
+    esac
+}
+
 s_apps() {
-    case $(pick Apps "Radio") in
+    case $(pick Apps "Radio" "Reminder") in
         Radio) run foot -T Radio "$bin/omunchy-radio" ;;
+        Reminder)
+            local m t
+            m=$(ask "Remind me in (minutes)") || return
+            [[ $m =~ ^[0-9]+$ ]] || return
+            t=$(ask "Reminder text") || return
+            "$bin/omunchy-reminder" "$m" "${t:-Reminder}" >/dev/null && notify-send -a Omunchy "Reminder set" "in $m min: ${t:-Reminder}"
+            ;;
         "") s_main ;;
     esac
 }
@@ -100,7 +145,18 @@ s_update() {
 }
 
 s_setup() {
-    case $(pick Setup "Keybindings" "Wallpaper" "Control centre") in
+    local o=("Theme" "Theme tour" "New theme from wallpaper" "Keybindings" "Wallpaper" "Control centre")
+    ((live)) || o+=("Security")
+    case $(pick Setup "${o[@]}") in
+        Theme) "$bin/omunchy-theme" pick ;;
+        "Theme tour") run "$bin/omunchy-theme" tour 4 ;;
+        "New theme from wallpaper")
+            local n w; w=$(noctalia msg wallpaper-get 2>/dev/null)
+            [[ -f $w ]] || { rofi -e "No wallpaper set."; return; }
+            n=$(ask "Name for the new theme") || return
+            [[ -n $n ]] && term "New theme" "$bin/omunchy-theme" new "$n" "$w"
+            ;;
+        Security) s_security ;;
         Keybindings) run "$bin/omunchy-menu-keybinds" ;;
         Wallpaper) noctalia msg panel-toggle wallpaper ;;
         "Control centre") noctalia msg panel-toggle control-center ;;
@@ -108,9 +164,40 @@ s_setup() {
     esac
 }
 
+s_security() {
+    local sec=$bin/omunchy-security
+    case $(pick Security "Status" "Firewall on" "Firewall off" "SSH server on (keys only)" "SSH server off" "Change disk password") in
+        Status) term Security "$sec" status ;;
+        "Firewall on") term Firewall "$sec" firewall on ;;
+        "Firewall off") confirm "Turn the firewall off?" && term Firewall "$sec" firewall off ;;
+        "SSH server on (keys only)") term SSH "$sec" ssh on ;;
+        "SSH server off") term SSH "$sec" ssh off ;;
+        "Change disk password") term "Disk password" "$sec" drive-password ;;
+        "") s_setup ;;
+    esac
+}
+
+s_snapshots() {
+    local snap=$bin/omunchy-snapshot
+    case $(pick Snapshots "List" "Create now" "Restore..." "Clean up old roots") in
+        List) term Snapshots "$snap" list ;;
+        "Create now") term Snapshots "$snap" create "manual (menu)" ;;
+        "Restore...") term "Restore snapshot" "$snap" restore ;;
+        "Clean up old roots") term Snapshots "$snap" clean ;;
+        "") s_system ;;
+    esac
+}
+
 s_system() {
-    case $(pick System "Lock" "Power menu") in
+    local o=("Lock" "Suspend" "Log out" "Reboot" "Shut down" "Power menu")
+    ((live)) || o+=("Snapshots")
+    case $(pick System "${o[@]}") in
+        Snapshots) s_snapshots ;;
         Lock) noctalia msg session lock ;;
+        Suspend) noctalia msg session lock-and-suspend ;;
+        "Log out") confirm "Log out?" && noctalia msg session logout ;;
+        Reboot) confirm "Reboot?" && noctalia msg session reboot ;;
+        "Shut down") confirm "Shut down?" && noctalia msg session shutdown ;;
         "Power menu") noctalia msg panel-toggle session ;;
         "") s_main ;;
     esac
@@ -119,10 +206,9 @@ s_system() {
 pkill -x rofi && exit 0
 case ${1:-} in
     "") s_main ;;
-    install-ai) ((live)) && { rofi -e "AI agents are available after installing Omunchy."; exit 1; }
-        ai_pick Install "$("$bin/omunchy-agents" available)" omunchy-install-ai ;;
+    install-ai) ai_pick Install "$(live_ai)" omunchy-install-ai ;;
     install | remove | update) ((live)) && { rofi -e "Install Omunchy first."; exit 1; }; "s_$1" ;;
-    apps | setup | system) "s_$1" ;;
+    apps | capture | toggles | setup | system) "s_$1" ;;
     -h | --help) sed -n '2,4s/^# \{0,1\}//p' "$0" ;;
     *) echo "unknown section: $1" >&2; exit 2 ;;
 esac

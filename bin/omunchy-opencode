@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# omunchy:summary=Run OpenCode (live session: read-only, sudo blocked); --web opens it in the browser
+#   omunchy-opencode         terminal UI
+#   omunchy-opencode --web   browser UI on 127.0.0.1 with a one-off password; stops when this exits
+set -uo pipefail
+bin=$(dirname "$(readlink -f "$0")")
+oc=${MISE_DATA_DIR:-$HOME/.local/share/mise}/shims/opencode
+[[ -x $oc ]] || { echo "OpenCode is not installed: omunchy-install-ai opencode" >&2; exit 1; }
+
+run=("$oc")
+if [[ -d /run/archiso ]]; then
+    export OPENCODE_CONFIG=$bin/../default/opencode-live.json
+    run=(setpriv --no-new-privs "$oc")
+    echo "Live session: OpenCode can look but not change (no file edits, no sudo)."
+    echo "It and its login are lost on reboot. Install Omunchy for the full version."
+fi
+
+if [[ ${1:-} != --web ]]; then
+    args=$("$bin/omunchy-agents" get opencode | cut -f5)
+    # shellcheck disable=SC2086
+    exec "${run[@]}" $args
+fi
+
+port=$(comm -23 <(seq 4096 4196) <(ss -Htln | awk '{sub(/.*:/, "", $4); print $4}' | sort -u) | head -1)
+[[ -n $port ]] || { echo "No free port in 4096-4196." >&2; exit 1; }
+pass=$(head -c 18 /dev/urandom | base64 | tr -d '/+=')
+export OPENCODE_SERVER_PASSWORD=$pass
+cd "$HOME" || exit 1
+"${run[@]}" serve --hostname 127.0.0.1 --port "$port" &
+srv=$!
+trap 'kill $srv 2>/dev/null' EXIT INT TERM
+for _ in $(seq 40); do
+    curl -s -o /dev/null -u "opencode:$pass" "http://127.0.0.1:$port/" && break
+    kill -0 $srv 2>/dev/null || { echo "OpenCode server failed to start." >&2; exit 1; }
+    sleep 0.25
+done
+setsid -f "${BROWSER:-firefox}" "http://opencode:$pass@127.0.0.1:$port/" >/dev/null 2>&1
+echo
+echo "OpenCode is open in the browser (http://127.0.0.1:$port/). Close this window to stop it."
+wait $srv

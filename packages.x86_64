@@ -29,6 +29,13 @@ libnotify
 reflector
 playerctl
 
+## === CAPTURE (omunchy-capture; OCR tesseract installs on first use) ===
+grim
+slurp
+wf-recorder
+zbar
+hyprpicker
+
 ## === BLUETOOTH & POWER (daemons: live ISO enables them via
 ## multi-user.target.wants, obinstall enables them on installed systems) ===
 bluez
@@ -87,11 +94,17 @@ kbd
 ## === COMMAND-LINE TOOLS ===
 mise
 openssh
+ufw
 arch-install-scripts
 curl
 pacman-contrib
 fzf
 eza
+zoxide
+bat
+fd
+ripgrep
+bash-completion
 
 ## === MEDIA APPLICATIONS ===
 mpv
