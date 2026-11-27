@@ -10,6 +10,7 @@ SUDO=(sudo); [[ ! -t 0 && -n ${SUDO_ASKPASS:-} ]] && SUDO=(sudo -A)
 dropin=/etc/ssh/sshd_config.d/10-omunchy.conf
 
 [[ ! -d /run/archiso ]] || { echo "Running live - install Omunchy first."; exit 1; }
+((EUID)) || { echo "Run omunchy-security as your user, not root (it uses sudo itself)." >&2; exit 1; }
 
 ufw_on() { "${SUDO[@]}" ufw status 2>/dev/null | grep -q '^Status: active'; }
 
@@ -22,7 +23,8 @@ luks_dev() { # the LUKS partition under / (empty if not encrypted)
 status() {
     if ufw_on; then echo "Firewall:  on (incoming blocked)"; else echo "Firewall:  off"; fi
     if systemctl is-active -q sshd; then
-        echo "SSH:       on$([[ -f $dropin ]] && echo ", keys only")"
+        if [[ $("${SUDO[@]}" sshd -T 2>/dev/null | grep -ciE '^(passwordauthentication|kbdinteractiveauthentication) no$') == 2 ]]
+        then echo "SSH:       on, keys only"; else echo "SSH:       on, PASSWORDS ACCEPTED (omunchy-security ssh on fixes it)"; fi
     else echo "SSH:       off"; fi
     local d; d=$(luks_dev)
     if [[ -n $d ]]; then echo "Disk:      encrypted ($d)"; else echo "Disk:      not encrypted"; fi
@@ -34,6 +36,8 @@ firewall() {
             "$bin/omunchy-pkg-add" ufw
             "${SUDO[@]}" ufw default deny incoming >/dev/null
             "${SUDO[@]}" ufw default allow outgoing >/dev/null
+            # keep an enabled SSH server reachable (this may be running over it)
+            systemctl is-active -q sshd && "${SUDO[@]}" ufw limit 22/tcp comment omunchy-sshd >/dev/null
             "${SUDO[@]}" ufw --force enable >/dev/null
             "${SUDO[@]}" systemctl enable -q ufw.service
             echo "Firewall on: incoming connections blocked."
@@ -61,16 +65,21 @@ ssh_cmd() {
                 "PasswordAuthentication no" "KbdInteractiveAuthentication no" \
                 "PermitRootLogin no" "AllowUsers $USER" |
                 "${SUDO[@]}" install -Dm644 /dev/stdin "$dropin"
-            "${SUDO[@]}" sshd -t
-            "${SUDO[@]}" systemctl enable -q --now sshd
-            "${SUDO[@]}" systemctl reload sshd
-            ufw_on && "${SUDO[@]}" ufw limit ssh >/dev/null
+            # a drop-in loses to an earlier match in sshd_config: check the effective settings
+            if ! "${SUDO[@]}" sshd -t || [[ $("${SUDO[@]}" sshd -T 2>/dev/null | grep -ciE '^(passwordauthentication|kbdinteractiveauthentication) no$') != 2 ]]; then
+                "${SUDO[@]}" rm -f "$dropin"
+                echo "sshd would still accept passwords (check /etc/ssh/sshd_config); SSH left off." >&2
+                exit 1
+            fi
+            "${SUDO[@]}" systemctl enable -q sshd
+            "${SUDO[@]}" systemctl reload-or-restart sshd
+            ufw_on && "${SUDO[@]}" ufw limit 22/tcp comment omunchy-sshd >/dev/null
             echo "SSH on: key login only for $USER$(ufw_on && echo ", port 22 open (rate-limited)")."
             ;;
         off)
             "${SUDO[@]}" systemctl disable -q --now sshd
             "${SUDO[@]}" rm -f "$dropin"
-            ufw_on && "${SUDO[@]}" ufw delete limit ssh >/dev/null 2>&1 || true
+            ufw_on && "${SUDO[@]}" ufw delete limit 22/tcp >/dev/null 2>&1 || true
             echo "SSH off."
             ;;
         *) echo "usage: omunchy-security ssh on|off" >&2; exit 2 ;;

@@ -2,102 +2,136 @@
 # omunchy:summary=System snapshots: list, create, restore (rollback that works with GRUB), clean
 #   omunchy-snapshot list
 #   omunchy-snapshot create [description]
-#   omunchy-snapshot restore <number>   make snapshot <number> the system on next boot
+#   omunchy-snapshot restore [number]   make a snapshot the system on next boot (asks if no number)
 #   omunchy-snapshot clean              delete roots set aside by earlier restores
 # Restore keeps /home, logs and the package cache (their own subvolumes) and
-# re-syncs the kernel and initramfs in /boot (FAT, not snapshotted) to the
+# re-syncs the kernels and initramfs in /boot (FAT, not snapshotted) to the
 # restored system. The replaced root is kept as @.old-<date> until clean.
+# Until the reboot, package updates are refused (they would write a kernel the
+# restored system has no modules for).
 set -euo pipefail
 
-if ((EUID != 0)) && [[ ${1:-} == restore || ${1:-} == clean ]]; then
+if ((EUID != 0)); then
     SUDO=(sudo); [[ ! -t 0 && -n ${SUDO_ASKPASS:-} ]] && SUDO=(sudo -A)
     exec "${SUDO[@]}" "$0" "$@"
 fi
 [[ ! -d /run/archiso ]] || { echo "Running live - install Omunchy first."; exit 1; }
 
+PENDING=/run/omunchy-restore-pending   # tmpfs: gone after the reboot
 die() { echo "omunchy-snapshot: $*" >&2; exit 1; }
 need_snapper() { snapper -c root get-config >/dev/null 2>&1 || die "snapshots are not set up: run omunchy-install-snapper"; }
+rootdev() { findmnt -no SOURCE / | sed 's/\[.*//'; }
 
-top= new=
+top= new= swapped=0 done=0 stamp=
+undo() { # put the running system's root, kernels and initramfs back
+    echo "omunchy-snapshot: restore failed; undoing." >&2
+    [[ -n $new ]] && { umount -R "$new" 2>/dev/null || true; rmdir "$new" 2>/dev/null || true; new=; }
+    if btrfs subvolume delete "$top/@" >/dev/null 2>&1 || [[ ! -e $top/@ ]]; then
+        mv "$top/@.old-$stamp" "$top/@"
+    else
+        echo "WARNING: could not remove the new @; the current system is $top/@.old-$stamp - rename it to @ before rebooting" >&2
+    fi
+    local k
+    for k in /usr/lib/modules/*/; do
+        [[ -f $k/pkgbase && -f $k/vmlinuz ]] && install -Dm644 "$k/vmlinuz" "/boot/vmlinuz-$(<"$k/pkgbase")"
+    done
+    mkinitcpio -P >/dev/null 2>&1 || echo "WARNING: rebuilding the current initramfs failed: do not reboot, run mkinitcpio -P" >&2
+    [[ -f /boot/grub/grub.cfg ]] && { grub-mkconfig -o /boot/grub/grub.cfg >/dev/null 2>&1 || echo "WARNING: grub-mkconfig failed: run it before rebooting" >&2; }
+    rm -f "$PENDING"
+}
 cleanup() {
-    [[ -n $new ]] && { umount -R "$new" 2>/dev/null || true; rmdir "$new" 2>/dev/null || true; }
-    [[ -n $top ]] && { umount "$top" 2>/dev/null || true; rmdir "$top" 2>/dev/null || true; }
+    set +e
+    ((swapped && !done)) && undo
+    [[ -n $new ]] && { umount -R "$new" 2>/dev/null; rmdir "$new" 2>/dev/null; }
+    [[ -n $top ]] && { umount "$top" 2>/dev/null; rmdir "$top" 2>/dev/null; }
 }
 trap cleanup EXIT
 
 mount_top() { # the btrfs top level (subvolid 5) of the root filesystem
-    local dev; dev=$(findmnt -no SOURCE / | sed 's/\[.*//')
     [[ $(findmnt -no FSTYPE /) == btrfs ]] || die "/ is not btrfs"
     top=$(mktemp -d /run/omunchy-snapshot.XXXXXX)
-    mount -o subvolid=5 "$dev" "$top"
+    mount -o subvolid=5 "$(rootdev)" "$top"
     [[ -d $top/@ && -d $top/@snapshots ]] || die "unexpected btrfs layout (need @ and @snapshots at the top level)"
 }
 
 restore() {
-    local n=${1:-} ans stamp kver pkgbase
-    [[ $n =~ ^[0-9]+$ ]] || die "usage: omunchy-snapshot restore <number> (see: omunchy-snapshot list)"
+    local n=${1:-} ans k pkgbase need=0 f
     need_snapper
+    [[ -e $PENDING ]] && die "a restore is already waiting for a reboot"
+    findmnt -no OPTIONS / | grep -q 'subvol=/@\(,\|$\)' || die "/ is not the @ subvolume (booted into a snapshot?): boot the normal entry first"
+    if [[ -z $n ]]; then
+        [[ -t 0 ]] || die "usage: omunchy-snapshot restore <number>"
+        snapper -c root list
+        read -rp "Snapshot number to restore: " n
+    fi
+    [[ $n =~ ^[1-9][0-9]*$ ]] || die "not a snapshot number: $n"
     mount_top
     local snap=$top/@snapshots/$n/snapshot
     [[ -d $snap ]] || die "no snapshot $n"
     [[ -d $snap/usr/lib/modules ]] || die "snapshot $n has no /usr/lib/modules: not a root snapshot"
-    findmnt -no OPTIONS / | grep -q 'subvol=/@\(,\|$\)' || die "/ is not the @ subvolume (booted into a snapshot?): boot the normal entry first"
+
+    # room on the FAT /boot for the snapshot's kernels plus fresh initramfs (rough: 4x each kernel)
+    for k in "$snap"/usr/lib/modules/*/vmlinuz; do [[ -f $k ]] && need=$((need + $(stat -c %s "$k") * 4)); done
+    (($(df --output=avail -B1 /boot | tail -1) > need)) || die "not enough free space on /boot"
 
     echo "Snapshot $n: $(snapper -c root --csvout list --columns number,date,description | awk -F, -v n="$n" '$1 == n { print $2" "$3 }')"
     echo "On next boot the system (not /home) goes back to this point."
     if [[ -t 0 ]]; then read -rp "Restore it? [y/N] " ans; [[ $ans == [yY]* ]] || { echo "Cancelled."; exit 0; }; fi
 
     stamp=$(date +%Y%m%d-%H%M%S)
+    snapper -c root create -d "before restore to $n" --cleanup-algorithm number 2>/dev/null || true
+    # package updates now refuse to run until the reboot
+    : >"$PENDING"
     # the running system keeps working from the renamed subvolume until reboot
     mv "$top/@" "$top/@.old-$stamp"
-    if ! btrfs subvolume snapshot "$snap" "$top/@" >/dev/null; then
-        mv "$top/@.old-$stamp" "$top/@"; die "could not create the new root; nothing changed"
-    fi
+    swapped=1
+    btrfs subvolume snapshot "$snap" "$top/@" >/dev/null
 
-    # /boot is not in the snapshot: put the restored system's kernels and initramfs there
+    # /boot is not in the snapshot: give it the restored system's kernels and initramfs
     new=$(mktemp -d /run/omunchy-snapshot-new.XXXXXX)
-    mount -o subvol=@ "$(findmnt -no SOURCE / | sed 's/\[.*//')" "$new"
+    mount -o subvol=@ "$(rootdev)" "$new"
     mount --bind /boot "$new/boot"
-    for kver in "$new"/usr/lib/modules/*/; do
-        [[ -f $kver/pkgbase && -f $kver/vmlinuz ]] || continue
-        pkgbase=$(<"$kver/pkgbase")
-        install -Dm644 "$kver/vmlinuz" "/boot/vmlinuz-$pkgbase"
-        echo "  kernel: $pkgbase $(basename "$kver")"
+    local keep=()
+    for k in "$new"/usr/lib/modules/*/; do
+        [[ -f $k/pkgbase && -f $k/vmlinuz ]] || continue
+        pkgbase=$(<"$k/pkgbase"); keep+=("$pkgbase")
+        install -Dm644 "$k/vmlinuz" "/boot/vmlinuz-$pkgbase"
+        echo "  kernel: $pkgbase $(basename "$k")"
     done
-    if ! arch-chroot "$new" mkinitcpio -P >/dev/null 2>&1; then
-        echo "omunchy-snapshot: initramfs rebuild failed; undoing." >&2
-        umount -R "$new"; rmdir "$new"; new=
-        btrfs subvolume delete "$top/@" >/dev/null
-        mv "$top/@.old-$stamp" "$top/@"
-        # put the current system's kernel back
-        for kver in /usr/lib/modules/*/; do
-            [[ -f $kver/pkgbase && -f $kver/vmlinuz ]] && install -Dm644 "$kver/vmlinuz" "/boot/vmlinuz-$(<"$kver/pkgbase")"
-        done
-        mkinitcpio -P >/dev/null 2>&1 || echo "WARNING: also failed to rebuild the current initramfs: do not reboot, run mkinitcpio -P" >&2
-        exit 1
-    fi
+    ((${#keep[@]})) || die "snapshot $n has no kernel"
+    # kernels installed after the snapshot have no modules in it: drop them from /boot
+    for f in /boot/vmlinuz-*; do
+        [[ -f $f ]] || continue
+        pkgbase=${f#/boot/vmlinuz-}
+        [[ " ${keep[*]} " == *" $pkgbase "* ]] && continue
+        rm -f "$f" "/boot/initramfs-$pkgbase.img" "/boot/initramfs-$pkgbase-fallback.img"
+        echo "  removed kernel $pkgbase (not in snapshot $n)"
+    done
+    arch-chroot "$new" mkinitcpio -P >/dev/null 2>&1 || die "initramfs rebuild failed"
     echo "  initramfs rebuilt"
     if [[ -f /boot/grub/grub.cfg ]]; then
         mount --bind /.snapshots "$new/.snapshots" 2>/dev/null || true
-        arch-chroot "$new" grub-mkconfig -o /boot/grub/grub.cfg >/dev/null 2>&1 &&
-            echo "  boot menu regenerated" || echo "  warning: grub-mkconfig failed; the old menu still boots the restored system"
+        arch-chroot "$new" grub-mkconfig -o /boot/grub/grub.cfg >/dev/null 2>&1 || die "grub-mkconfig failed"
+        echo "  boot menu regenerated"
     fi
-    snapper -c root create -d "omunchy-snapshot: restored $n (old root @.old-$stamp)" --cleanup-algorithm number 2>/dev/null || true
-    echo "Done. Reboot to start the restored system."
+    done=1
+    echo "Done. Reboot to start the restored system (package updates are blocked until then)."
     echo "The replaced system is kept as @.old-$stamp; free the space later with: omunchy-snapshot clean"
 }
 
 clean() {
     mount_top
-    local olds=("$top"/@.old-*) o ans
+    local olds=("$top"/@.old-*) o ans cur
     [[ -e ${olds[0]} ]] || { echo "Nothing to clean."; return; }
+    [[ -t 0 ]] || die "clean asks before each deletion: run it in a terminal"
+    cur=$(btrfs subvolume show / | awk '/Subvolume ID/ { print $3 }')
     for o in "${olds[@]}"; do
-        # never the subvolume the system is running from (before the post-restore reboot)
-        if [[ $(btrfs subvolume show "$o" | awk '/Subvolume ID/ { print $3 }') == "$(btrfs subvolume show / | awk '/Subvolume ID/ { print $3 }')" ]]; then
+        if [[ $(btrfs subvolume show "$o" | awk '/Subvolume ID/ { print $3 }') == "$cur" ]]; then
             echo "  ${o##*/} is the running system: reboot first"; continue
         fi
-        if [[ -t 0 ]]; then read -rp "Delete ${o##*/}? [y/N] " ans; [[ $ans == [yY]* ]] || continue; fi
-        btrfs subvolume delete "$o" >/dev/null && echo "  deleted ${o##*/}"
+        read -rp "Delete ${o##*/}? [y/N] " ans; [[ $ans == [yY]* ]] || continue
+        if btrfs subvolume delete -R "$o" >/dev/null; then echo "  deleted ${o##*/}"
+        else echo "  could not delete ${o##*/}" >&2; fi
     done
 }
 

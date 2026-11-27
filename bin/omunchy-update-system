@@ -11,6 +11,11 @@ if [[ ! -s /etc/pacman.d/gnupg/pubring.gpg ]]; then
     exit 1
 fi
 
+if [[ -e /run/omunchy-restore-pending ]]; then
+    echo "A snapshot restore is waiting for a reboot: reboot first, then update."
+    pause; exit 1
+fi
+
 # pacman needs room to download and unpack; a full disk mid-upgrade is hard to recover
 avail=$(df --output=avail -k / | tail -1)
 if ((avail < 2 * 1024 * 1024)); then
@@ -35,8 +40,13 @@ echo "$(wc -l <<<"$pending") updates pending. Running: sudo pacman -Syu"
 echo
 
 SUDO=(sudo); [[ ! -t 0 && -n ${SUDO_ASKPASS:-} ]] && SUDO=(sudo -A)
-# keyring first, same transaction run: avoids signature errors from new packager keys
-"${SUDO[@]}" pacman -Sy --needed --noconfirm archlinux-keyring && "${SUDO[@]}" pacman -Su
+# old cached package versions out first (keeps 2 per package), small disks fill up
+command -v paccache >/dev/null && "${SUDO[@]}" paccache -rqk2
+# pacman in its own systemd scope: a systemd re-exec mid-upgrade can't take it down.
+# keyring first: avoids signature errors from new packager keys
+scope=(); [[ -d /run/systemd/system ]] && scope=(systemd-run --scope --quiet --collect)
+"${SUDO[@]}" "${scope[@]}" pacman -Sy --needed --noconfirm archlinux-keyring &&
+    "${SUDO[@]}" "${scope[@]}" pacman -Su
 rc=$?
 echo
 if ((rc == 0)); then
@@ -49,7 +59,8 @@ if ((rc == 0)); then
         notify-send -a Omunchy "Reboot recommended" "The kernel was updated" 2>/dev/null || true
     fi
 else
-    echo "Update failed (exit $rc). Scroll up for pacman's output."
+    echo "Update failed or cancelled (exit $rc). Scroll up for pacman's output."
+    echo "The package lists are refreshed now: run the update again before installing anything."
 fi
 
 pkill -RTMIN+8 waybar 2>/dev/null

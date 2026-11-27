@@ -342,8 +342,12 @@ EOT
   chroot_run systemctl enable greetd.service bluetooth.service power-profiles-daemon.service
   # firewall: deny incoming, allow outgoing (ufw defaults); `ufw enable` would
   # touch the host's netfilter from the chroot, so flip ENABLED and the unit
-  run sed -i 's/^ENABLED=.*/ENABLED=yes/' "$MNT/etc/ufw/ufw.conf"
-  chroot_run systemctl enable ufw.service
+  if [[ -f $MNT/etc/ufw/ufw.conf ]]; then
+    run sed -i 's/^ENABLED=.*/ENABLED=yes/' "$MNT/etc/ufw/ufw.conf"
+    chroot_run systemctl enable ufw.service
+  else
+    warn "ufw not installed: no firewall"
+  fi
   chroot_run systemctl set-default graphical.target
 }
 

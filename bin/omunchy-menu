@@ -171,18 +171,11 @@ s_security() {
 }
 
 s_snapshots() {
-    local snap=$bin/omunchy-snapshot rows n
+    local snap=$bin/omunchy-snapshot
     case $(pick Snapshots "List" "Create now" "Restore..." "Clean up old roots") in
         List) term Snapshots "$snap" list ;;
         "Create now") term Snapshots "$snap" create "manual (menu)" ;;
-        "Restore...")
-            # snapper's table, minus the header and snapshot 0 (the live system)
-            rows=$(snapper -c root --csvout list --columns number,date,description 2>/dev/null | awk -F, 'NR > 1 && $1 != 0 { print $1"  "$2"  "$3 }')
-            [[ -n $rows ]] || { rofi -e "No snapshots (set up: Install > Snapper snapshots)."; return; }
-            n=$(sort -rn <<<"$rows" | rofi -dmenu -i -p "Restore snapshot" -no-show-icons) || return
-            n=${n%% *}; [[ $n =~ ^[0-9]+$ ]] || return
-            confirm "Restore snapshot $n? The system (not /home) goes back on next boot" && term "Restore" "$snap" restore "$n"
-            ;;
+        "Restore...") term "Restore snapshot" "$snap" restore ;;
         "Clean up old roots") term Snapshots "$snap" clean ;;
         "") s_system ;;
     esac
