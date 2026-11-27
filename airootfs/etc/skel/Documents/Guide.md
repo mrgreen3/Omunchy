@@ -41,10 +41,26 @@ persistent changes require the installer, obinstall.
 - Toggles: Super+Ctrl+I stay awake (no idle lock), Super+Ctrl+N night light,
   Super+Shift+N do not disturb; also Super+Alt+Space > Toggles.
 
+- Reminders: omunchy-reminder 25 Tea (minutes, then text) pops a
+  notification when due; omunchy-reminder list / clear. Also Apps > Reminder.
+
+- Snapshots (after Install > Snapper snapshots): every pacman update takes a
+  before/after snapshot. omunchy-snapshot list / create / restore <n>, or
+  System > Snapshots. Restore puts the system (not /home) back to snapshot n
+  on the next reboot, kernel included; the replaced system is kept until
+  omunchy-snapshot clean.
+
+- Security: new installs have the firewall on (incoming blocked) and no SSH
+  server. omunchy-security status; firewall on|off; ssh on|off (key login
+  only: put your other machine's public key in ~/.ssh/authorized_keys first);
+  drive-password changes the disk encryption password. Also Setup > Security.
+
 - Updating: omunchy-update (or Super+Alt+Space > Update > Omunchy) pulls
   Omunchy's own files from github.com/mrgreen3/Omunchy, runs any one-off
   migrations, adds new wallpapers, refreshes the extras package database, then
-  updates packages (pacman -Syu).
+  updates packages (keyring first, then pacman -Syu). One run at a time, no
+  suspend mid-update, log in ~/.local/state/omunchy/update.log; it says when
+  a reboot is needed after a kernel update. The alias `update` runs it.
   Installed system only. Never edit files in ~/.local/share/omunchy: local
   edits block the update; put your own versions in ~/Scripts.
   omunchy-update --no-packages skips pacman; the waybar update badge runs

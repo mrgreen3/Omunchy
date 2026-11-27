@@ -87,8 +87,15 @@ s_toggles() {
 }
 
 s_apps() {
-    case $(pick Apps "Radio") in
+    case $(pick Apps "Radio" "Reminder") in
         Radio) run foot -T Radio "$bin/omunchy-radio" ;;
+        Reminder)
+            local m t
+            m=$(ask "Remind me in (minutes)") || return
+            [[ $m =~ ^[0-9]+$ ]] || return
+            t=$(ask "Reminder text") || return
+            "$bin/omunchy-reminder" "$m" "${t:-Reminder}" >/dev/null && notify-send -a Omunchy "Reminder set" "in $m min: ${t:-Reminder}"
+            ;;
         "") s_main ;;
     esac
 }
@@ -138,8 +145,11 @@ s_update() {
 }
 
 s_setup() {
-    case $(pick Setup "Theme" "Keybindings" "Wallpaper" "Control centre") in
+    local o=("Theme" "Keybindings" "Wallpaper" "Control centre")
+    ((live)) || o+=("Security")
+    case $(pick Setup "${o[@]}") in
         Theme) "$bin/omunchy-theme" pick ;;
+        Security) s_security ;;
         Keybindings) run "$bin/omunchy-menu-keybinds" ;;
         Wallpaper) noctalia msg panel-toggle wallpaper ;;
         "Control centre") noctalia msg panel-toggle control-center ;;
@@ -147,8 +157,42 @@ s_setup() {
     esac
 }
 
+s_security() {
+    local sec=$bin/omunchy-security
+    case $(pick Security "Status" "Firewall on" "Firewall off" "SSH server on (keys only)" "SSH server off" "Change disk password") in
+        Status) term Security "$sec" status ;;
+        "Firewall on") term Firewall "$sec" firewall on ;;
+        "Firewall off") confirm "Turn the firewall off?" && term Firewall "$sec" firewall off ;;
+        "SSH server on (keys only)") term SSH "$sec" ssh on ;;
+        "SSH server off") term SSH "$sec" ssh off ;;
+        "Change disk password") term "Disk password" "$sec" drive-password ;;
+        "") s_setup ;;
+    esac
+}
+
+s_snapshots() {
+    local snap=$bin/omunchy-snapshot rows n
+    case $(pick Snapshots "List" "Create now" "Restore..." "Clean up old roots") in
+        List) term Snapshots "$snap" list ;;
+        "Create now") term Snapshots "$snap" create "manual (menu)" ;;
+        "Restore...")
+            # snapper's table, minus the header and snapshot 0 (the live system)
+            rows=$(snapper -c root --csvout list --columns number,date,description 2>/dev/null | awk -F, 'NR > 1 && $1 != 0 { print $1"  "$2"  "$3 }')
+            [[ -n $rows ]] || { rofi -e "No snapshots (set up: Install > Snapper snapshots)."; return; }
+            n=$(sort -rn <<<"$rows" | rofi -dmenu -i -p "Restore snapshot" -no-show-icons) || return
+            n=${n%% *}; [[ $n =~ ^[0-9]+$ ]] || return
+            confirm "Restore snapshot $n? The system (not /home) goes back on next boot" && term "Restore" "$snap" restore "$n"
+            ;;
+        "Clean up old roots") term Snapshots "$snap" clean ;;
+        "") s_system ;;
+    esac
+}
+
 s_system() {
-    case $(pick System "Lock" "Suspend" "Log out" "Reboot" "Shut down" "Power menu") in
+    local o=("Lock" "Suspend" "Log out" "Reboot" "Shut down" "Power menu")
+    ((live)) || o+=("Snapshots")
+    case $(pick System "${o[@]}") in
+        Snapshots) s_snapshots ;;
         Lock) noctalia msg session lock ;;
         Suspend) noctalia msg session lock-and-suspend ;;
         "Log out") confirm "Log out?" && noctalia msg session logout ;;

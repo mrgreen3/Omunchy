@@ -18,6 +18,8 @@ user's machine; act quickly on read-only checks, ask before changing anything.
 - `omunchy-agents` / `omunchy-install-ai <id>` / `omunchy-remove-ai <id>` AI agents via mise
 - `omunchy-extras` / `omunchy-install-extras <pkg>` / `omunchy-remove-extras <pkg>` curated Omarchy pkgs
 - `omunchy-install-gpu`, `omunchy-install-snapper`, `omunchy-install-yay` one-shot setups
+- `omunchy-snapshot list|create|restore <n>|clean` (restore/clean: ask the user first, always)
+- `omunchy-security status|firewall on|off|ssh on|off|drive-password`; `omunchy-reminder <min> [text]|list|clear`
 - `omunchy-webapp`, `omunchy-radio`, `omunchy-menu` (Super+Alt+Space), `omunchy-menu-keybinds` (Super+K)
 - `omunchy-theme list|current|set <name>` switch theme; `omunchy-theme-refresh` re-render colours
 - `omunchy-capture record|text|qr|colour|status` recording, OCR, QR, colour picker

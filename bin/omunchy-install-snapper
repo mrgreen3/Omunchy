@@ -3,6 +3,7 @@
 # transaction (snap-pac), timeline snapshots, and snapshots in the GRUB menu
 # (grub-btrfs). Needs root: re-runs itself with sudo. Safe to re-run.
 #   omunchy-install-snapper
+# wheel may list/create snapshots without sudo (ALLOW_GROUPS); restore needs root.
 
 set -euo pipefail
 
@@ -119,7 +120,8 @@ set_config() {
 set_config root TIMELINE_CREATE=yes TIMELINE_CLEANUP=yes NUMBER_CLEANUP=yes \
     TIMELINE_LIMIT_HOURLY=$ROOT_HOURLY TIMELINE_LIMIT_DAILY=$ROOT_DAILY \
     TIMELINE_LIMIT_WEEKLY=0 TIMELINE_LIMIT_MONTHLY=0 TIMELINE_LIMIT_YEARLY=0 \
-    NUMBER_LIMIT=$ROOT_NUMBER NUMBER_LIMIT_IMPORTANT=$ROOT_NUMBER
+    NUMBER_LIMIT=$ROOT_NUMBER NUMBER_LIMIT_IMPORTANT=$ROOT_NUMBER \
+    ALLOW_GROUPS=wheel SYNC_ACL=yes
 if ((sep_home)); then
     set_config home TIMELINE_CREATE=yes TIMELINE_CLEANUP=yes NUMBER_CLEANUP=yes \
         TIMELINE_LIMIT_HOURLY=$HOME_HOURLY TIMELINE_LIMIT_DAILY=$HOME_DAILY \

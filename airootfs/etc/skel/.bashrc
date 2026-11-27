@@ -33,7 +33,7 @@ alias decompress='tar -xzf'
 alias pkg_size="pacman -Qi | awk '/^Name/{n=\$3} /^Installed Size/{print \$4\$5\"\t\"n}' | sort -hr"
 
 # Pacman upgrades
-alias update='sudo pacman -Syu'
+alias update='omunchy-update'
 alias updates='checkupdates'
 
 # fzf shell integration

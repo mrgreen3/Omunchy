@@ -27,6 +27,21 @@ if [[ -d /run/archiso ]]; then
     exit 1
 fi
 
+# One run at a time, logged, and no suspend/shutdown mid-update. Set up once,
+# before the pull; the --after-pull re-exec inherits the lock, log and inhibitor.
+state=${XDG_STATE_HOME:-$HOME/.local/state}/omunchy
+if [[ $stage == pull ]]; then
+    if [[ -z ${OMUNCHY_UPDATE_INHIBITED:-} ]] && command -v systemd-inhibit >/dev/null; then
+        export OMUNCHY_UPDATE_INHIBITED=1
+        exec systemd-inhibit --what=sleep:shutdown:idle --who=omunchy-update --why="Updating the system" "$0" "$@"
+    fi
+    mkdir -p "$state"
+    exec 8>"$state/update.lock"
+    flock -n 8 || { echo "Another omunchy-update is running."; exit 1; }
+    { echo; echo "=== $(date -Is) omunchy-update $*"; } >>"$state/update.log"
+    exec > >(tee -a "$state/update.log") 2>&1
+fi
+
 if [[ $stage == pull ]]; then
     "$(dirname "$(readlink -f "$0")")/omunchy-netcheck" || { echo "Connect first and retry."; exit 1; }
 

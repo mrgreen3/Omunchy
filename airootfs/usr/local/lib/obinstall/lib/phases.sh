@@ -340,6 +340,10 @@ EOT
   printf '[Unit]\nAfter=plymouth-quit-wait.service\n' | write_file "$MNT/etc/systemd/system/greetd.service.d/plymouth.conf"
   ((DRY_RUN)) || echo "GTK_THEME=adw-gtk3-dark" >>"$MNT/etc/environment"
   chroot_run systemctl enable greetd.service bluetooth.service power-profiles-daemon.service
+  # firewall: deny incoming, allow outgoing (ufw defaults); `ufw enable` would
+  # touch the host's netfilter from the chroot, so flip ENABLED and the unit
+  run sed -i 's/^ENABLED=.*/ENABLED=yes/' "$MNT/etc/ufw/ufw.conf"
+  chroot_run systemctl enable ufw.service
   chroot_run systemctl set-default graphical.target
 }
 

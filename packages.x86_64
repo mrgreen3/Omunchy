@@ -94,6 +94,7 @@ kbd
 ## === COMMAND-LINE TOOLS ===
 mise
 openssh
+ufw
 arch-install-scripts
 curl
 pacman-contrib
