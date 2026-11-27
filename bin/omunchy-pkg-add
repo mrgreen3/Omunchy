@@ -7,4 +7,8 @@ for p in "$@"; do pacman -Q "$p" &>/dev/null || missing+=("$p"); done
 ((${#missing[@]})) || exit 0
 "$(dirname "$0")/omunchy-netcheck" || exit 1
 SUDO=(sudo); [[ ! -t 0 && -n ${SUDO_ASKPASS:-} ]] && SUDO=(sudo -A)
-"${SUDO[@]}" pacman -S --needed --noconfirm "${missing[@]}"
+# fresh installs have no sync databases yet: refresh with a full upgrade
+# (pacman -Sy then -S alone would be a partial upgrade)
+op=-S
+for db in /var/lib/pacman/sync/core.db /var/lib/pacman/sync/extra.db; do [[ -s $db ]] || op=-Syu; done
+"${SUDO[@]}" pacman "$op" --needed --noconfirm "${missing[@]}"
