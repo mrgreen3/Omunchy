@@ -85,8 +85,9 @@ The installer builds a fresh pacman keyring offline (the live one is a tmpfs, so
 If pacman later reports signature errors, run `omunchy-fix-keys` with a network connection (it also updates `archlinux-keyring`).
 
 - **AI.** No agent is on the ISO: they install on the installed system only
-  (`omunchy-install-ai opencode|claude|pi`, or the menu). `~/Documents/Guide.md` is the only
-  instructions file for every agent (no AGENTS.md/CLAUDE.md); the `omunchy-guide` skill in
+  (`omunchy-install-ai opencode|claude|pi`, or the menu). `~/.config/omunchy/AGENTS.md` (linked as
+  opencode's AGENTS.md and Claude Code's CLAUDE.md) holds the agent rules and points at
+  `~/Documents/Guide.md` for the full reference; the `omunchy-guide` skill in
   `~/.config/omunchy/skills`, linked into `~/.agents/skills`, `~/.claude/skills` and
   `~/.config/opencode/skills`, points opencode, pi, Gemini CLI and Claude Code at it.
 - **Live session.** `omunchy-welcome` (started by mango) shows a Super+K keybinds hint at login and a

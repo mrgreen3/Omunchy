@@ -23,10 +23,23 @@ persistent changes require the installer, obinstall.
   ~/.config/omunchy/skills (the omunchy-guide skill, shared by opencode, pi,
   Gemini CLI and Claude Code; it points them at this Guide), ~/Documents (Guide, Keybindings, About), ~/Backgrounds.
 
-- Theme: colours follow the wallpaper. Change the wallpaper in noctalia and the
-  bar, panels, rofi, window borders and new foot windows re-colour to match
-  (noctalia [theme] source = "wallpaper" in ~/.config/noctalia/config.toml).
-  Default wallpaper: [wallpaper.default] in the same file; more in ~/Backgrounds.
+- Theme: Super+Ctrl+T (or omunchy-theme pick / set <name> / list) switches
+  between named themes (Catppuccin, Gruvbox, Nord, Tokyo Night, Everforest,
+  Rose Pine, Matte Black, light ones...) or "Wallpaper", where colours follow
+  the wallpaper. The bar, panels, rofi, window borders and new foot windows
+  re-colour to match (noctalia's [theme.templates.user.*] in
+  ~/.config/noctalia/config.toml). Add your own rows in
+  ~/.config/omunchy/themes.tsv. Default wallpaper: [wallpaper.default] in the
+  same file; more in ~/Backgrounds.
+
+- Capture: Print = region screenshot (noctalia), Alt+Print starts/stops a
+  region recording (Alt+Shift+Print whole screen) into ~/Videos, a red dot in
+  the bar while recording. Super+Ctrl+Print copies text from a region (OCR;
+  installs tesseract on first use), Super+Print picks a colour. QR codes:
+  Super+Alt+Space > Capture. Command: omunchy-capture.
+
+- Toggles: Super+Ctrl+I stay awake (no idle lock), Super+Ctrl+N night light,
+  Super+Shift+N do not disturb; also Super+Alt+Space > Toggles.
 
 - Updating: omunchy-update (or Super+Alt+Space > Update > Omunchy) pulls
   Omunchy's own files from github.com/mrgreen3/Omunchy, runs any one-off
@@ -44,7 +57,7 @@ persistent changes require the installer, obinstall.
   (list: omunchy-extras; remove: omunchy-remove-extras <id>).
 
 - Omunchy menu: Super+Alt+Space (or omunchy-menu) reaches every Omunchy
-  action: apps, install, remove, update, setup, system. On the live ISO it
+  action: apps, capture, toggles, install, remove, update, setup, system. On the live ISO it
   offers "Install Omunchy" and hides installs and AI agents.
 
 - Commands: Omunchy's own commands are omunchy-* in ~/.local/share/omunchy/bin
@@ -106,7 +119,7 @@ opencode auth login
   - pacman: official repos only; never `pacman -Sy` alone (partial upgrade)
   - explains every command and asks before any sudo use
   - sudo has no terminal to ask on, so it is always written `sudo -A <cmd>`:
-    a themed password box (rofi) opens for the user and the password goes
+    a password box (GTK) opens for the user and the password goes
     straight to sudo, never through chat. See SUDO FROM OPENCODE below
   - no global npm/nodejs; user-local tools install under ~/.local or ~/.pi
     with their own installers (no sudo for those)

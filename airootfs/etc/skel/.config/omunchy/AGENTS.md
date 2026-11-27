@@ -19,7 +19,8 @@ user's machine; act quickly on read-only checks, ask before changing anything.
 - `omunchy-extras` / `omunchy-install-extras <pkg>` / `omunchy-remove-extras <pkg>` curated Omarchy pkgs
 - `omunchy-install-gpu`, `omunchy-install-snapper`, `omunchy-install-yay` one-shot setups
 - `omunchy-webapp`, `omunchy-radio`, `omunchy-menu` (Super+Alt+Space), `omunchy-menu-keybinds` (Super+K)
-- `omunchy-theme-refresh` re-render colours from noctalia's palette
+- `omunchy-theme list|current|set <name>` switch theme; `omunchy-theme-refresh` re-render colours
+- `omunchy-capture record|text|qr|colour|status` recording, OCR, QR, colour picker
 - `mmsg` mango IPC: `mmsg get all-clients` / `get all-tags` state, `mmsg dispatch <action>,<args>`
 
 ## Rules

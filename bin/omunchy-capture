@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+# omunchy:summary=Screen recording, OCR text, QR codes and colour picking (screenshots: noctalia)
+#   omunchy-capture record [region|screen]   start, or stop if running (Alt+Print)
+#   omunchy-capture text | qr | colour       region to clipboard (OCR installs tesseract on first use)
+#   omunchy-capture status                   exit 0 while recording
+set -uo pipefail
+bin=$(dirname "$(readlink -f "$0")")
+run=${XDG_RUNTIME_DIR:-/tmp}/omunchy-record
+dir=$(xdg-user-dir VIDEOS 2>/dev/null || echo "$HOME/Videos")
+
+note() { notify-send -a Omunchy -t 4000 "$@"; }
+need() { # need <pkg...>: install missing packages (older installs, OCR on first use)
+    "$bin/omunchy-pkg-present" "$@" && return
+    note "Installing $*"
+    "$bin/omunchy-pkg-add" "$@" || { note -u critical "Install failed: $*"; return 1; }
+}
+recording() { [[ -f $run.pid ]] && kill -0 "$(<"$run.pid")" 2>/dev/null; }
+region() { slurp -d 2>/dev/null; }
+
+record() {
+    if recording; then
+        kill -INT "$(<"$run.pid")"
+        while recording; do sleep 0.2; done
+        note "Recording saved" "$(<"$run.file")"
+        rm -f "$run.pid"
+        pkill -RTMIN+9 waybar 2>/dev/null
+        return
+    fi
+    need wf-recorder slurp || return 1
+    local geom=() out
+    if [[ ${1:-region} == region ]]; then
+        local g; g=$(region) || return 0
+        geom=(-g "$g")
+    fi
+    mkdir -p "$dir"
+    out=$dir/recording-$(date +%Y%m%d-%H%M%S).mp4
+    setsid wf-recorder "${geom[@]}" -f "$out" >/dev/null 2>&1 &
+    echo $! >"$run.pid"; printf '%s\n' "$out" >"$run.file"
+    pkill -RTMIN+9 waybar 2>/dev/null
+    note "Recording" "Alt+Print again to stop"
+}
+
+text() {
+    need grim slurp tesseract tesseract-data-eng || return 1
+    local g t; g=$(region) || return 0
+    t=$(grim -g "$g" - | tesseract stdin stdout --psm 6 -l "${OMUNCHY_OCR_LANGS:-eng}" 2>/dev/null)
+    [[ -n ${t//[[:space:]]/} ]] || { note "No text found"; return; }
+    printf '%s' "$t" | wl-copy && note "Text copied" "${t:0:120}"
+}
+
+qr() {
+    need grim slurp zbar || return 1
+    local g v; g=$(region) || return 0
+    v=$(grim -g "$g" - | zbarimg -q --raw -Sdisable -Sqrcode.enable - 2>/dev/null)
+    [[ -n $v ]] || { note "No QR code found"; return; }
+    # may hold a 2FA secret: keep it out of clipboard history and the journal
+    printf '%s' "$v" | wl-copy --sensitive && note "QR code copied"
+}
+
+colour() {
+    need hyprpicker || return 1
+    local c; c=$(hyprpicker -a -f hex 2>/dev/null) || return 0
+    [[ -n $c ]] && note "Colour copied" "$c"
+}
+
+case ${1:-} in
+    record) record "${2:-region}" ;;
+    text) text ;;
+    qr) qr ;;
+    colour | color) colour ;;
+    status) recording ;;
+    *) sed -n '2,5s/^# \{0,1\}//p' "$0"; exit 2 ;;
+esac

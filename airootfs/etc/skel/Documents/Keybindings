@@ -65,6 +65,19 @@ Super + p               Screenshot (full)
 Super + Shift + s       Screenshot (region)
 Super + Shift + e       Power Menu
 
+
+CAPTURE & TOGGLES
+───────────────────────
+
+Print                   Screenshot (region)
+Alt + Print             Record region (again to stop)
+Alt + Shift + Print     Record whole screen (again to stop)
+Super + Ctrl + Print    Copy text from screen (OCR)
+Super + Print           Colour picker
+Super + Ctrl + t        Theme picker
+Super + Ctrl + i        Stay awake (no idle lock)
+Super + Ctrl + n        Night light
+
 Vol Up (XF86)           Increase Volume
 Vol Down (XF86)         Decrease Volume
 Mute (XF86)             Toggle Mute

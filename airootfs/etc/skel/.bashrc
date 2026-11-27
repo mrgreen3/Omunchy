@@ -18,7 +18,18 @@ unset d
 # mise: user-local agent/tool installs (~/.local/share/mise)
 command -v mise >/dev/null && eval "$(mise activate bash)"
 
-alias ls='ls --color=auto'
+[[ -r /usr/share/bash-completion/bash_completion ]] && . /usr/share/bash-completion/bash_completion
+
+# Shell tools (Omarchy-style): eza listings, bat previews, zoxide jumps
+alias ls='eza -lh --group-directories-first --icons=auto'
+alias lsa='ls -a'
+alias lt='eza --tree --level=2 --long --icons=auto --git'
+alias ff="fzf --preview 'bat --style=numbers --color=always {}'"
+alias ..='cd ..'
+alias ...='cd ../..'
+command -v zoxide >/dev/null && eval "$(zoxide init bash)"
+compress() { tar -czf "${1%/}.tar.gz" "${1%/}"; }
+alias decompress='tar -xzf'
 
 # Package sizes
 alias pkg_size="pacman -Qi | awk '/^Name/{n=\$3} /^Installed Size/{print \$4\$5\"\t\"n}' | sort -hr"
