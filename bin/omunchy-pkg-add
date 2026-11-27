@@ -5,4 +5,5 @@ missing=()
 for p in "$@"; do pacman -Q "$p" &>/dev/null || missing+=("$p"); done
 ((${#missing[@]})) || exit 0
 "$(dirname "$0")/omunchy-netcheck" || exit 1
-sudo pacman -S --needed --noconfirm "${missing[@]}"
+SUDO=(sudo); [[ ! -t 0 && -n ${SUDO_ASKPASS:-} ]] && SUDO=(sudo -A)
+"${SUDO[@]}" pacman -S --needed --noconfirm "${missing[@]}"

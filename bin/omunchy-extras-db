@@ -18,7 +18,8 @@ place_db() {
     if mkdir -p "$out" 2>/dev/null && [[ -w $out ]]; then
         install -Dm644 "$tmp/omunchy-extras.db" "$out/omunchy-extras.db"
     else
-        sudo install -D -m0644 -o root -g root "$tmp/omunchy-extras.db" "$out/omunchy-extras.db"
+        SUDO=(sudo); [[ ! -t 0 && -n ${SUDO_ASKPASS:-} ]] && SUDO=(sudo -A)
+        "${SUDO[@]}" install -D -m0644 -o root -g root "$tmp/omunchy-extras.db" "$out/omunchy-extras.db"
     fi
     echo "Wrote $out/omunchy-extras.db ($(wc -c <"$tmp/omunchy-extras.db") bytes)"
 }

@@ -60,5 +60,20 @@ categories = false
 show_icons = true
 compact    = true
 
-[hooks]
-colors_changed = "/home/live/.local/share/omunchy/bin/omunchy-theme-refresh"
+[theme.templates.user.rofi]
+input_path  = "/home/live/.config/noctalia/templates/rofi-colors.rasi"
+output_path = "/home/live/.config/rofi/colors.rasi"
+
+[theme.templates.user.mango]
+input_path  = "/home/live/.config/noctalia/templates/mango-colors.conf"
+output_path = "/home/live/.cache/omunchy-mango-colors.conf"
+post_hook   = "/home/live/.local/share/omunchy/bin/omunchy-theme-mango"
+
+[theme.templates.user.waybar]
+input_path  = "/home/live/.config/noctalia/templates/waybar-colors.css"
+output_path = "/home/live/.config/waybar/colors.css"
+post_hook   = "pkill -SIGUSR2 -x waybar"
+
+[theme.templates.user.foot]
+input_path  = "/home/live/.config/noctalia/templates/foot"
+output_path = "/home/live/.config/foot/themes/noctalia"

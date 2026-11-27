@@ -1,8 +1,8 @@
 #!/bin/sh
-# omunchy:summary=Copy noctalia-rendered colours into mango's config.conf (omunchy-theme-refresh post_hook)
+# omunchy:summary=Copy noctalia-rendered colours into mango's config.conf (noctalia template post_hook)
 set -e
 
-SRC="/tmp/omunchy-mango-colors.conf"
+SRC="$HOME/.cache/omunchy-mango-colors.conf"
 DEST="$HOME/.config/mango/config.conf"
 
 [ -f "$SRC" ] || exit 0
