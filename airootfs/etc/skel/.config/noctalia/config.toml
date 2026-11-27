@@ -61,19 +61,19 @@ show_icons = true
 compact    = true
 
 [theme.templates.user.rofi]
-input_path  = "/home/live/.config/noctalia/templates/rofi-colors.rasi"
-output_path = "/home/live/.config/rofi/colors.rasi"
+input_path  = "~/.config/noctalia/templates/rofi-colors.rasi"
+output_path = "~/.config/rofi/colors.rasi"
 
 [theme.templates.user.mango]
-input_path  = "/home/live/.config/noctalia/templates/mango-colors.conf"
-output_path = "/home/live/.cache/omunchy-mango-colors.conf"
-post_hook   = "/home/live/.local/share/omunchy/bin/omunchy-theme-mango"
+input_path  = "~/.config/noctalia/templates/mango-colors.conf"
+output_path = "~/.cache/omunchy-mango-colors.conf"
+post_hook   = "~/.local/share/omunchy/bin/omunchy-theme-mango"
 
 [theme.templates.user.waybar]
-input_path  = "/home/live/.config/noctalia/templates/waybar-colors.css"
-output_path = "/home/live/.config/waybar/colors.css"
+input_path  = "~/.config/noctalia/templates/waybar-colors.css"
+output_path = "~/.config/waybar/colors.css"
 post_hook   = "pkill -SIGUSR2 -x waybar"
 
 [theme.templates.user.foot]
-input_path  = "/home/live/.config/noctalia/templates/foot"
-output_path = "/home/live/.config/foot/themes/noctalia"
+input_path  = "~/.config/noctalia/templates/foot"
+output_path = "~/.config/foot/themes/noctalia"

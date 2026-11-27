@@ -14,13 +14,18 @@ rows() {
 }
 
 set_theme() {
-    local row src scheme mode
+    local row name src scheme mode
     row=$(rows | awk -F'\t' -v n="$1" 'tolower($1) == tolower(n) && !f { print; f = 1 }')
     [[ -n $row ]] || { echo "omunchy-theme: no theme '$1' (see: omunchy-theme list)" >&2; exit 1; }
     IFS=$'\t' read -r name src scheme mode <<<"$row"
-    if [[ $src == custom && -f $dir/default/palettes/$scheme.json ]]; then
-        mkdir -p "$cfg/noctalia/palettes"
-        cp -f "$dir/default/palettes/$scheme.json" "$cfg/noctalia/palettes/$scheme.json"
+    if [[ $src == custom ]]; then
+        [[ $scheme != */* ]] || { echo "omunchy-theme: bad palette name '$scheme'" >&2; exit 1; }
+        if [[ -f $dir/default/palettes/$scheme.json ]]; then
+            mkdir -p "$cfg/noctalia/palettes"
+            cp -f "$dir/default/palettes/$scheme.json" "$cfg/noctalia/palettes/$scheme.json"
+        fi
+        [[ -f $cfg/noctalia/palettes/$scheme.json ]] ||
+            { echo "omunchy-theme: palette $cfg/noctalia/palettes/$scheme.json not found" >&2; exit 1; }
     fi
     noctalia msg theme-mode-set "$mode" >/dev/null
     noctalia msg color-scheme-set "$src" "$scheme" >/dev/null
@@ -35,7 +40,7 @@ case ${1:-} in
     pick)
         cur=$("$0" current)
         t=$(rows | cut -f1 | rofi -dmenu -i -p "Theme ($cur)" -no-show-icons) || exit 0
-        [[ -n $t ]] && set_theme "$t" >/dev/null
+        [[ -z $t ]] || set_theme "$t" >/dev/null
         ;;
     *) sed -n '2,4s/^# \{0,1\}//p' "$0"; exit 2 ;;
 esac
