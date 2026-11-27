@@ -38,6 +38,14 @@ chain inside omacom/omarchy or a recorded upstream URL below.
 |---|---|---|---|
 | mountain-moon.jpg | osaka-jade `3-mountain-moon` | "Add extra Osaka Jade background image" (commit af00a902, DHH) | MIT (omarchy) |
 | stars.jpg | — (not from Omarchy) | AI-generated for the Omunchy project; no third-party source material | Free to use; no attribution required |
+| catppuccin-waves.webp | catppuccin `2-waves` (was `2-cat-waves-mocha.png`) | Contributed to omarchy in PR #1008 (commit cc807821, Shawn Yeager) | MIT (omarchy; contributed under the repo licence) |
+| catppuccin-latte-color-fade.webp | catppuccin-latte `1-color-fade` (was `1-catppuccin-latte.png`) | Contributed to omarchy (commit 786b0b22, Ryan Yogan) | MIT (omarchy; contributed under the repo licence) |
+| everforest-tree-tops.webp | everforest `1-tree-tops` (was `1-everforest.jpg`) | "Pull backgrounds into the repo" (commit e2c8e3cc, DHH), from basecamp/omakub | MIT (omarchy/omakub) |
+| flexoki-orb.webp | flexoki-light `1-orb` (was `flexoki-light-orb.png`) | "Add Flexoki Light as new default theme" (commit 0df4dc1a, DHH) | MIT (omarchy) |
+| kanagawa-wave.webp | kanagawa `1-kanagawa` | "Pull backgrounds into the repo" (commit e2c8e3cc, DHH); the artwork is Hokusai's *The Great Wave off Kanagawa* (c. 1831) | Artwork public domain; file MIT (omarchy) |
+| matte-black-dark-waters.webp | matte-black `1-dark-waters` (was `1-matte-black.jpg`) | "Pull backgrounds into the repo" (commit e2c8e3cc, DHH), from basecamp/omakub | MIT (omarchy/omakub) |
+| nord-city-view.webp | nord `1-city-view` (was `1-nord.png`) | "Pull backgrounds into the repo" (commit e2c8e3cc, DHH), from basecamp/omakub | MIT (omarchy/omakub) |
+| rose-pine-funky-shapes.webp | rose-pine `1-funky-shapes` (was `background.jpg`) | "Let the themes include backgrounds directly" (commit 2235332c, DHH) | MIT (omarchy) |
 
 ### Conversions
 
@@ -45,6 +53,11 @@ Shipped as JPEG, capped at 3840 px wide, converted from Omarchy's original and
 renamed to a clean ASCII slug:
 
 - `themes/osaka-jade/backgrounds/3-mountain-moon.webp` -> `mountain-moon.jpg`
+
+Theme wallpapers (added 2026-11-27, traced through renames a4219f8f, c254f890,
+1d915c65, 3b8fce1c to the adding commit; files from omarchy tag v4.5.0, kept as
+webp, renamed to `<theme>-<name>`). `kanagawa-wave.webp` re-encoded from the
+4335 px JPEG to 2880 px webp to stay under 1 MB.
 
 Removed from the set: `aesthetic.jpg` (unverified origin), `sunset-lake.jpg`
 and `tree-tops.jpg` (both MIT-covered, dropped to ship a single wallpaper).
@@ -68,7 +81,12 @@ Excluded candidates and reasons:
   photos of museum-held paintings, rightsholder status is unverifiable. Ship
   nothing without a licence trail; the add-on repo has none.
 - `white 1/2/3-white` — trivial solid/branded images of unclear provenance.
-- `catppuccin-latte 1-color-fade`, `flexoki-light 1-orb`, `hackerman
+- `tokyo-night` set: `sunset-lake` was originally committed as
+  `scenery-pink-lakeside-sunset-lake-landscape-scenic-panorama-7680x3215-144.png`,
+  a wallpaper-site download name with no recorded source; `pawel-czerwinski`
+  and `milad-fakurian` are named photographers (likely Unsplash) with no
+  licence recorded in the repo. Tokyo Night ships no wallpaper.
+- `hackerman
   1-synth-scape`, `retro-82` set, `ristretto` set, `matte-black 0-ship-at-sea`
   — provenance not individually traced within the time budget; excluded
   rather than shipped on an assumption. (Not a licence finding — simply not
