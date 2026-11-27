@@ -77,15 +77,19 @@ Toggle a window between floating and tiling with Super+T.
 
 AI SETUP (OPENCODE)
 
-The AI setup assistant is OpenCode. It is not on the ISO and is offered on the
-installed system only (installed live, it would be lost on reboot). Once
-connected: "Install AI Agent" in the launcher (Super+Space), or
-Super+Alt+Space > Install > AI agent, or run:
+The AI setup assistant is OpenCode. It is not on the ISO; it downloads on
+demand. On the installed system: "Install AI Agent" in the launcher
+(Super+Space), or Super+Alt+Space > Install > AI agent. On the live ISO:
+Super+Alt+Space > AI help (OpenCode). Live it is read-only (no file edits,
+sudo blocked by the kernel's no_new_privs flag) and lost on reboot; it is for
+troubleshooting before install. Or run:
 
 omunchy-install-ai opencode
 
 It installs with mise like the other agents (see MISE) and adds an "OpenCode"
-entry to the launcher (Super+Space), or run `opencode --standalone`.
+entry plus "OpenCode (browser)" to the launcher (Super+Space). Run
+`omunchy-opencode` (terminal) or `omunchy-opencode --web` (browser, local
+only, one-off password; close its terminal window to stop it).
 
 On the live ISO, omunchy-welcome shows connection hints when offline.
 
@@ -96,7 +100,7 @@ opencode auth login
   (browser login), or set OPENCODE_API_KEY in your own terminal, then retry.
 
 - Rules every AI assistant follows (opencode, pi, Claude Code, Gemini CLI;
-  this Guide is their only instructions file; opencode settings: ~/.config/opencode):
+  short rules in ~/.config/omunchy/AGENTS.md, this Guide for detail; opencode settings: ~/.config/opencode):
 
   - runs as `opencode --standalone` on this system
   - pacman: official repos only; never `pacman -Sy` alone (partial upgrade)

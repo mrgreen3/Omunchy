@@ -33,13 +33,22 @@ extras_pick() { # extras_pick <verb> <extras rows> <command>
     term "$1 extras" "$bin/$3" "$(sed -n "$((i + 1))p" <<<"$rows" | cut -f1)"
 }
 
+# Live: OpenCode only (read-only, lost on reboot); installed: every agent not yet installed.
+live_ai() {
+    if ((live)); then "$bin/omunchy-agents" available | awk -F'\t' '$1 == "opencode"'
+    else "$bin/omunchy-agents" available; fi
+}
+
 s_main() {
     local opts=("Apps")
-    ((live)) && opts+=("Install Omunchy") || opts+=("Install" "Remove" "Update")
+    ((live)) && opts+=("Install Omunchy" "AI help (OpenCode)") || opts+=("Install" "Remove" "Update")
     opts+=("Setup" "System")
     case $(pick Omunchy "${opts[@]}") in
         Apps) s_apps ;;
         "Install Omunchy") run obinstall ;;
+        "AI help (OpenCode)")
+            if [[ -n $(live_ai) ]]; then ai_pick Install "$(live_ai)" omunchy-install-ai
+            else run foot -T "OpenCode (browser)" "$bin/omunchy-opencode" --web; fi ;;
         Install) s_install ;;
         Remove) s_remove ;;
         Update) s_update ;;
@@ -119,8 +128,7 @@ s_system() {
 pkill -x rofi && exit 0
 case ${1:-} in
     "") s_main ;;
-    install-ai) ((live)) && { rofi -e "AI agents are available after installing Omunchy."; exit 1; }
-        ai_pick Install "$("$bin/omunchy-agents" available)" omunchy-install-ai ;;
+    install-ai) ai_pick Install "$(live_ai)" omunchy-install-ai ;;
     install | remove | update) ((live)) && { rofi -e "Install Omunchy first."; exit 1; }; "s_$1" ;;
     apps | setup | system) "s_$1" ;;
     -h | --help) sed -n '2,4s/^# \{0,1\}//p' "$0" ;;
