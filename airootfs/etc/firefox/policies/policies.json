@@ -3,6 +3,8 @@
     "OverrideFirstRunPage": "",
     "OverridePostUpdatePage": "",
     "DontCheckDefaultBrowser": true,
-    "SkipTermsOfUse": true
+    "SkipTermsOfUse": true,
+    "AppAutoUpdate": false,
+    "BackgroundAppUpdate": false
   }
 }

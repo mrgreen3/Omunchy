@@ -1,0 +1,7 @@
+# Run heavy agent/model work here: systemd-run --user --slice=app-models.slice <cmd>
+[Unit]
+Description=Local models and agents
+
+[Slice]
+CPUWeight=20
+ManagedOOMMemoryPressure=kill
