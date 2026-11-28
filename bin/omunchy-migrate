@@ -4,6 +4,7 @@
 #   omunchy-migrate --list   show each migration and whether it has run
 # Done markers: ~/.local/state/omunchy/migrated/<name>. A failed migration stops
 # the run and is retried next time; migrations must be safe to rerun.
+# Exit 75 = not ready yet (e.g. waiting on a package): skipped, retried next run.
 set -uo pipefail
 SRC=$(dirname "$(readlink -f "$0")")/..
 SRC=$(cd "$SRC" && pwd)
@@ -20,7 +21,12 @@ for m in "$SRC"/migrations/*.sh; do
     fi
     [[ -e $STATE/$name ]] && continue
     echo "Running migration $name"
-    if ! OMUNCHY_DIR=$SRC bash "$m"; then
+    OMUNCHY_DIR=$SRC bash "$m"
+    rc=$?
+    if [[ $rc -eq 75 ]]; then
+        echo "Migration $name not ready yet - will retry next update."
+        continue
+    elif [[ $rc -ne 0 ]]; then
         echo "Migration $name failed - stopping. Fix it and rerun omunchy-update."
         exit 1
     fi
