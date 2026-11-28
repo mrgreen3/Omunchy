@@ -39,7 +39,7 @@ chain inside omacom/omarchy or a recorded upstream URL below.
 | mountain-moon.jpg | osaka-jade `3-mountain-moon` | "Add extra Osaka Jade background image" (commit af00a902, DHH) | MIT (omarchy) |
 | stars.jpg | — (not from Omarchy) | AI-generated for the Omunchy project; no third-party source material | Free to use; no attribution required |
 | catppuccin-waves.webp | catppuccin `2-waves` (was `2-cat-waves-mocha.png`) | Contributed to omarchy in PR #1008 (commit cc807821, Shawn Yeager) | MIT (omarchy; contributed under the repo licence) |
-| catppuccin-latte-color-fade.webp | catppuccin-latte `1-color-fade` (was `1-catppuccin-latte.png`) | Contributed to omarchy (commit 786b0b22, Ryan Yogan) | MIT (omarchy; contributed under the repo licence) |
+| catppuccin-blue-eye.webp | catppuccin `3-blue-eye` (was `3-blue-eye.png`) | Contributed to omarchy in PR #1008 (commit cc807821, Shawn Yeager) | MIT (omarchy; contributed under the repo licence) |
 | everforest-tree-tops.webp | everforest `1-tree-tops` (was `1-everforest.jpg`) | "Pull backgrounds into the repo" (commit e2c8e3cc, DHH), from basecamp/omakub | MIT (omarchy/omakub) |
 | matte-black-ship-at-sea.webp | matte-black `0-ship-at-sea` | "Add new default background for matte black" (commit e5a1b994, DHH) | MIT (omarchy) |
 | ethereal-cosmic.webp | ethereal `1-cosmic` (was `1-cosmic.jpg`) | Contributed to omarchy in PR #3464 "Add theme ethereal" (commit cd2a4e41, bjarneo) | MIT (omarchy; contributed under the repo licence) |
@@ -56,11 +56,11 @@ renamed to a clean ASCII slug:
 
 Theme wallpapers (added 2026-11-27, traced through renames a4219f8f, c254f890,
 1d915c65, 3b8fce1c to the adding commit; files from omarchy tag v4.5.0, kept as
-webp, renamed to `<theme>-<name>`). The three dark replacements (2026-11-28) were
+webp, renamed to `<theme>-<name>`). The four dark replacements (2026-11-28) were
 re-encoded to 2880 px webp.
 
-Removed from the set: `flexoki-orb.webp`, `kanagawa-wave.webp` and
-`rose-pine-funky-shapes.webp` (too light; replaced 2026-11-28), `aesthetic.jpg` (unverified origin), `sunset-lake.jpg`
+Removed from the set: `flexoki-orb.webp`, `kanagawa-wave.webp`,
+`rose-pine-funky-shapes.webp` and `catppuccin-latte-color-fade.webp` (too light; replaced 2026-11-28), `aesthetic.jpg` (unverified origin), `sunset-lake.jpg`
 and `tree-tops.jpg` (both MIT-covered, dropped to ship a single wallpaper).
 
 ## Excluded (audit of omissions)
